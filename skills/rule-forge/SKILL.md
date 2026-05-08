@@ -21,6 +21,7 @@ paths:
   - "**/.claude/rules/**"
   - "**/CLAUDE.md"
   - "**/CLAUDE.local.md"
+harness-targets: [claude]
 ---
 
 # rule-forge

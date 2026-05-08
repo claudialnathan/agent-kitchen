@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# bin/sync-cross-tool — link cross-tool skills from this repo into ~/.cursor/skills
+# and ~/.codex/skills.
+#
+# Each SKILL.md may declare `harness-targets:` in its frontmatter (e.g.
+# `harness-targets: [claude]` for claude-only). Default when absent is
+# `[claude, cursor, codex]`. This script handles cursor + codex; Claude Code
+# itself consumes skills via the marketplace plugin defined in .claude-plugin/.
+#
+# Idempotent. Safe to re-run after editing skills.
+#
+# Usage: bin/sync-cross-tool [--dry-run]
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SKILLS_DIR="$REPO_ROOT/skills"
+
+DRY_RUN=0
+case "${1:-}" in
+  --dry-run|-n) DRY_RUN=1 ;;
+  ""|--help|-h)
+    if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then
+      sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
+      exit 0
+    fi
+    ;;
+  *) echo "usage: $0 [--dry-run]" >&2; exit 2 ;;
+esac
+
+# Read `harness-targets:` from a SKILL.md (frontmatter only). Output a
+# space-separated list of tokens. Default to "claude cursor codex" when absent.
+read_targets() {
+  local md="$1"
+  local line
+  line=$(awk '
+    /^---$/ { c++; next }
+    c==1 && /^harness-targets:/ { print; exit }
+    c>=2 { exit }
+  ' "$md")
+  if [[ -z "$line" ]]; then
+    echo "claude cursor codex"
+    return
+  fi
+  # forms supported: "harness-targets: [claude]" or "harness-targets: [claude, cursor, codex]"
+  echo "$line" \
+    | sed -E 's/.*\[([^]]*)\].*/\1/' \
+    | tr ',' ' ' \
+    | tr -s ' ' \
+    | sed 's/^ *//; s/ *$//'
+}
+
+sync_one_tool() {
+  local tool="$1"
+  local dest="$2"
+
+  echo "=== $tool ($dest) ==="
+  mkdir -p "$dest"
+
+  local added=0 removed=0 unchanged=0 repointed=0 refused=0
+  local wanted_list=""
+
+  # First pass: ensure each desired link exists and points at this repo.
+  local skill_dir
+  for skill_dir in "$SKILLS_DIR"/*/; do
+    [[ -d "$skill_dir" ]] || continue
+    local name; name=$(basename "$skill_dir")
+    local md="$skill_dir/SKILL.md"
+    [[ -f "$md" ]] || continue
+    local targets; targets=$(read_targets "$md")
+    if echo " $targets " | grep -q " $tool "; then
+      wanted_list+=" $name"
+      local link="$dest/$name"
+      if [[ -L "$link" ]]; then
+        local cur; cur=$(readlink "$link")
+        if [[ "$cur" == "$SKILLS_DIR/$name" ]]; then
+          echo "  = $name"
+          unchanged=$((unchanged + 1))
+        else
+          if (( DRY_RUN )); then
+            echo "  ~ $name (would re-point: $cur -> $SKILLS_DIR/$name)"
+          else
+            ln -snf "$SKILLS_DIR/$name" "$link"
+            echo "  ~ $name (re-pointed: $cur -> $SKILLS_DIR/$name)"
+          fi
+          repointed=$((repointed + 1))
+        fi
+      elif [[ -e "$link" ]]; then
+        echo "  ! $name -- refusing to overwrite non-symlink at $link"
+        refused=$((refused + 1))
+      else
+        if (( DRY_RUN )); then
+          echo "  + $name -> $SKILLS_DIR/$name"
+        else
+          ln -s "$SKILLS_DIR/$name" "$link"
+          echo "  + $name -> $SKILLS_DIR/$name"
+        fi
+        added=$((added + 1))
+      fi
+    fi
+  done
+
+  # Second pass: remove orphan symlinks pointing into this repo for skills no
+  # longer desired (deleted, renamed, or retagged claude-only).
+  local entry
+  for entry in "$dest"/*; do
+    [[ -L "$entry" ]] || continue
+    local name; name=$(basename "$entry")
+    if echo " $wanted_list " | grep -q " $name "; then
+      continue
+    fi
+    local cur; cur=$(readlink "$entry")
+    if [[ "$cur" == "$SKILLS_DIR/"* ]]; then
+      if (( DRY_RUN )); then
+        echo "  - $name (would unlink: was -> $cur)"
+      else
+        rm "$entry"
+        echo "  - $name (unlinked: was -> $cur)"
+      fi
+      removed=$((removed + 1))
+    fi
+  done
+
+  local prefix=""
+  (( DRY_RUN )) && prefix="(dry-run) "
+  echo "  ${prefix}summary: +$added ~$repointed =$unchanged -$removed (refused: $refused)"
+  echo
+}
+
+sync_one_tool cursor "$HOME/.cursor/skills"
+sync_one_tool codex  "$HOME/.codex/skills"

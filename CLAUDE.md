@@ -4,20 +4,36 @@ A workshop for designing Claude Code skills and harness extensions. Not a produc
 
 ## Layout
 
-- `.claude/skills/<name>/` — the skills. Each stands alone.
-- `guides/` — companion notes that don't load into context: the README tour, harness-state snapshots, private design notes.
-- `commands/` — slash commands scoped to this directory.
+This repo is a single-plugin Claude Code marketplace. Layout mirrors `claudialnathan/priors`.
+
+- `.claude-plugin/{marketplace,plugin}.json` — marketplace + plugin manifests.
+- `skills/<name>/` — the skills. Each stands alone. Source of truth for all three tools (Claude / Cursor / Codex).
+- `.claude/skills/` — symlink → `../skills`, so project-scope discovery still works inside this repo while authoring.
+- `commands/`, `hooks/`, `agents/` — plugin commands/hooks/subagents (populated as needed).
+- `bin/sync-cross-tool` — idempotent symlink syncer into `~/.cursor/skills/` and `~/.codex/skills/`.
+- `guides/` — companion notes that don't load into context: README tour, harness-state snapshots, private design notes.
 
 ## The skills
 
-Three meta-skills (about the harness itself) and one applied skill:
+Three meta-skills (about the harness itself) and two applied skills:
 
 - **`skill-forge/`** — designs *other* skills. Triages requests to the right surface (CLAUDE.md, path-scoped rule, hook, MCP server, subagent, or skill), then drafts the skill when that's the answer.
 - **`hook-forge/`** — designs hooks. Picks the event, the determinism mode, and the handler shape.
 - **`rule-forge/`** — designs path-scoped rules at `.claude/rules/<name>.md`.
 - **`cache-aware-testing/`** — applied skill for testing Next.js 16 Cache Components apps on a Vitest + Playwright + Supabase + shadcn stack.
+- **`shadcn-tailwind/`** — applied skill encoding shadcn (4.x on Base UI) + Tailwind v4 discipline. Auto-loads on UI files via `paths:`.
 
 The meta-skills compose: skill-forge triages and, when the right answer is a hook or a rule, hands off to hook-forge or rule-forge to *actually* produce the artifact. "Make a skill" doesn't always end with a skill.
+
+## Publishing across tools
+
+Skills here flow to three places:
+
+1. **Claude Code in this repo (project scope)** — live via the `.claude/skills` → `../skills` symlink. No action needed while authoring.
+2. **Claude Code in other repos (user/global scope)** — via the marketplace plugin. Install once: `/plugin marketplace add /Users/claudianathan/repos/cookbooks/harness` (local), then `/plugin install claudia@harness`. Refresh with `/plugin marketplace update harness`.
+3. **Cursor and Codex** — via symlinks at `~/.cursor/skills/<name>` and `~/.codex/skills/<name>`. Run `bin/sync-cross-tool` after adding/removing a skill (idempotent; supports `--dry-run`).
+
+Per-skill targeting via optional `harness-targets:` frontmatter. Absent → all three tools. Set to `[claude]` for Claude-Code-specific skills (the three meta-skills are tagged this way; applied skills are unset = published everywhere). Other tools ignore unknown frontmatter, so the field is non-invasive.
 
 ## New artifacts are feedback for the forges
 
@@ -45,9 +61,9 @@ Pre-ship greps (run from repo root). The byte order matters — triggers are *ba
 
 ```bash
 # fenced trigger: three backticks immediately followed by an exclamation mark
-grep -rln $'\x60\x60\x60!' .claude/skills/
+grep -rln $'\x60\x60\x60!' skills/
 # inline trigger: an exclamation mark immediately followed by a backtick
-grep -rln $'!\x60' .claude/skills/
+grep -rln $'!\x60' skills/
 ```
 
 Both should return nothing. If they don't, fix before committing or copying.

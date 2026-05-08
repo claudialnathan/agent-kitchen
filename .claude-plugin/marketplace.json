@@ -1,0 +1,17 @@
+{
+  "name": "harness",
+  "owner": {
+    "name": "Claudia Nathan",
+    "url": "https://github.com/claudialnathan"
+  },
+  "plugins": [
+    {
+      "name": "claudia",
+      "source": "./",
+      "description": "Skill workshop: meta-skills (skill-forge, hook-forge, rule-forge) for designing Claude Code artifacts, plus applied skills (cache-aware-testing, shadcn-tailwind).",
+      "version": "0.1.0",
+      "license": "MIT",
+      "keywords": ["claude-code", "skills", "meta-skills", "harness"]
+    }
+  ]
+}

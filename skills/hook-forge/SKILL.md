@@ -30,6 +30,7 @@ paths:
   - "**/.claude/skills/**/SKILL.md"
   - "**/.claude/agents/**/*.md"
   - "**/.claude/hooks/**"
+harness-targets: [claude]
 ---
 
 # hook-forge

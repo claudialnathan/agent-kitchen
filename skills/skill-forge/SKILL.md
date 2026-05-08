@@ -4,6 +4,7 @@ description: Designs a skill for Claude Code by triaging whether a skill is even
 when_to_use: |
   Triggers: "make a skill for X", "turn this into a skill", "I keep typing the same thing", "this should be reusable", "design a /command for Y", "review my skill", "why isn't my skill triggering", "convert my CLAUDE.md section into a skill", "build a skill that does Z".
   Adjacent intents that should also pull this skill in: deciding between a skill and a hook, deciding between a skill and a subagent, packaging a personal workflow, building a plugin (since plugins bundle skills).
+harness-targets: [claude]
 ---
 
 # skill-forge

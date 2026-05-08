@@ -1,0 +1,10 @@
+{
+  "name": "claudia",
+  "version": "0.1.0",
+  "description": "Skill workshop: meta-skills (skill-forge, hook-forge, rule-forge) plus applied skills (cache-aware-testing, shadcn-tailwind).",
+  "author": {
+    "name": "Claudia Nathan"
+  },
+  "license": "MIT",
+  "keywords": ["claude-code", "skills", "meta-skills", "harness"]
+}

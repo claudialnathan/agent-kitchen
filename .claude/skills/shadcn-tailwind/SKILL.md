@@ -1,6 +1,6 @@
 ---
 name: shadcn-tailwind
-description: Stack-wide UI discipline for shadcn (4.x on Base UI) + Tailwind v4 projects. Encodes the recurring drift modes (raw colors instead of semantic tokens, arbitrary spacing values, `asChild` from Radix-era code, `dark:` backfills, undeclared font weights) and the discovery pattern (read `globals.css` for project-specific `@theme` tokens before writing classNames). Auto-loads when editing UI files; complements `figma-to-tailwind-tokens` which covers the deep design-translation workflow.
+description: Stack-wide UI discipline for shadcn (4.x on Base UI) + Tailwind v4 projects. Hard rules — no `px`, no `#hex` (always rem and oklch); no raw colour palettes (use semantic tokens); no `asChild` (Base UI uses `render`); no `dark:` backfills for missing tokens. Plus the discovery pattern: read `globals.css` for project-specific `@theme` tokens before writing classNames. Auto-loads when editing UI files; complements `figma-to-tailwind-tokens` which covers the deep design-translation workflow.
 when_to_use: |
   Auto-loads on UI files via `paths`. Also trigger on:
   - "review my UI"
@@ -54,7 +54,17 @@ Tailwind v4's spacing scale is driven by `--spacing` (default `0.25rem`). Utilit
 
 **If you find yourself typing an arbitrary value like `[3.75rem]` or `[20px]`, divide by `--spacing` (default 0.25rem) and try the named utility first.** `min-h-[3.75rem]` should be `min-h-15`. The Tailwind LSP will flag this; Claude often misses it because the multiplication isn't obvious.
 
-Arbitrary values are legitimate for: `calc()` expressions, values not on the scale, or one-off pixel-perfect designer requirements. They are **not** legitimate just because the named utility didn't come to mind first.
+Arbitrary values are legitimate for: `calc()` expressions, values not on the scale, or one-off designer requirements off the scale. They are **not** legitimate just because the named utility didn't come to mind first.
+
+## No `px`. No `#hex`. Always rem and oklch.
+
+Hard rule, no exceptions: **never write `px` or `#hex` values.** Not in arbitrary values, not in inline styles, not in new CSS, not in token declarations. Convert in passing when you see them, even in code you weren't otherwise touching.
+
+- **Lengths are rem.** `px ÷ 16 = rem`. `[3px]` → `[0.1875rem]`, `[20px]` → `[1.25rem]`, `[180px]` → `[11.25rem]` (and try the named utility first — `[11.25rem]` is `45 × --spacing` so it's `min-h-45` / `w-45`). Applies to *every* length: spacing, sizing, border, ring, offset, blur. Reason: rem scales with the user's root font size and inherits the project's typographic rhythm; px is a fixed pixel that ignores both.
+- **Colors are oklch.** shadcn 4.x ships oklch in its `@theme` variables by default; the project's tokens already are. When you have to write a colour value (new token, gradient stop, shadow), it's `oklch(...)`, not `#rrggbb` and not `rgb(...)`. Hex never appears. If you're tempted to reach for an arbitrary `text-[#6b7280]`, the answer is a semantic token, not a hex literal.
+- **"In passing" means in passing.** Editing a file with `[20px]` or `#6b7280` already in it: fix it while you're there. Don't introduce new ones; don't leave the old ones because they're not part of your task. The drift is what the skill exists to stop.
+
+The only carve-out: third-party code, generated CSS, and external dependencies you don't own. Anything you author or edit is rem + oklch.
 
 ## shadcn 4.x is on Base UI, not Radix
 
@@ -75,7 +85,9 @@ A short self-check, run mentally before saying "done":
 - [ ] No raw color palette classes (`bg-red-500`, `text-zinc-700`) — replaced with semantic tokens or a justified extension to `globals.css`.
 - [ ] Font-weight classes match what's declared in the project's `@theme` block. If using `font-medium`, verified `--font-weight-medium` exists.
 - [ ] No `asChild` in components built on Base UI (use `render` prop).
-- [ ] Arbitrary values (`[Nrem]`, `[Npx]`, `[#hex]`) are intentional, not first-reach. Tried the named utility first.
+- [ ] No `px` anywhere — arbitrary lengths are in rem (`[0.1875rem]` not `[3px]`). Existing px values fixed in passing.
+- [ ] No `#hex` anywhere — colours via semantic tokens or `oklch(...)`. Existing hex fixed in passing.
+- [ ] Arbitrary values are intentional, not first-reach. Tried the named utility first.
 - [ ] No `dark:` overrides backfilling a missing semantic token.
 - [ ] State variants use `data-[state=...]` selectors against Base UI's state attributes.
 

@@ -30,7 +30,7 @@ Run through this triage ladder. The first match wins.
 
 3. **Is the work a side task that would flood the main context with output?** (running tests, scraping logs, exploring an unfamiliar module). → That's a **subagent**, not a skill — or a skill with `context: fork` that runs *as* a subagent.
 
-4. **Is the rule a fact Claude should hold every session?** ("we use pnpm not npm", "tests live in `tests/`", "the API base path is `/v2`"). → That's a **CLAUDE.md** entry. Reserve CLAUDE.md for short, broadly-applicable facts; keep it under ~200 lines.
+4. **Is the rule a fact Claude should hold every session?** ("we use pnpm not npm", "tests live in `tests/`", "the API base path is `/v2`"). → That's a **CLAUDE.md** entry. Reserve CLAUDE.md for short, broadly-applicable facts; keep it under ~200 lines. For non-trivial CLAUDE.md design (initial bootstrap, structural audit, surface-aware tune), hand off to `claude-md-forge` — it triages across all six surfaces and writes rules reason-first.
 
 5. **Does the rule only apply when working in certain files?** ("API endpoints under `src/api/` follow these conventions"). → That's a **path-scoped rule** in `.claude/rules/something.md` with `paths:` frontmatter. Only loads when Claude touches matching files.
 
@@ -40,7 +40,7 @@ If you've gotten here, continue to the next section. If not, **carry through to 
 
 - **Hook** → if `hook-forge` is installed, invoke it (`/hook-forge`) and design the hook there. Otherwise, walk the user through the hook configuration inline: which event, which matcher, which handler type, what the script returns. The triage isn't done until the actual `.claude/settings.json` (or skill/agent frontmatter `hooks:` block) is drafted.
 - **MCP** → propose the `claude mcp add` command for a known server, or design the inline `.mcp.json` entry. If domain-specific guidance is needed (schema, query patterns), that's a *companion* skill the user can build after the connection exists.
-- **CLAUDE.md** → propose the actual lines to add (or suggest a path-scoped rule file at `.claude/rules/<name>.md` if the content is more than a few lines and only applies to some files).
+- **CLAUDE.md** → propose the actual lines to add (or suggest a path-scoped rule file at `.claude/rules/<name>.md` if the content is more than a few lines and only applies to some files). For more than a few lines, structural restructuring, or AGENTS.md handling, hand off to `claude-md-forge`.
 - **Path-scoped rule** → draft the `.claude/rules/<name>.md` with `paths:` frontmatter and the rule body.
 - **Subagent** → propose the `.claude/agents/<name>.md` with frontmatter (tools, model, permissionMode) and the system prompt body.
 - **Nothing** → say so and stop. The cheapest answer is often "do this in the moment, don't encode it."
@@ -49,7 +49,7 @@ Read [references/triage.md](references/triage.md) for the longer form, including
 
 ## Classify: which kind of skill?
 
-Skills are not one shape. The six kinds below have different goals and different SKILL.md structures. Pick one before drafting.
+Skills are not one shape. The seven kinds below have different goals and different SKILL.md structures. Pick one before drafting.
 
 | Kind | Purpose | Default invocation | Default `context` | Body shape |
 | :--- | :--- | :--- | :--- | :--- |
@@ -59,6 +59,7 @@ Skills are not one shape. The six kinds below have different goals and different
 | **Forked research** | Investigate something without polluting the main thread | model-invocable, `context: fork`, `agent: Explore` | forked | task prompt for a subagent |
 | **Path-scoped knowledge** | Conventions that only matter for some files | model-invocable + `paths:` glob | inline | declarative, narrow scope |
 | **Toolkit** | Bundle scripts and examples Claude calls into for repeatable infrastructure (browser automation, file processing, report generation) | model-invocable; bundled `scripts/` and `examples/` carry the value | inline | thin orientation pointing at the artifacts |
+| **Dispatcher** | Triage and shape across 2+ related jobs under one skill, sharing the triage logic (e.g., `skill-forge`, `hook-forge`, `rule-forge`, `claude-md-forge`) | model-invocable; often `paths:`-scoped to the artifact type | inline | quick-dispatch table at top, shared triage, per-job sections |
 
 Different kinds need different things. A workflow skill needs imperative steps and pre-approved tools. A knowledge skill needs concrete conventions and almost no procedural text. A forked-research skill needs a clear task statement and an agent type — not your usual list of bullets.
 
@@ -249,7 +250,7 @@ This applies to *any file inside a skill directory*, not just `SKILL.md`. The lo
 Before saving, walk this list:
 
 - [ ] Triaged: confirmed this should be a skill, not a hook/MCP/CLAUDE.md/subagent/path-rule.
-- [ ] Classified: one of the six kinds; frontmatter matches the kind.
+- [ ] Classified: one of the seven kinds; frontmatter matches the kind.
 - [ ] Named the move: I can say in one sentence what attention this skill frees up and what it redirects toward. If the answer is "nothing, it just shortens work," I've decided that shortening is worth the recurring context cost.
 - [ ] `name:` set explicitly (don't rely on the directory-name default — the file is more readable and the skill's identity less filesystem-coupled when `name:` is in the frontmatter).
 - [ ] `description` is the *what*; trigger phrases live in `when_to_use` as a separate field. Splitting keeps the description scannable and lets the trigger list grow without bloating the lead sentence.

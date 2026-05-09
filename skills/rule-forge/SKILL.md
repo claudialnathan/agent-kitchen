@@ -59,6 +59,8 @@ CLAUDE.md is *always* in context. Rules are *only* in context when matching file
 
 If you're tempted to add to CLAUDE.md "for the API directory we do X" — that's a rule, not a CLAUDE.md fact.
 
+For designing the CLAUDE.md side itself (or splitting an over-long one), hand off to `claude-md-forge` — its audit job triages CLAUDE.md content across all six surfaces and produces the matching rule files in lockstep.
+
 ### Rule vs path-scoped skill
 
 Both use `paths:` globs to scope auto-loading. The difference is invocation:

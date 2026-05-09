@@ -1,4 +1,4 @@
-# The five skill kinds
+# The seven skill kinds
 
 Different kinds of skills want different bodies. This is the catalog of structural archetypes — pick the kind first, then write to its template, not the other way around.
 
@@ -9,6 +9,8 @@ The kinds are:
 3. **Guarded action** — single-action skill with strict tool scope (subset of Workflow, but worth calling out).
 4. **Forked research** — investigation that returns a summary, runs in a subagent.
 5. **Path-scoped knowledge** — knowledge but only when working in certain files.
+6. **Toolkit** — thin body that points at bundled scripts and examples Claude calls into.
+7. **Dispatcher** — 2+ related jobs unified by triage, with a quick-dispatch table at the top of the body.
 
 ## 1. Workflow
 
@@ -329,6 +331,81 @@ User asks for flow screenshots → Is the server already running?
 **Why this is its own kind:** the body doesn't fit the workflow shape (no procedure with side effects), the knowledge shape (the value isn't reference content), or any of the other three. The structural pattern — thin body, scripts carry the value, "don't read the source unless you have to" — is distinct enough to deserve a name.
 
 **When NOT to use the toolkit kind:** when the work is genuinely reasoning-heavy (judgment calls, design decisions, code review). Toolkits ossify; they're for deterministic infrastructure. If your scripts are doing things a model could do better with judgment, you're in the wrong kind — that's knowledge or workflow.
+
+## 7. Dispatcher
+
+A dispatcher skill bundles 2+ related jobs under one roof, sharing the triage logic and dispatching to the right job from observable signals. The harness's own forges — `skill-forge`, `hook-forge`, `rule-forge`, `claude-md-forge` — are dispatchers. Anything that asks "is this a creation, audit, or update task?" before doing the work fits this shape.
+
+**Frontmatter pattern:**
+
+```yaml
+---
+description: <triages X kind of work across N jobs>. <N> jobs: <job-1>, <job-2>, <job-3>. <Differentiator vs adjacent surfaces and existing tools.>
+when_to_use: |
+  Triggers: <phrasings for each job>
+paths:
+  - <glob for the artifact type the dispatcher works on>
+---
+```
+
+`paths:` is common because dispatchers usually have a natural artifact scope (a SKILL.md, a hook config, a CLAUDE.md). Auto-loading when those files are open is high-precision.
+
+**Body shape:**
+
+- **Quick-dispatch table at the top** — one screen, observable signals to the job. The user's natural-language phrasing plus 1–2 repo signals (a file exists, a file is over N lines, a directory is non-empty) should pick the job in a glance.
+- **Shared triage section** that all jobs use — the cross-cutting decision logic.
+- **Per-job sections** with the steps for that job, deferred-references for depth.
+- **Closing checklist** that applies across jobs.
+
+**Why this is its own kind:** the body's first job is *picking which job*. That's a structural difference from a single workflow (one set of steps), a knowledge skill (passive reference), or a toolkit (thin pointer to scripts). Forcing a dispatcher into the workflow kind produces a long preamble before the user sees anything actionable; forcing it into knowledge loses the per-job procedural depth.
+
+**Why one skill, not N:** description budget. Each visible skill consumes its share of the 1,536-character cap per session. Three discrete skills (`bootstrap-X`, `audit-X`, `tune-X`) cost three description-budget hits and split the user's discovery surface. One dispatcher costs one and is easier to find.
+
+**Body discipline:** if the dispatch table needs paragraphs of reasoning, you've got two skills, not one. Dispatch should be readable in a glance. The N jobs should genuinely share triage — not just topic.
+
+**Defer to other forges:** dispatchers often *produce* artifacts whose own design has a forge. When the artifact is a hook, hand off to `hook-forge`. When it's a path-scoped rule, hand off to `rule-forge`. When it's a skill, hand off to `skill-forge`. The dispatcher does triage and shape; the artifact-specific forge does the artifact's own design.
+
+**Example: `/claude-md-forge`** (sketch — see the actual skill for the full body)
+
+```yaml
+---
+name: claude-md-forge
+description: Designs CLAUDE.md and adjacent project-instruction files. Three jobs: bootstrap (new repo or thin /init output), audit (existing CLAUDE.md is bloated, stale, or wrong-surface), tune (recent-session learnings need to land somewhere correct). Different from /init (generic scaffold) and claude-md-improver plugin (additive grading) — restructures by surface and writes rules with reasons.
+when_to_use: |
+  Triggers: "set up CLAUDE.md", "audit my CLAUDE.md", "add this to CLAUDE.md", ...
+paths:
+  - "**/CLAUDE.md"
+  - "**/AGENTS.md"
+  - "**/.claude/rules/**"
+harness-targets: [claude]
+---
+
+## Quick dispatch — which job is this?
+
+| Signal | Job |
+| :--- | :--- |
+| No CLAUDE.md, or only the literal `/init` template | Bootstrap |
+| CLAUDE.md exists, >200 lines, or feels generic | Audit |
+| CLAUDE.md exists, recent session surfaced X | Tune |
+
+## The shared triage [six surfaces table — every job uses this]
+
+## Job 1 — Bootstrap [steps]
+
+## Job 2 — Audit [steps]
+
+## Job 3 — Tune [steps]
+```
+
+The point: the body opens with the dispatch table, then a shared triage every job uses, then per-job sections.
+
+**When NOT to use the dispatcher kind:**
+
+- The jobs share nothing beyond topic. Two unrelated workflows in one skill confuse the description and weaken triggering. Make them separate skills.
+- There's actually only one job, just multiple trigger phrasings. That's a knowledge or workflow skill with a generous `when_to_use` block — not a dispatcher.
+- The "jobs" are sequential phases of one workflow. That's still one workflow skill, just with longer steps.
+
+**Examples in the wild:** `skill-forge` (triage / classify / shape), `hook-forge` (event / determinism / handler triage + design), `rule-forge` (triage four nearby surfaces / write the rule), `claude-md-forge` (bootstrap / audit / tune).
 
 ## Picking when the kind is ambiguous
 

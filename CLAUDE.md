@@ -17,15 +17,16 @@ This repo is a single-plugin Claude Code marketplace. Layout mirrors `claudialna
 
 ## The skills
 
-Three meta-skills (about the harness itself) and two applied skills:
+Four meta-skills (about the harness itself) and two applied skills:
 
 - **`skill-forge/`** — designs *other* skills. Triages requests to the right surface (CLAUDE.md, path-scoped rule, hook, MCP server, subagent, or skill), then drafts the skill when that's the answer.
 - **`hook-forge/`** — designs hooks. Picks the event, the determinism mode, and the handler shape.
 - **`rule-forge/`** — designs path-scoped rules at `.claude/rules/<name>.md`.
+- **`claude-md-forge/`** — designs CLAUDE.md (and AGENTS.md, CLAUDE.local.md, .claude/rules/ alongside it). Three jobs: bootstrap (new repo or thin `/init` output), audit (existing CLAUDE.md is bloated/stale/wrong-surface), tune (recent learnings need the right surface). Reason-first content shape.
 - **`cache-aware-testing/`** — applied skill for testing Next.js 16 Cache Components apps on a Vitest + Playwright + Supabase + shadcn stack.
 - **`shadcn-tailwind/`** — applied skill encoding shadcn (4.x on Base UI) + Tailwind v4 discipline. Auto-loads on UI files via `paths:`.
 
-The meta-skills compose: skill-forge triages and, when the right answer is a hook or a rule, hands off to hook-forge or rule-forge to *actually* produce the artifact. "Make a skill" doesn't always end with a skill.
+The meta-skills compose: skill-forge triages and, when the right answer is a hook, a rule, or non-trivial CLAUDE.md design, hands off to hook-forge, rule-forge, or claude-md-forge to *actually* produce the artifact. "Make a skill" doesn't always end with a skill.
 
 ## Publishing across tools
 
@@ -107,3 +108,7 @@ Use absolute YYYY-MM-DD in skills, references, and memory. Relative phrases ("la
 - **Auto-memory** — user preferences, project context, feedback. Persists across sessions.
 
 If you're tempted to add to this file "for the X skill we do Y" — that's content for skill X itself, not CLAUDE.md.
+
+## Treat this file as intent, not current truth
+
+Rules here reflect what was true at time of writing. If you see them contradicted by current code — commands that fail, paths that are gone, conventions the codebase has moved away from — flag the contradiction before relying on the rule. The audit job in `claude-md-forge` is the fix path; don't silently work around drift.

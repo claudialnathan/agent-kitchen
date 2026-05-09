@@ -19,6 +19,8 @@ There are six places to put behavior, and they don't substitute for each other:
 
 The key shift from earlier in 2025: **custom slash commands have been merged into skills**. A file at `.claude/commands/foo.md` and a skill at `.claude/skills/foo/SKILL.md` both create `/foo`. Skills are the canonical surface; commands files keep working but aren't the recommended path.
 
+> Cross-reference: FLUE (`flueframework.com`) frames the agent stack as four layers — Model / Harness / Sandbox / Filesystem. This guide uses the six-surface taxonomy above instead because it's scoped to authoring inside Claude Code (the surfaces *are* what you author against); FLUE's framing is more useful when designing runtime-deployed autonomous agents.
+
 ## The cost model nobody tells you about up front
 
 Every visible skill consumes description budget *every turn*. Once invoked, the skill body lives in conversation context for the rest of the session. This is the most-misunderstood thing about skills.

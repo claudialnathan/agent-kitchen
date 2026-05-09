@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# Pre-ship hygiene check for harness skills.
+# Mechanically runs the validation gates from CLAUDE.md.
+# Exits non-zero on any FAIL. Run from anywhere in the repo.
+
+set -uo pipefail
+cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+
+fail=0
+
+# 1. Loader-trigger byte sequences. CLAUDE.md: "This has caused two real failures already."
+echo "Loader-trigger sequences (must be empty):"
+m1=$(grep -rln $'\x60\x60\x60!' skills/ 2>/dev/null || true)
+m2=$(grep -rln $'!\x60' skills/ 2>/dev/null || true)
+if [ -n "$m1$m2" ]; then
+  echo "  FAIL"
+  [ -n "$m1" ] && { echo "    triple-backtick + bang in:"; printf '%s\n' "$m1" | sed 's/^/      /'; }
+  [ -n "$m2" ] && { echo "    bang + backtick in:";        printf '%s\n' "$m2" | sed 's/^/      /'; }
+  fail=1
+else
+  echo "  OK"
+fi
+
+# 2. Required frontmatter (name + description).
+echo
+echo "Required frontmatter (name, description):"
+fm_fail=0
+for d in skills/*/; do
+  md="$d/SKILL.md"
+  [ -f "$md" ] || continue
+  if ! awk '/^name:/{n=1} /^description:/{de=1} END{exit !(n && de)}' "$md"; then
+    echo "  FAIL: $md missing name or description"
+    fm_fail=1
+    fail=1
+  fi
+done
+[ "$fm_fail" -eq 0 ] && echo "  OK"
+
+# 3. Description + when_to_use combined chars. CLAUDE.md: 1,536-char discovery budget.
+#    Anything past is silently truncated by the skill loader. Counts only those two fields,
+#    not the full frontmatter (which can hold paths, hooks, harness-targets, etc.).
+echo
+echo "Description + when_to_use chars (1,536 budget):"
+for d in skills/*/; do
+  md="$d/SKILL.md"
+  [ -f "$md" ] || continue
+  combined=$(awk '
+    BEGIN { c=0; mode="" }
+    /^---$/ { c++; if (c==2) exit; next }
+    c != 1 { next }
+    /^description:[[:space:]]*\|[[:space:]]*$/ { mode="d"; next }
+    /^description:/ { sub(/^description:[[:space:]]*/, ""); print; mode=""; next }
+    /^when_to_use:[[:space:]]*\|[[:space:]]*$/ { mode="w"; next }
+    /^when_to_use:/ { sub(/^when_to_use:[[:space:]]*/, ""); print; mode=""; next }
+    /^[a-zA-Z_][a-zA-Z0-9_-]*:/ { mode=""; next }
+    mode != "" { print }
+  ' "$md")
+  len=$(printf '%s' "$combined" | wc -c | tr -d ' ')
+  flag="OK"
+  if [ "$len" -gt 1536 ]; then
+    flag="OVER"
+    fail=1
+  fi
+  printf "  %-30s %5d / 1536  %s\n" "$(basename "$d")" "$len" "$flag"
+done
+
+# 4. Reference orphans: files in references/ not mentioned in SKILL.md.
+echo
+echo "Reference orphans (in references/ but not pointed at by SKILL.md):"
+ref_fail=0
+for d in skills/*/; do
+  [ -d "$d/references" ] || continue
+  for ref in "$d/references"/*.md; do
+    [ -f "$ref" ] || continue
+    bn=$(basename "$ref")
+    if ! grep -q "references/$bn" "$d/SKILL.md" 2>/dev/null; then
+      echo "  ORPHAN: $ref"
+      ref_fail=1
+    fi
+  done
+done
+[ "$ref_fail" -eq 0 ] && echo "  OK"
+
+# 5. Dangling references: files mentioned by SKILL.md that don't exist on disk.
+echo
+echo "Dangling references (mentioned in SKILL.md but missing on disk):"
+dangle_fail=0
+for d in skills/*/; do
+  md="$d/SKILL.md"
+  [ -f "$md" ] || continue
+  for ref in $(grep -oE 'references/[a-zA-Z0-9_.-]+\.md' "$md" | sort -u); do
+    if [ ! -f "$d/$ref" ]; then
+      echo "  DANGLING: $d/SKILL.md mentions $ref but $d$ref does not exist"
+      dangle_fail=1
+      fail=1
+    fi
+  done
+done
+[ "$dangle_fail" -eq 0 ] && echo "  OK"
+
+echo
+if [ "$fail" -ne 0 ]; then
+  echo "FAILED — see above." >&2
+  exit 1
+fi
+echo "OK — safe to ship."

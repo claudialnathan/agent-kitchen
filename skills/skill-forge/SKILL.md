@@ -18,7 +18,7 @@ It does **two** things in order:
 
 If you only learn one thing here: **a skill is content that lives in recurring context with a 1,536-character description budget per skill and a 5,000-token compaction budget**. Most skill design choices follow from that.
 
-## Step 1 — Triage: should this be a skill?
+## Triage: should this be a skill?
 
 Before opening a `SKILL.md`, ask which extension surface fits. Skills are flexible but not free — every visible skill consumes description budget every turn, and every invocation pins content into context for the rest of the session. If another surface fits better, use it instead.
 
@@ -36,7 +36,7 @@ Run through this triage ladder. The first match wins.
 
 6. **None of the above, and it's a procedure or body of knowledge that's reusable across sessions.** → Now it's a skill.
 
-If you've gotten here, continue to Step 2. If not, **carry through to the redirected surface — don't just announce that it should be one**. Specifically:
+If you've gotten here, continue to the next section. If not, **carry through to the redirected surface — don't just announce that it should be one**. Specifically:
 
 - **Hook** → if `hook-forge` is installed, invoke it (`/hook-forge`) and design the hook there. Otherwise, walk the user through the hook configuration inline: which event, which matcher, which handler type, what the script returns. The triage isn't done until the actual `.claude/settings.json` (or skill/agent frontmatter `hooks:` block) is drafted.
 - **MCP** → propose the `claude mcp add` command for a known server, or design the inline `.mcp.json` entry. If domain-specific guidance is needed (schema, query patterns), that's a *companion* skill the user can build after the connection exists.
@@ -47,7 +47,7 @@ If you've gotten here, continue to Step 2. If not, **carry through to the redire
 
 Read [references/triage.md](references/triage.md) for the longer form, including how to combine surfaces (e.g., MCP + skill, hook + skill).
 
-## Step 2 — Classify: which kind of skill?
+## Classify: which kind of skill?
 
 Skills are not one shape. The six kinds below have different goals and different SKILL.md structures. Pick one before drafting.
 
@@ -68,11 +68,7 @@ If you can't articulate what attention this skill frees up and where it redirect
 
 Read [references/skill-kinds.md](references/skill-kinds.md) for a worked example of each kind, including which frontmatter fields matter and which are noise. The additive-vs-transformative distinction is covered there in more depth.
 
-## Step 3 — Draft the SKILL.md
-
-Once you've classified, draft. The order matters.
-
-### 3a. Write the description first
+## Description first
 
 The description is the *only* thing the model sees when deciding whether to invoke. Skills with vague descriptions silently under-trigger — Claude consults skills only when it needs help, and a generic description loses against a specific one.
 
@@ -84,7 +80,7 @@ Three rules:
 
 Anti-patterns and fixes are in [references/triggering.md](references/triggering.md). When in doubt, write three candidate descriptions and ask "which of these would I match against my actual prompt?".
 
-### 3b. Pick the frontmatter that earns its keep
+## Frontmatter that earns its keep
 
 Don't carpet-bomb frontmatter. Each field exists for a reason; setting it without that reason adds noise and obscures intent.
 
@@ -102,7 +98,7 @@ Don't carpet-bomb frontmatter. Each field exists for a reason; setting it withou
 
 The full reference, including substitutions (`$ARGUMENTS`, `$N`, `$name`, `${CLAUDE_SKILL_DIR}`, `${CLAUDE_SESSION_ID}`, `${CLAUDE_EFFORT}`), lives in [references/frontmatter.md](references/frontmatter.md).
 
-### 3c. Write the body for the lifecycle, not for one turn
+## Write the body for the lifecycle, not for one turn
 
 Once a skill is invoked, **its content stays in the conversation as a single message until the session ends or compaction drops it**. Claude does not re-read the file. This is the single most-misunderstood fact about skills.
 
@@ -111,13 +107,13 @@ Implications:
 - Write **standing instructions** ("when running tests, prefer single-file runs"), not one-time steps ("first check if Node is installed"). The latter waste tokens after the first response.
 - If the body is mostly procedure ("do step 1, then step 2, then step 3"), you're writing additive content. If the body says "here's what to attend to throughout this work, and the mechanics are X" — you're writing transformative content. The transformative kind holds up better as recurring context because the reader-Claude-on-turn-8 is still being told *what to keep in foreground*, not stepped through a recipe whose first half already ran.
 - **Every line is a recurring cost.** Apply the CLAUDE.md test: if removing this line wouldn't change behavior, delete it. Skills over ~500 lines start hurting more than they help.
-- **Reference docs go in sibling files**, not inline. `reference.md`, `examples/`, `scripts/` all exist for this. Mention them by filename in SKILL.md so Claude knows when to load them: "for the full schema list, see `reference.md`."
+- **Reference docs go in sibling files**, not inline. `reference.md`, `examples/`, `scripts/` all exist for this. The skill directory path is auto-prepended when Claude reads SKILL.md, so name bundled docs by filename — Claude resolves them on demand: "for the full schema list, see `reference.md`."
 - **Compaction carries skills forward with a budget**: the most recent invocation of each skill is re-attached, keeping the first 5,000 tokens. The shared budget across re-attached skills is 25,000 tokens. If a skill is huge or you've invoked many others after it, it can be dropped entirely. Re-invoke it after compaction if you need the full content back.
 - **If a skill seems to "stop working" after the first turn, it usually didn't.** The content is still in context; the model just chose another path. Strengthen the description and the imperative tone, or use a hook for things that must happen.
 
 More on the lifecycle (loading order, compaction, drift signals) in [references/lifecycle.md](references/lifecycle.md).
 
-### 3d. Use the harness features that actually fit this skill
+## Harness features that actually fit this skill
 
 The 2026 features I see most often missed when they would help:
 
@@ -125,18 +121,18 @@ The 2026 features I see most often missed when they would help:
 - **`context: fork` + `agent: Explore`** for any skill whose job is to *investigate* and *summarize*. The investigation tokens never enter your main thread.
 - **`paths:` glob** for knowledge that's narrowly scoped to part of a repo. Loads only when those files are open.
 - **`allowed-tools`** for workflow skills that touch the same 3–5 commands every run. Skip the per-use approval prompt without granting blanket access.
-- **`${CLAUDE_SKILL_DIR}`** for referencing bundled scripts. Resolves correctly whether the skill lives at user, project, or plugin scope.
+- **`${CLAUDE_SKILL_DIR}`** for invoking bundled scripts via Bash (`python3 ${CLAUDE_SKILL_DIR}/scripts/foo.py`) — bash commands run in the user's CWD, not the skill dir, so without the placeholder the path won't resolve. Markdown reference files don't need it; only bash-invoked paths do. Resolves correctly whether the skill lives at user, project, or plugin scope.
 - **Frontmatter `hooks:`** for skills that need a hard rule while active (e.g., a `db-reader` skill that must never see `INSERT`/`UPDATE`).
 
 Read [references/patterns.md](references/patterns.md) for the patterns each one fits and the patterns each one ruins.
 
-### 3e. Bundle scripts when you'd write the same code three times
+## Bundle scripts when you'd write the same code three times
 
 If your skill walks Claude through generating an HTML report, the first three users will write three slightly different generators. Bundle the script once and tell the skill to call it: `python3 ${CLAUDE_SKILL_DIR}/scripts/report.py "$ARGUMENTS"`. This is the single highest-leverage thing you can do for a skill that does deterministic output. Scripts are *executed*, never *loaded into context* — so they're free.
 
 Don't bundle scripts when the work is genuinely judgment-laden (review, refactor, code generation). Scripts ossify; skills bend.
 
-## Step 4 — Test discipline
+## Test discipline
 
 The existing skill-creator skill (`~/.claude/skills/skill-creator/`) has a heavy eval loop with an HTML viewer, baselines, and benchmarks. **Use it when the skill has objectively verifiable outputs** — file transforms, deterministic generators, fixed-format reports. For those, the eval loop catches regressions you wouldn't otherwise see.
 
@@ -151,7 +147,7 @@ If after two iterations the model still ignores the skill, the issue is almost a
 
 Detail in [references/iteration.md](references/iteration.md).
 
-## Step 5 — Check against anti-patterns before shipping
+## Check against anti-patterns before shipping
 
 Read [references/anti-patterns.md](references/anti-patterns.md) before committing the skill. The most common ones in May 2026:
 
@@ -166,7 +162,7 @@ Read [references/anti-patterns.md](references/anti-patterns.md) before committin
 
 ## Working examples
 
-Two short ones to ground the patterns. Each one corresponds to a kind from Step 2.
+Two short ones to ground the patterns. Each one corresponds to a kind from the classification table above.
 
 ### Workflow kind — `/commit-staged`
 
@@ -253,7 +249,7 @@ This applies to *any file inside a skill directory*, not just `SKILL.md`. The lo
 Before saving, walk this list:
 
 - [ ] Triaged: confirmed this should be a skill, not a hook/MCP/CLAUDE.md/subagent/path-rule.
-- [ ] Classified: one of the five kinds; frontmatter matches the kind.
+- [ ] Classified: one of the six kinds; frontmatter matches the kind.
 - [ ] Named the move: I can say in one sentence what attention this skill frees up and what it redirects toward. If the answer is "nothing, it just shortens work," I've decided that shortening is worth the recurring context cost.
 - [ ] `name:` set explicitly (don't rely on the directory-name default — the file is more readable and the skill's identity less filesystem-coupled when `name:` is in the frontmatter).
 - [ ] `description` is the *what*; trigger phrases live in `when_to_use` as a separate field. Splitting keeps the description scannable and lets the trigger list grow without bloating the lead sentence.
@@ -272,7 +268,7 @@ Before saving, walk this list:
 ## See also
 
 - [references/triage.md](references/triage.md) — extension surface decision tree, with how to combine surfaces.
-- [references/skill-kinds.md](references/skill-kinds.md) — full template for each of the five kinds.
+- [references/skill-kinds.md](references/skill-kinds.md) — full template for each of the six kinds.
 - [references/frontmatter.md](references/frontmatter.md) — every frontmatter field, every substitution, when each one helps.
 - [references/triggering.md](references/triggering.md) — how Claude consults skills, why descriptions fail, how to write ones that match.
 - [references/lifecycle.md](references/lifecycle.md) — load order, compaction budgets, drift signals, re-invocation.

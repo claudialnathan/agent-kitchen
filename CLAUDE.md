@@ -11,6 +11,8 @@ This repo is a single-plugin Claude Code marketplace. Layout mirrors `claudialna
 - `.claude/skills/` — symlink → `../skills`, so project-scope discovery still works inside this repo while authoring.
 - `commands/`, `hooks/`, `agents/` — plugin commands/hooks/subagents (populated as needed).
 - `bin/sync-cross-tool` — idempotent symlink syncer into `~/.cursor/skills/` and `~/.codex/skills/`.
+- `bin/preship-check` — runs the validation gates from this file (loader-trigger greps, frontmatter required fields, frontmatter size, reference orphans/dangling). Run before commits.
+- `FYI.md` — install/update/troubleshoot playbook. Not loaded into context; read when setting up the publish flow or debugging propagation.
 - `guides/` — companion notes that don't load into context: README tour, harness-state snapshots, private design notes.
 
 ## The skills
@@ -45,6 +47,10 @@ The user comes to this repo specifically to design new skills, rules, and hooks.
 - Did the artifact's shape suggest a kind/example/section the forge should learn?
 
 Propose updates to skill-forge / hook-forge / rule-forge based on what surfaced — not as a separate ask the user has to remember, but as part of finishing the work. The forges sharpen with use; an artifact that revealed a gap is more valuable as a forge improvement than as a one-off.
+
+## Trajectory and governance
+
+Current trajectory: workshop-scale, evidence-driven growth into more meta-forges and more applied skills (B + C in `guides/trajectory-2026-05-08.md`). ECC-scale catalogues and public-template repositioning are off the table. Two governance gates before adding a new forge or applied skill: (1) **triage gap is real** — there's a class of artifact the existing forges don't cover, or discipline that gets retyped in a stack; (2) **first worked example is in hand** — never ship an empty forge or stack-tagged skill. Tier 1 maintenance touch-ups (auditing existing forges against current harness affordances) are exempt from gate 2. The candidate-moves inventory in the trajectory doc is not a backlog to drain.
 
 ## Authoring footgun: skill loader trigger sequences
 
@@ -86,6 +92,7 @@ Personal skills at `~/.claude/skills/<name>/` shadow project skills with the sam
 - `README_skillforge.md` — public-facing tour of the skill-forge family. Update when the family changes shape.
 - `claude-code-state-2026-05.md` — snapshot of harness facts as of May 2026. Frozen in time; trust the canonical docs at `https://code.claude.com/docs/en/` on details that move.
 - `skill-forge-design-notes.md` — workshop notes, less-settled decisions, things to revisit. Private.
+- `trajectory-2026-05-08.md` — option space, recommended direction, candidate-moves inventory. Snapshot; replace when superseded.
 
 ## Dates
 

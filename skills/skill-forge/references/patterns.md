@@ -102,6 +102,43 @@ The harness has a lot of features. Most skills only need one or two. This page i
 
 **Free in context:** scripts aren't loaded into Claude's context — they're executed. Bundle generously when the work is deterministic.
 
+## Defer-points (composing with other skills)
+
+**What it is:** When a skill's domain overlaps another skill's authoritative territory, the cleanest move is a named defer rather than a duplicate. The SKILL.md body cites the other skill explicitly; the user (and the model) know what's owned vs deferred.
+
+**Where it shines:**
+- Single-source-of-truth skills (see kind 2a in `skill-kinds.md`) that own a domain but have to coexist with adjacent canonical skills.
+- Stack-specific applied skills that should compose with stack-agnostic philosophy skills (e.g., a `design-engineer` skill that defers to a generic animation-philosophy skill for the *what to animate and how* layer).
+- Skills that update on different cadences. Defer to the other skill so updates flow through automatically; duplication rots.
+
+**The pattern, in body prose:**
+
+```markdown
+## Composing with always-loaded skills
+
+This skill is the single source of truth for X — except where two other skills are canonical:
+
+- `<other-skill-1>` owns <sub-domain>. **This skill defers there** when <trigger condition>.
+- `<other-skill-2>` owns <sub-domain>. **This skill defers there** when <trigger condition>.
+
+This skill also composes with `<co-located-skill>` (same auto-load surface) — that one owns <narrow concern>; cross-reference, don't duplicate.
+```
+
+**Where it hurts:**
+- **Implicit defer.** "For motion craft, see Emil." With no skill name, the model doesn't know there's a separate skill to invoke. Always name it: "invoke `emil-design-eng`" or "see the `emil-design-eng` skill."
+- **Defer where you should cross-reference.** If both skills auto-load on the same files (`paths:` overlap), they're already composing — write a short cross-reference line, not a full defer-point block. Reserve full defer-points for skills that don't auto-trigger together.
+- **Defer-as-excuse for thinness.** A skill that defers most of its content and keeps only a triage layer is a dispatcher, not an SoT skill. If that's the actual shape, use the **Dispatcher** kind (kind 7).
+
+**Three relationships, three prose shapes:**
+
+| Relationship | Other skill auto-loads? | Right shape |
+| :-- | :-- | :-- |
+| Co-located authority (same `paths:`) | Yes | One-line cross-reference: "for token discipline, see `shadcn-tailwind`." |
+| Adjacent canonical authority | No | Full defer-point block: "for animation craft, invoke `emil-design-eng`." |
+| Optional companion | Sometimes | Mention once with the conditional: "if `<companion>` is installed, …" |
+
+Worked example: `design-engineer` defers to `emil-design-eng` for animation philosophy (full block — different paths, must invoke), defers to `web-design-guidelines` for Vercel-specific review (full block — different trigger), and cross-references `shadcn-tailwind` (one line — same `paths:`, already composing).
+
 ## When to combine
 
 Combinations that work well:

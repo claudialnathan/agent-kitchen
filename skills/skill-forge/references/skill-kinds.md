@@ -120,6 +120,28 @@ description: Conventions for our REST API endpoints — URL shape, response enve
   - Response: `201` with `{"data": {"id": "...", "team_id": "abc", "user_id": "...", "role": "editor"}}`.
 ```
 
+### 2a. Knowledge — single-source-of-truth variant
+
+Some knowledge skills aren't lookup material; they're meant to be *the* place a domain lives. The user wants one handle to reach for, not three skills to compose mentally. Frequent cases: a stack-specific design-engineering skill, an internal-platform conventions skill, a product domain glossary that owns the lingo.
+
+The shape that works:
+
+- **SKILL.md is compact** (~200–300 lines). It carries the stance, the hard rules, and the reflex moves — the always-on layer. Fits in the 5K compaction budget without strain.
+- **`references/<topic>.md` carries the depth.** One file per axis (e.g., layout, motion, polish, taste, checklist). Loaded only when pointed at by SKILL.md, so depth is free-of-budget unless opened.
+- **Defer-points are explicit and named.** Where another canonical skill owns a sub-domain, the SoT skill cites it ("for X, invoke `that-skill`") instead of duplicating. The SoT promise is "single handle for the domain"; it doesn't have to mean "single body for everything inside." See the defer-point pattern in `references/patterns.md`.
+- **`paths:` auto-load** so the skill surfaces wherever the work lives. SoT only matters if it triggers reliably; description-only triggering is too easy to miss.
+- **Reference map at the bottom of SKILL.md** is the navigation aid. Each reference gets one line — what it covers and when to open it.
+
+Three constraints to enforce:
+
+1. **No reference orphans.** Every file in `references/` is pointed at from SKILL.md (`bin/preship-check` enforces this).
+2. **No defer overlap.** If you defer to another skill for a sub-domain, don't *also* duplicate that sub-domain in your own references. Pick one home.
+3. **The SoT promise is to the user, not the model.** Claude sees the description, not the user's mental model. Make the description say it explicitly: "Single source of truth for X on stack Y."
+
+Worked example: `design-engineer` in this harness. SKILL.md is the disposition + master rules + reflex stack (~206 lines). References cover layout / fluid / motion-base-ui / polish / taste / checklist (~1,724 lines combined, opened on demand). Animation craft defers to `emil-design-eng`; Vercel review checklist defers to `web-design-guidelines`; token discipline cross-references `shadcn-tailwind` (which auto-loads on the same files). Each defer-point is named in the body — the user (and the model) know what's owned vs deferred.
+
+When *not* to use this variant: the domain is a thin slice (one rule set, no axes) — a flat knowledge skill is simpler. The references would each be 30 lines — just put them in SKILL.md. There isn't real composition with other skills (it's not deferring; it's just one big knowledge skill — write it as one).
+
 ## 3. Guarded action
 
 A guarded action is a special case of workflow: a single-step action with side effects, where the safety comes from `allowed-tools`. Posting to Slack, sending an email, opening a PR comment.

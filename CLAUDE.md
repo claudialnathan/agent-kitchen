@@ -17,7 +17,7 @@ This repo is a single-plugin Claude Code marketplace. Layout mirrors `claudialna
 
 ## The skills
 
-Four meta-skills (about the harness itself) and two applied skills:
+Four meta-skills (about the harness itself) and three applied skills:
 
 - **`skill-forge/`** — designs *other* skills. Triages requests to the right surface (CLAUDE.md, path-scoped rule, hook, MCP server, subagent, or skill), then drafts the skill when that's the answer.
 - **`hook-forge/`** — designs hooks. Picks the event, the determinism mode, and the handler shape.
@@ -25,6 +25,7 @@ Four meta-skills (about the harness itself) and two applied skills:
 - **`claude-md-forge/`** — designs CLAUDE.md (and AGENTS.md, CLAUDE.local.md, .claude/rules/ alongside it). Three jobs: bootstrap (new repo or thin `/init` output), audit (existing CLAUDE.md is bloated/stale/wrong-surface), tune (recent learnings need the right surface). Reason-first content shape.
 - **`cache-aware-testing/`** — applied skill for testing Next.js 16 Cache Components apps on a Vitest + Playwright + Supabase + shadcn stack.
 - **`shadcn-tailwind/`** — applied skill encoding shadcn (4.x on Base UI) + Tailwind v4 discipline. Auto-loads on UI files via `paths:`.
+- **`design-engineer/`** — applied skill, single source of truth for design-engineering discipline on shadcn (Base UI) + Tailwind v4 + Next.js + Vercel. The stance (slow down, fluid before fixed, layout primitive before custom layout, container query before viewport breakpoint, frequency-aware motion), reflex stack (Every Layout primitives, smolcss, modern-CSS), proactive polish (concentric radii, tabular numbers, text-wrap balance, scale-on-press, focus-visible rings) added unprompted, and Motion + Base UI integration. Composes with `emil-design-eng` (defers for animation craft) and `web-design-guidelines` (defers for Vercel checklist). Auto-loads on UI files via `paths:`. Six bundled references: layout, fluid, motion-base-ui, polish, taste, checklist.
 
 The meta-skills compose: skill-forge triages and, when the right answer is a hook, a rule, or non-trivial CLAUDE.md design, hands off to hook-forge, rule-forge, or claude-md-forge to *actually* produce the artifact. "Make a skill" doesn't always end with a skill.
 
@@ -94,6 +95,7 @@ Personal skills at `~/.claude/skills/<name>/` shadow project skills with the sam
 - `claude-code-state-2026-05.md` — snapshot of harness facts as of May 2026. Frozen in time; trust the canonical docs at `https://code.claude.com/docs/en/` on details that move.
 - `skill-forge-design-notes.md` — workshop notes, less-settled decisions, things to revisit. Private.
 - `trajectory-2026-05-08.md` — option space, recommended direction, candidate-moves inventory. Snapshot; replace when superseded.
+- `baseline-bakein-2026-05-09.md` — copyable starter pack for `globals.css` on shadcn 4.x + Tailwind v4 + Next.js. Triages Baseline / modern-CSS features as bake / `@utility` / skip with dated browser-support notes. Refresh by 2026-11.
 
 ## Dates
 

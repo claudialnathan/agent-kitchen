@@ -8,7 +8,7 @@
     {
       "name": "claudia",
       "source": "./",
-      "description": "Skill workshop: meta-skills (skill-forge, hook-forge, rule-forge) for designing Claude Code artifacts, plus applied skills (cache-aware-testing, shadcn-tailwind).",
+      "description": "Skill workshop: meta-skills (skill-forge, hook-forge, rule-forge, claude-md-forge) for designing Claude Code artifacts, plus applied skills (cache-aware-testing, shadcn-tailwind, design-engineer).",
       "version": "0.1.0",
       "license": "MIT",
       "keywords": ["claude-code", "skills", "meta-skills", "harness"]

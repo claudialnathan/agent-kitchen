@@ -1,7 +1,7 @@
 {
   "name": "claudia",
   "version": "0.1.0",
-  "description": "Skill workshop: meta-skills (skill-forge, hook-forge, rule-forge) plus applied skills (cache-aware-testing, shadcn-tailwind).",
+  "description": "Skill workshop: meta-skills (skill-forge, hook-forge, rule-forge, claude-md-forge) plus applied skills (cache-aware-testing, shadcn-tailwind, design-engineer).",
   "author": {
     "name": "Claudia Nathan"
   },

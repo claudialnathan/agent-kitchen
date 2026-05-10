@@ -40,16 +40,20 @@ A copyable starter pack for `globals.css`. Drop into the base of any project on 
     scrollbar-color: var(--color-muted-foreground) transparent;
 
     /* Type / a11y reflexes */
+    /* v4 also exposes `scheme-light-dark`/`scheme-*` utilities; we set once globally */
     color-scheme: light dark;
+    /* v4 also exposes `accent-*` utilities; this is the global default */
     accent-color: var(--color-primary);
   }
 
+  /* v4 also exposes `antialiased`/`subpixel-antialiased`; we apply once on <html> */
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Headings balance, body pretty — set once at the type layer */
+  /* Headings balance, body pretty — set once at the type layer.
+     v4 also exposes `text-balance` / `text-pretty` utilities. */
   h1,
   h2,
   h3,
@@ -64,7 +68,8 @@ A copyable starter pack for `globals.css`. Drop into the base of any project on 
     text-wrap: pretty;
   }
 
-  /* Anchored sections clear sticky headers */
+  /* Anchored sections clear sticky headers.
+     v4 also exposes `scroll-mt-*` utilities for one-off overrides. */
   [id] {
     scroll-margin-top: 4rem;
   }
@@ -95,7 +100,9 @@ A copyable starter pack for `globals.css`. Drop into the base of any project on 
     }
   }
 
-  /* <details> animated open/close — pairs with interpolate-size */
+  /* <details> animated open/close — pairs with interpolate-size.
+     v4 also exposes `transition-discrete` / `transition-normal` utilities;
+     we set raw on the base element so it works without classes. */
   details::details-content {
     block-size: 0;
     overflow-y: clip;
@@ -118,6 +125,8 @@ A copyable starter pack for `globals.css`. Drop into the base of any project on 
   }
 }
 
+/* Optional. Tailwind v4 ships `field-sizing-content` directly; this only
+   earns its keep when you want the min-height bundled with the resize. */
 @utility field-auto {
   field-sizing: content;
   min-height: var(--input-min-height, 2.25rem);
@@ -147,7 +156,7 @@ Top recommendations ranked by impact-per-line. Cited browser-support is honest; 
 | `@property` for animatable theme tokens                                                | **Bake**                  | Baseline newly available                                            | Without it, `transition: --gradient-angle` silently does nothing. Animated borders/conic spinners/shadow pulses driven by class toggles, no JS.                                             |
 | `scrollbar-gutter: stable` + `scrollbar-color`                                         | **Bake**                  | Baseline                                                            | Kills the 1px reflow when modal-open toggles `overflow: hidden`; ties scrollbars to the shadcn token system in both themes.                                                                 |
 | `<details>::details-content` animated open/close                                       | **Bake**                  | Progressive enhancement                                             | Pairs with `interpolate-size`. Free animated FAQ accordions / disclosure widgets without Base UI Disclosure / zero JS on marketing pages.                                                   |
-| `field-sizing: content`                                                                | **`@utility field-auto`** | Progressive enhancement (Chrome stable)                             | Auto-resize textareas / inputs without resize observers. Don't bake globally — breaks shadcn `Input` height assumptions. Opt-in.                                                            |
+| `field-sizing: content`                                                                | **Use v4's `field-sizing-content`** | Progressive enhancement (Chrome stable)                             | Tailwind v4 already ships `field-sizing-content` / `field-sizing-fixed`. Don't reinvent — use the utility per textarea. The custom `@utility field-auto` below only earns its keep if you want the `min-height` bundled in. |
 | `text-wrap: balance` / `text-wrap: pretty`                                             | **Bake (already)**        | Baseline                                                            | Set at the type layer once. Eliminates one-word last lines on headings; orphans on body.                                                                                                    |
 | Subgrid (`grid-template-columns: subgrid`)                                             | **Reach for it**          | Baseline widely available (March 2026)                              | Use when card content (image/title/CTA) must align across siblings. See `design-engineer/references/layout.md`.                                                                             |
 | Container queries (`@container`, `cqi`)                                                | **Reach for it**          | Baseline                                                            | Already in Tailwind v4 core (`@container`, `@xs:`/`@md:` variants). Component-scoped responsive — the right answer when you'd otherwise reach for a viewport breakpoint inside a component. |
@@ -219,7 +228,7 @@ Pitch + visible effect + fallback for each of the five `globals.css` adds, plus 
 
 **Pairing**: requires the `interpolate-size: allow-keywords` rule to interpolate to/from `auto`. Don't add this without that.
 
-### `@utility field-auto` (`field-sizing: content`)
+### `field-sizing: content` (and the optional `@utility field-auto`)
 
 **What it does**: makes a form control (`<textarea>`, `<input>`) size itself to fit its current content. The element grows as the user types.
 
@@ -227,11 +236,19 @@ Pitch + visible effect + fallback for each of the five `globals.css` adds, plus 
 
 **Without it**: fixed height — content overflows or scrolls inside the control.
 
-**Why opt-in (not bake)**: shadcn `Input` and `Textarea` ship with deliberate min-heights and field-sizing assumptions. Applying globally breaks those defaults; opt in per textarea via `<Textarea className="field-auto" />`.
+**How to apply**: Tailwind v4 already ships `field-sizing-content` and `field-sizing-fixed` utilities. Reach for those first — `<Textarea className="field-sizing-content min-h-9" />` is the lowest-friction path.
+
+**Why an optional `@utility field-auto`**: it bundles `field-sizing: content` with a token-driven `min-height` so a single class does both. Worth it only if you find yourself co-applying the two repeatedly. Otherwise, drop the custom utility and use v4's directly.
+
+**Why not bake globally**: shadcn `Input` and `Textarea` ship with deliberate min-heights and field-sizing assumptions. Applying globally breaks those defaults; opt in per textarea.
 
 ## Easing tokens — why custom curves
 
 Stock CSS easings (`ease`, `ease-in-out`) feel weak; they were tuned conservatively for backwards compatibility with 1990s motion sensibilities and never updated. Custom curves give you the punch that makes UI animation feel intentional.
+
+**Override semantics**. Tailwind v4 already ships `--ease-in`, `--ease-out`, `--ease-in-out` defaults — and the `ease-in` / `ease-out` / `ease-in-out` utility classes resolve to whatever those tokens point at. Defining the same names in your `@theme` block **overrides** v4's defaults rather than adding new tokens, so the utility classes automatically pick up the stronger curves. `--ease-drawer` and `--ease-spring` are net-new (no v4 default to overlap).
+
+**Bare `transition` is a separate token**. Tailwind v4 routes the unmodified `transition` utility through `--default-transition-timing-function` and `--default-transition-duration` — distinct from `--ease-out`. If you don't override those too, `<button class="transition">` keeps Tailwind's stock 150ms / weak ease-in-out. The token block below points both at the strong defaults so bare `transition` inherits the philosophy.
 
 | Token                            | Curve                                | When to reach for it                                                                                                                       |
 | :------------------------------- | :----------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
@@ -296,13 +313,19 @@ If you find yourself reaching for these often, ship as `@utility` so they compos
 
 ```css
 @theme {
+  /* Overrides Tailwind v4 defaults; `ease-out`/`ease-in-out` classes resolve to these. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* strong ease-out — UI default */
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1); /* strong ease-in-out — moves between states */
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); /* iOS-like — drawers, sheets */
 
+  /* Net-new tokens (Tailwind v4 has no `--duration-*` defaults). */
   --duration-fast: 180ms;
   --duration-medium: 240ms;
   --duration-slow: 320ms;
+
+  /* Re-route bare `transition` utility through the strong defaults too. */
+  --default-transition-timing-function: var(--ease-out);
+  --default-transition-duration: var(--duration-fast);
 }
 
 @supports (animation-timing-function: linear(0, 1)) {
@@ -324,14 +347,31 @@ Components consume tokens, never literals: `transition-transform duration-(--dur
 
 Generators (don't hand-write `linear()`): Jake Archibald's spring tool, Easing Wizard.
 
-## What's already in shadcn 4.x — don't bake again
+## What's already in the stack — don't reinvent
+
+**From shadcn 4.x:**
 
 - `oklch()` colors — shadcn ships these by default in `:root` and `.dark`.
 - `@theme inline { --color-foo: var(--foo) }` mapping pattern — shadcn's canonical theming.
 - `@custom-variant dark (&:is(.dark *))` — shadcn's class-based dark mode.
 - `tw-animate-css` — shipped via the canonical base import; gives you `animate-in`, `animate-out`, `fade-in-0`, `zoom-in-95`, etc.
-- Container queries (`@container`, `@md:`) — Tailwind v4 core.
-- `:has()` / `:is()` / `:where()` — Tailwind v4 has utility variants (`has-*`, `group-has-*`).
+
+**From Tailwind v4 core (utility classes — reach for these in JSX rather than re-implementing):**
+
+- Container queries (`@container`, `@xs:`/`@md:` variants, `--container-3xs` … `--container-7xl`).
+- `:has()` / `:is()` / `:where()` variants (`has-*`, `group-has-*`, etc.).
+- `text-balance` / `text-pretty`.
+- `field-sizing-content` / `field-sizing-fixed`.
+- `scheme-light-dark` / `scheme-light` / `scheme-dark` / `scheme-only-*`.
+- `antialiased` / `subpixel-antialiased`.
+- `accent-*` / `caret-*` (read from theme colors).
+- `scroll-mt-*` / `scroll-m*` / `scroll-mx-*` / etc.
+- `transition-discrete` / `transition-normal`.
+- `starting:` variant (CSS `@starting-style`).
+- `ease-linear` / `ease-in` / `ease-out` / `ease-in-out` (resolve to your `@theme` overrides).
+- `duration-*` (numeric or `duration-(--duration-fast)` for theme tokens).
+
+The bake-in re-applies several of these at the base layer (`text-wrap`, `color-scheme`, `antialiased`, `scroll-margin-top`, `accent-color`) so they work without classes — that's deliberate. But in components, prefer the utility.
 
 ## Refresh discipline
 

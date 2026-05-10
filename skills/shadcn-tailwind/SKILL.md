@@ -1,6 +1,7 @@
 ---
 name: shadcn-tailwind
-description: Stack-wide UI discipline for shadcn (4.x on Base UI) + Tailwind v4 projects. Hard rules — no `px`, no `#hex` (always rem and oklch); no raw colour palettes (use semantic tokens); no `asChild` (Base UI uses `render`); no `dark:` backfills for missing tokens. Plus the discovery pattern: read `globals.css` for project-specific `@theme` tokens before writing classNames. Auto-loads when editing UI files; complements `figma-to-tailwind-tokens` which covers the deep design-translation workflow.
+description: 'Stack-wide UI discipline for shadcn (4.x on Base UI) + Tailwind v4 projects. Hard rules — no `px`, no `#hex` (always rem and oklch); no raw colour palettes (use semantic tokens); no `asChild` (Base UI uses `render`); no `dark:` backfills for missing tokens. Plus the discovery pattern: read `globals.css` for project-specific `@theme` tokens before writing classNames. Auto-loads when editing UI files; complements `figma-to-tailwind-tokens` which covers the deep design-translation workflow.'
+compatibility: Tailwind v4 + shadcn 4.x on Base UI
 when_to_use: |
   Auto-loads on UI files via `paths`. Also trigger on:
   - "review my UI"

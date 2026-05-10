@@ -95,13 +95,14 @@ This discipline applies inside every meta-forge in this plugin (`skill-forge`, `
 
 The description is the *only* thing the model sees when deciding whether to invoke. Skills with vague descriptions silently under-trigger — Claude consults skills only when it needs help, and a generic description loses against a specific one.
 
-Three rules:
+Four rules:
 
 1. **Lead with the use case, not the noun.** "Designs a skill that fits the harness…" beats "A skill creator."
 2. **Include the trigger phrases users actually say.** Lift wording from the conversation that prompted you to make the skill. Casual phrasings, abbreviations, related-but-not-identical asks.
 3. **Cap the combined `description` + `when_to_use` at 1,536 characters.** Anything past that is silently truncated in the skill listing. The first ~200 chars do most of the matching work.
+4. **For cross-tool skills, treat 1,024 chars as the operative ceiling on `description` alone.** The 1,536-char combined budget is Claude-Code-specific. The open agentskills.io spec caps `description` at **1,024 chars** and ignores `when_to_use` entirely — Cursor and Codex see the description and nothing else. If `harness-targets:` is unset (the cross-tool default), the description has to carry the trigger load on its own; lifting trigger phrases out into `when_to_use` only helps in Claude Code. Either keep enough trigger surface in the description, or scope the skill `[claude]` and rely on `when_to_use`.
 
-Anti-patterns and fixes are in [references/triggering.md](references/triggering.md). When in doubt, write three candidate descriptions and ask "which of these would I match against my actual prompt?".
+Anti-patterns and fixes are in [references/triggering.md](references/triggering.md). When in doubt, write three candidate descriptions and ask "which of these would I match against my actual prompt?". For trigger-rate optimization at scale (train/validation splits, multi-run thresholds), see [references/iteration.md](references/iteration.md).
 
 ## Frontmatter that earns its keep
 
@@ -140,16 +141,19 @@ More on the lifecycle (loading order, compaction, drift signals) in [references/
 
 ## Harness features that actually fit this skill
 
+> **Portability note.** Every feature in this list is a Claude Code extension, not part of the open agentskills.io spec. `paths:`, `when_to_use:`, `context: fork`, frontmatter `hooks:`, the dynamic-injection sequences, and `${CLAUDE_SKILL_DIR}` are silently ignored by Cursor, Codex, and other open-spec consumers. If the skill is tagged `[claude]` (or only ever loaded by Claude Code), reach for these freely. If the skill is published cross-tool (this repo's default), reaching for them is fine — they just don't fire elsewhere — *and* the `description` has to do the triggering work alone in those tools (see "Description first" rule 4).
+
 The 2026 features I see most often missed when they would help:
 
 - **Dynamic context injection** — an inline form (an exclamation mark immediately followed by a backtick-wrapped shell command) and a fenced form (a code-fence opener of three backticks immediately followed by an exclamation mark). Runs *before* Claude sees the skill body, replacing the placeholder with command output. Use it to inline live state (git diff, gh pr view, current branch, env). The model receives data, not instructions to fetch data — it doesn't have to spend a tool call. Only fits when the data is small, deterministic, and useful for almost every invocation. **Literal syntax not rendered here** — see the meta-skill authoring section below for why.
 - **`context: fork` + `agent: Explore`** for any skill whose job is to *investigate* and *summarize*. The investigation tokens never enter your main thread.
 - **`paths:` glob** for knowledge that's narrowly scoped to part of a repo. Loads only when those files are open.
-- **`allowed-tools`** for workflow skills that touch the same 3–5 commands every run. Skip the per-use approval prompt without granting blanket access.
+- **`allowed-tools`** for workflow skills that touch the same 3–5 commands every run. Skip the per-use approval prompt without granting blanket access. (This one *is* in the open spec — experimental, but recognized; safe to set on cross-tool skills.)
+- **`compatibility`** (open-spec field) — declare runtime requirements so Cursor/Codex/etc. can surface them. `compatibility: Next.js 16+ App Router with Cache Components, Vitest, Playwright, Supabase` says more in the listing than any prose preamble. Free in Claude Code (which ignores it). Underused.
 - **`${CLAUDE_SKILL_DIR}`** for invoking bundled scripts via Bash (`python3 ${CLAUDE_SKILL_DIR}/scripts/foo.py`) — bash commands run in the user's CWD, not the skill dir, so without the placeholder the path won't resolve. Markdown reference files don't need it; only bash-invoked paths do. Resolves correctly whether the skill lives at user, project, or plugin scope.
 - **Frontmatter `hooks:`** for skills that need a hard rule while active (e.g., a `db-reader` skill that must never see `INSERT`/`UPDATE`).
 
-Read [references/patterns.md](references/patterns.md) for the patterns each one fits and the patterns each one ruins.
+Read [references/patterns.md](references/patterns.md) for the patterns each one fits and the patterns each one ruins, plus the named instruction shapes from the agentskills.io spec (Gotchas, Templates, Validation loops, Plan-validate-execute).
 
 ## Bundle scripts when you'd write the same code three times
 
@@ -159,7 +163,7 @@ Don't bundle scripts when the work is genuinely judgment-laden (review, refactor
 
 ## Test discipline
 
-The existing skill-creator skill (`~/.claude/skills/skill-creator/`) has a heavy eval loop with an HTML viewer, baselines, and benchmarks. **Use it when the skill has objectively verifiable outputs** — file transforms, deterministic generators, fixed-format reports. For those, the eval loop catches regressions you wouldn't otherwise see.
+The existing skill-creator skill (`~/.claude/skills/skill-creator/`) has a heavy eval loop with an HTML viewer, baselines, and benchmarks. **Use it when the skill has objectively verifiable outputs** — file transforms, deterministic generators, fixed-format reports. For those, the eval loop catches regressions you wouldn't otherwise see. The canonical structure (per the agentskills.io spec) is `evals/evals.json` inside the skill directory plus an `iteration-N/` workspace alongside it; the eval loop runs each test case `with_skill` and `without_skill` and reports a delta. Don't reach for it unless the outputs are graded by code.
 
 **For most skills, that workflow is overkill.** Workflow skills, knowledge skills, and forked-research skills usually need:
 
@@ -170,7 +174,7 @@ The existing skill-creator skill (`~/.claude/skills/skill-creator/`) has a heavy
 
 If after two iterations the model still ignores the skill, the issue is almost always either (a) the description doesn't match the user's natural phrasing, or (b) the task is too simple for Claude to bother consulting a skill. Skills get consulted when Claude needs help — "read this PDF" won't trigger a PDF skill no matter how good the description, because Claude can do it directly.
 
-Detail in [references/iteration.md](references/iteration.md).
+Detail in [references/iteration.md](references/iteration.md), including the train/validation split methodology for description-tuning at scale.
 
 ## Check against anti-patterns before shipping
 

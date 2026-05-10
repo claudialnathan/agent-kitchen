@@ -157,6 +157,19 @@ Both forms cost the same against the 1,536-char budget. The second is easier to 
 - **Default:** `bash`
 - **Worth setting:** only on Windows when you want inline-injection blocks (the bang-backtick form) to run via PowerShell. Requires `CLAUDE_CODE_USE_POWERSHELL_TOOL=1`.
 
+### `compatibility` (open-spec field)
+- **Type:** string (max 500 chars)
+- **Default:** none
+- **Worth setting for:** any skill with non-trivial runtime requirements — a stack assumption, a system package, network access, a specific framework version. Open-spec consumers (Cursor, Codex, `skills-ref validate`) surface this in the listing; Claude Code ignores it gracefully. The field is in the agentskills.io spec but Claude-Code-specific catalogues regularly skip it, which means cross-tool installers see a generic skill with no signal that it assumes Next.js 16+ (or Tailwind v4, or whatever).
+- **Examples:** `compatibility: Tailwind v4 + shadcn 4.x on Base UI`, `compatibility: Next.js 16+ App Router with Cache Components, Vitest, Playwright, Supabase`, `compatibility: Requires git, gh CLI, and read access to the project's GitHub repo`.
+- **Anti-pattern:** writing the requirements in the body preamble instead. Body is recurring context cost; `compatibility:` is read once at discovery and free thereafter.
+
+### `license` (open-spec field)
+- **Type:** string (license name or reference to a bundled file)
+- **Default:** none (the marketplace plugin manifest may carry it)
+- **Worth setting for:** skills distributed via direct symlink (e.g., the cross-tool publish to `~/.cursor/skills/` and `~/.codex/skills/`) where there is no plugin manifest to inherit a license from. For skills only shipped via the plugin, the manifest license is enough.
+- **Spec recommendation:** keep it short — the SPDX name (`Apache-2.0`, `MIT`) or a reference to a bundled file (`LICENSE.txt`).
+
 ## Substitutions in the body
 
 These run *before* the body enters context.
@@ -219,5 +232,6 @@ hooks:                              # last; takes most space
 - Setting `model` to a model your account doesn't have access to — silent fallback may surprise you.
 - Heavy `when_to_use` blocks that push past the 1,536-char cap — the tail gets truncated, taking the trigger phrases with it.
 - Unescaped quotes inside an unquoted scalar `description:` — embedded `"..."` that aren't matched-and-balanced break strict YAML parsers. Symptoms: skill fails to load on some machines but not others, or the description gets parsed truncated. Fix: wrap the whole description in single quotes (and escape internal single quotes by doubling), or use a folded block scalar (`>`) so the whole multi-line value is treated as one string.
+- **Colon-space (`: `) inside an unquoted scalar `description:`** — same failure mode, same fix. YAML 1.2 reserves `: ` as the key/value separator and forbids it inside plain scalars. A description like `... discovery pattern: read globals.css ...` parses fine in Claude Code's lenient loader but blows up under PyYAML and other strict parsers, which means it'll fail validation in any cross-tool publish path. Single-quote the description, or use `>` block scalar. Real failure mode: `shadcn-tailwind` shipped with this and survived locally because `bin/preship-check` is line-oriented; strict-YAML consumers (Cursor, Codex, `skills-ref validate`) would have rejected it.
 - Skipping `name:` and relying on the directory-name default — works, but the SKILL.md is harder to read on its own and the skill's identity is coupled to where it lives. Set `name:` explicitly for ship-quality skills.
 - Leaving trigger phrases at the end of a long `description:` instead of moving them into `when_to_use:` — same character cost, worse readability and pattern-matching.

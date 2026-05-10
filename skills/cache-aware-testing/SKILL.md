@@ -2,6 +2,7 @@
 name: cache-aware-testing
 description: |
   Decision framework for testing in a Next.js 16+ App Router project with Cache Components on, plus shadcn (built on Base UI), Supabase auth and database, React Query, and Vercel deployment. Covers the Vitest/Playwright pyramid (which APIs Vitest cannot render — async Server Components, the use-cache directive, Server Actions), the cache invalidation matrix (updateTag in Server Actions, revalidateTag with profile "max" for stale-while-revalidate, revalidateTag with the {expire:0} object form from Route Handlers), the dev-vs-prod Playwright variant split, Supabase testing patterns (service role, RLS bypass, the auth.users foreign-key trap), and Base-UI/shadcn locator patterns (data-state attributes over class fragments).
+compatibility: Next.js 16+ App Router with Cache Components, Vitest, Playwright, Supabase
 when_to_use: |
   Triggers:
   - "tests are flaky"

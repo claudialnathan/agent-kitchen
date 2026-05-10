@@ -154,6 +154,128 @@ Combinations that fight:
 - **`context: fork` + extensive `allowed-tools` for the main thread** — the main thread's tools don't matter; the agent's tools do. Use the agent's permission mode and tool list, not blanket `allowed-tools`.
 - **Bundled script + body that re-derives the script's logic** — pick: the script does the work, or the model does. Splitting causes drift.
 
+## Named instruction patterns (from agentskills.io)
+
+The harness features above are mostly Claude-Code-specific. The instruction *shapes* in this section are from the open agentskills.io best-practices guide and apply to any skill body — Claude Code or open-spec. They're worth naming because each one fits a recognizable failure mode the body alone wouldn't fix.
+
+### Gotchas section
+
+**What it is:** A short, named list of environment-specific facts that defy reasonable assumptions — concrete corrections to mistakes the agent will otherwise make. Not general advice ("handle errors carefully"). Concrete hostile facts ("the `users` table uses soft deletes — `WHERE deleted_at IS NULL` or you'll see deactivated accounts").
+
+**Where it shines:** Whenever the skill encodes knowledge about a system whose surface contradicts itself. Mismatched IDs across services. Endpoints whose names suggest behaviour they don't have. Schemas whose foreign keys go to non-obvious tables. The discipline: when an agent makes a mistake you have to correct, add the correction to the gotchas section. That's the most direct iterative improvement available.
+
+**Where it hurts:** When promoted to general advice. "Handle errors gracefully" isn't a gotcha; it's a platitude. Gotchas are fact-shaped.
+
+**Pattern (from agentskills.io):**
+
+```markdown
+## Gotchas
+
+- The `users` table uses soft deletes. Queries must include
+  `WHERE deleted_at IS NULL` or results will include deactivated accounts.
+- The user ID is `user_id` in the database, `uid` in the auth service,
+  and `accountId` in the billing API. All three refer to the same value.
+- The `/health` endpoint returns 200 as long as the web server is running,
+  even when the database connection is down. Use `/ready` for full health.
+```
+
+Keep gotchas in `SKILL.md` itself, not behind a `references/` link — the agent has to see them *before* hitting the situation, and a "load this if X" instruction can miss the trigger.
+
+This skill's "Authoring footgun" section is itself a gotchas section. Worked example: a single hostile fact described concretely, with the operational rule and a verification step.
+
+### Templates for output format
+
+**What it is:** A literal markdown skeleton the agent fills in, instead of prose describing the desired structure. Models pattern-match against concrete shapes more reliably than they match against descriptions of shapes.
+
+**Where it shines:** Reports, analyses, reviews — anything where a consistent layout is part of the value. A template gives the model a frame; the work is filling sections, not deciding sections.
+
+**Where it hurts:** When the output is genuinely free-form (a code refactor, a one-shot answer). A template there imposes ceremony that doesn't earn its keep.
+
+**Pattern:**
+
+````markdown
+## Report structure
+
+Use this template, adapting sections as needed:
+
+```markdown
+# [Analysis Title]
+
+## Executive summary
+[One-paragraph overview of key findings]
+
+## Key findings
+- Finding 1 with supporting data
+- Finding 2 with supporting data
+
+## Recommendations
+1. Specific actionable recommendation
+2. Specific actionable recommendation
+```
+````
+
+For long templates, or templates needed only in some cases, store them in `assets/` (open-spec directory) and reference from `SKILL.md` so they only load when relevant.
+
+### Validation loops
+
+**What it is:** Do-the-work → run-a-validator → fix-issues → re-validate. The validator can be a script, a reference document the agent checks against, or a self-check prompt. The pattern's job is to keep the agent from declaring done while the work is still wrong.
+
+**Where it shines:** Output that's verifiable but easy to get wrong on the first pass — generated code, structured data, content that has to satisfy a schema. The validator catches what the agent missed.
+
+**Where it hurts:** Output where there's no objective check. Don't fake a validation loop with "make sure the writing is good" — that's not a validator.
+
+**Pattern:**
+
+```markdown
+## Editing workflow
+
+1. Make your edits.
+2. Run validation: `python scripts/validate.py output/`
+3. If validation fails:
+   - Review the error message.
+   - Fix the issues.
+   - Run validation again.
+4. Only proceed when validation passes.
+```
+
+The validator can also be a reference document — instruct the agent to check the work against `references/checklist.md` before finalizing. Either form works; the operative discipline is *don't move on until validation passes*.
+
+### Plan-validate-execute
+
+**What it is:** For batch or destructive operations, force the agent to draft an intermediate plan in a structured format, validate the plan against a source of truth, and only then execute. Errors caught at the plan stage are free; errors caught at execution time aren't.
+
+**Where it shines:** Form filling, batch updates, schema migrations, anything where the unit of work is "for each item, do X." Validation at plan time catches naming mismatches, missing required fields, type incompatibilities — before any side effects fire.
+
+**Where it hurts:** One-shot operations where the planning overhead exceeds the work itself.
+
+**Pattern (from agentskills.io's PDF-form example, generalized):**
+
+```markdown
+## Workflow
+
+1. Extract the source-of-truth shape: `python scripts/analyze.py input` → `truth.json`
+   (lists every required field, type, and constraint)
+2. Create `plan.json` mapping each field to its intended value.
+3. Validate: `python scripts/validate.py truth.json plan.json`
+   (checks that every field name exists in the truth, types are compatible,
+   required fields aren't missing)
+4. If validation fails, revise `plan.json` and re-validate.
+5. Execute: `python scripts/execute.py input plan.json output`
+```
+
+Step 3 is the load-bearing part. The validator's error messages should give the agent enough to self-correct: `Field 'signature_date' not found — available fields: customer_name, order_total, signature_date_signed`. Vague errors waste a turn.
+
+### Match specificity to fragility (calibration discipline)
+
+**What it is:** Not every part of a skill needs the same level of prescriptiveness. Match the specificity to how fragile the underlying task is.
+
+- **Give the agent freedom** when multiple approaches are valid and the task tolerates variation. Explain *why* rather than dictating *how*. A code-review skill can list what to look for without prescribing the order or the exact tools.
+- **Be prescriptive** when operations are fragile, consistency matters, or a specific sequence must be followed. Database migrations get exact commands. "Run this exactly: `python scripts/migrate.py --verify --backup`. Do not modify."
+
+Most skills mix both. Calibrate each section independently — it's fine for one section to be loose-and-explanatory and the next to be exact-and-imperative.
+
+**Anti-pattern:** A "menu of options" where five tools could work. Pick a default; mention alternatives briefly. `Use pdfplumber. For scanned documents, fall back to pdf2image with pytesseract.` beats `You can use pypdf, pdfplumber, PyMuPDF, or pdf2image — choose the one that fits your needs.`
+
 ## When to use the Monitor tool inside a skill
 
 Monitor (added v2.1.98) runs a command in the background and streams each output line back to Claude as it arrives. From inside a skill, you can ask Claude to spawn a monitor — a useful shape for `/loop`-style watchers and `/babysit-ci`-style poll loops.

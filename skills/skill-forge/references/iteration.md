@@ -31,12 +31,33 @@ If after two iterations the skill still doesn't work, the issue is usually one o
 
 For skills with *objectively verifiable* outputs — file transforms, deterministic generators, fixed-format reports — there's a heavier loop worth using. Anthropic ships a skill-creator skill at `~/.claude/skills/skill-creator/` that automates it.
 
-The shape:
-- Write 5–10 test cases as `(prompt, expected_output_shape)` pairs.
-- Run each prompt with the skill and without (baseline).
-- Define **assertions** that check the output programmatically (file exists, JSON validates, contains certain keys, line count in range).
-- Aggregate results into a benchmark (pass rate, time, token cost) and review side-by-side.
-- Iterate the skill, re-run, compare across iterations.
+The shape (open agentskills.io structure):
+- Write 5–10 test cases as `(prompt, expected_output_shape)` pairs in `evals/evals.json` inside the skill directory.
+- Run each prompt with the skill and without (baseline). Each run gets its own context; in Claude Code this is naturally a subagent task.
+- Define **assertions** that check the output programmatically (file exists, JSON validates, contains certain keys, line count in range). Add them after seeing the first round of outputs — you usually don't know what "good" looks like until you've seen the model's first attempt.
+- Capture token count and duration per run (`timing.json`); grade the assertions (`grading.json`); aggregate into `benchmark.json` per iteration.
+- Iterate the skill, re-run in `iteration-N/`, compare across iterations.
+
+The canonical workspace structure (per agentskills.io's evaluating-skills page):
+
+```
+my-skill/
+├── SKILL.md
+└── evals/
+    └── evals.json              # the test cases (you author this)
+my-skill-workspace/
+└── iteration-1/
+    ├── eval-<test-id>/
+    │   ├── with_skill/
+    │   │   ├── outputs/        # files produced by the run
+    │   │   ├── timing.json     # tokens + duration
+    │   │   └── grading.json    # assertion results
+    │   └── without_skill/
+    │       └── (same shape)
+    └── benchmark.json          # aggregated stats with delta
+```
+
+The `delta` in `benchmark.json` is the load-bearing output: a skill that adds 13s and improves pass rate by 50 points is probably worth shipping; one that doubles tokens for a 2-point bump probably isn't.
 
 When this is worth the overhead:
 - The skill produces structured outputs you can grade with code.
@@ -49,7 +70,23 @@ When it's overkill:
 - You'll use the skill occasionally and "good enough" is good enough.
 - You're still figuring out what the skill should be.
 
-To use the eval loop, invoke `~/.claude/skills/skill-creator/` (if available) with the skill path. It walks the workflow: spawning runs in parallel subagents, capturing timing, grading, opening an HTML viewer, reading feedback, iterating. See its SKILL.md for details. There's also a description optimizer (`scripts/run_loop.py`) that mutates the description against a trigger eval set and converges on better triggering.
+To use the eval loop, invoke `~/.claude/skills/skill-creator/` (if available) with the skill path. It walks the workflow: spawning runs in parallel subagents, capturing timing, grading, opening an HTML viewer, reading feedback, iterating. See its SKILL.md for details.
+
+## Description-tuning eval (the optimizer)
+
+A separate, narrower eval loop — not about output quality, but about *trigger rate*. Worth running when you've shipped a skill and it under-triggers (or over-triggers) on real prompts. Anthropic's skill-creator includes `scripts/run_loop.py` which automates this end-to-end.
+
+The agentskills.io methodology (reproduced here so you can run it manually if needed):
+
+1. **Build a trigger eval set** of ~20 queries. ~8–10 should-trigger, ~8–10 should-not-trigger. Vary phrasing, formality, detail. The most useful should-trigger queries are ones where the skill helps but the connection isn't obvious — those are the cases where description wording makes the difference. The strongest should-not-trigger queries are *near-misses* — same domain words, different actual need.
+2. **Split train/validation** at ~60/40. Use the train set to identify failures and propose changes; hold out the validation set to check whether changes generalize. Without the split, you'll overfit the description to the specific phrasings you tested.
+3. **Run each query 3 times** through your agent with the skill installed. Compute a trigger rate (fraction of runs where the skill loaded). A should-trigger query passes if rate ≥ 0.5; a should-not-trigger query passes if rate < 0.5.
+4. **Iterate the description** based on *train-set* failures only. If should-trigger queries fail, broaden — but address the *general category* the failed queries represent, not the specific keywords (that's overfitting). If should-not-trigger queries fail, narrow with explicit boundaries ("Use when X. Skip when Y — use `/other-skill`."). Stay under the 1,024-char open-spec cap.
+5. **Select the best iteration by validation pass rate**, not the latest one. An earlier iteration may have generalized better than a later one that overfit the train set.
+
+Five iterations is usually enough. If improvement stalls, the queries are likely the problem (too easy, too hard, or poorly labeled), not the description. If you're stuck after several incremental tweaks, try a structurally different framing rather than another tweak — "different framing or sentence structure may break through where refinement can't."
+
+Once selected: smoke-test the chosen description on 5–10 *fresh* queries (queries that were never part of the optimization). If those pass, ship it.
 
 ## A middle path
 

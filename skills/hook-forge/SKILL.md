@@ -45,6 +45,18 @@ Three questions to hold in foreground for any hook design:
 
 3. **Handler shape.** Five types: `command` (subprocess), `http` (POST to endpoint), `mcp_tool` (call connected MCP server tool), `prompt` (LLM yes/no), `agent` (subagent). Most hooks should be `command`. Reach for `prompt` or `agent` only when you genuinely need LLM judgment — they're slower and more expensive than a deterministic check.
 
+## Step 0 — What failure did you observe?
+
+Hooks are the canonical Ratchet surface: the agent did the wrong thing, you write a hook so it can't do it again. Before any of the three questions above, name the failure.
+
+- "Claude wrote to `.env` twice in one week despite CLAUDE.md saying not to." → that's the failure; the hook is the response.
+- "PRs landed without lint output ever running on the diff." → that's the failure.
+- "A subagent ran a destructive `rm -rf` we didn't authorize." → that's the failure.
+
+If you can't name a specific incident or repeated correction, stop. CLAUDE.md or a path-scoped rule is cheaper than a hook for things that *might* go wrong. Hooks earn their keep by enforcing what already went wrong.
+
+If the failure is one the current model has stopped making, don't write the hook. Record the model version this hook is earned against (see the repo's `Model-version pinning` convention) so the sunset audit has a trigger.
+
 ## Step 1 — Should this be a hook?
 
 If you got here from skill-forge, you already triaged. If not, run a brief reverse-triage to confirm a hook *is* the right surface:
@@ -127,6 +139,8 @@ This is the single most-misunderstood area of hook authoring. The default assump
 
 **Rule of thumb:** if you want to block, exit `2`. Anything else (including `1`) does not block. This catches a lot of authors who write `if (bad) { exit 1 }` and wonder why the bad thing keeps happening.
 
+**Success silent, failures verbose.** Hooks should be invisible when they pass and loud when they fail. A `command` PostToolUse hook that prints "lint clean" on every edit is noise that pollutes the next turn's context for every reader downstream. Print nothing on success; print the actionable error on failure. The exit-code semantics encode this — exit 0 with empty stdout costs nothing; exit 2 with stderr is the loud failure path Claude reads and reacts to. If the hook is doing observability, log to a file rather than stdout; only the agent-actionable part belongs in the harness loop.
+
 For events that can use JSON output for richer control (`PreToolUse` `permissionDecision`, `UserPromptSubmit` `decision`, `Stop` `decision`), see [references/handlers.md](references/handlers.md).
 
 ## Step 6 — Where does the hook live?
@@ -160,6 +174,8 @@ Three checks before you ship:
 ## Worked examples
 
 ### `command` PreToolUse: block writes to .env
+
+*Earned against:* repeated incidents where Claude attempted to edit `.env` directly to add a debug variable, despite CLAUDE.md saying not to. CLAUDE.md is interpreted; a hook makes the rule deterministic.
 
 `.claude/settings.json`:
 
@@ -195,6 +211,8 @@ Why this shape: deterministic check ⇒ `command` handler. Hard guarantee ⇒ ex
 
 ### `command` PostToolUse: lint after every edit
 
+*Earned against:* PRs landing with lint errors because the agent assumed style was clean and skipped the local check. The hook closes the verification loop after every edit so the agent sees the error in-session, not in CI.
+
 ```json
 {
   "hooks": {
@@ -214,6 +232,8 @@ The script runs `pnpm lint --fix` on the path that was edited. Returns 0 always 
 
 ### `command` UserPromptSubmit: inject git status
 
+*Earned against:* sessions opening with no awareness of uncommitted state, leading to "wait, where am I?" tool calls before any real work. The hook makes the cheap context free and avoids the discovery round-trip.
+
 ```json
 {
   "hooks": {
@@ -231,6 +251,8 @@ The script runs `pnpm lint --fix` on the path that was edited. Returns 0 always 
 The script returns a JSON object with `hookSpecificOutput.additionalContext` containing the current branch and `git status --short`. Claude sees the user's prompt with the git context already attached.
 
 ### Skill-scoped frontmatter hook: read-only db-reader
+
+*Earned against:* a `db-reader` skill being invoked in a session where the agent issued an `UPDATE` because the prompt mentioned "fix this row" and the skill's read-only intent wasn't enforced. CLAUDE.md instruction is interpretation; the frontmatter hook is enforcement scoped to the skill's lifetime.
 
 ```yaml
 ---
@@ -273,6 +295,16 @@ Before saving:
 - [ ] Hook lives at the right scope (project vs personal vs skill-frontmatter).
 - [ ] If `command` handler: script reads JSON from stdin, returns useful exit code, doesn't ingest its own source into context.
 - [ ] Sanity-tested: the rule fires when expected, doesn't fire when not, blocks correctly, surfaces the right message.
+
+## When this hook stops earning its keep
+
+Hooks accumulate. A hook earned against a specific model failure may be redundant once the model improves, but unlike skills hooks fire every session — dead hooks are a permanent tax. The deletion side of the Ratchet:
+
+1. On each major model release, pick a hook and re-run the failure scenario without it. Does the agent still make the mistake?
+2. If no, delete the hook. The harness no longer needs to enforce what the model now gets right.
+3. If yes but the failure has shifted, rewrite rather than layering more hooks on top of the old one.
+
+Hooks that block tools nobody uses, or enforce conventions that have moved, fire every turn for nothing. Periodic audit is the cost of keeping the harness honest.
 
 ## When this skill doesn't apply
 

@@ -37,6 +37,18 @@ Rules are the right surface when **all four** of these hold:
 
 If any of those is false, rules aren't the right surface.
 
+## Step 0 — Three corrections, then encode
+
+Rules are earned by repeated correction, not designed up front. The bar:
+
+- You've corrected the agent on the same convention three or more times in this codebase (or, for personal-scope rules, across three or more projects on the same stack).
+- The correction is path-scoped — only matters in some files — or you wouldn't be reaching for a rule.
+- The convention is stable enough that you expect to re-apply it for at least the next few weeks.
+
+If any of those is missing, don't encode it yet. The cheapest place to put a one-time correction is in the conversation. Rules are content that lives in context every time matching files are open — they only earn that recurring cost when the correction has been made enough times to extrapolate.
+
+If the correction is one the current model has stopped needing, the rule is obsolete on arrival. Record the model version this rule is earned against (see the repo's `Model-version pinning` convention) so the sunset audit has a trigger.
+
 ## Step 1 — Triage
 
 Four nearby surfaces to check first, plus a scope question.
@@ -76,7 +88,7 @@ Rules and hooks are completely different surfaces despite both being "things tha
 
 ### Rule vs nothing
 
-The cheapest answer. If the convention is something Claude already infers from the code, don't write a rule. Repeat the same correction three times before encoding.
+The cheapest answer. If the convention is something Claude already infers from the code, don't write a rule. The three-corrections bar from Step 0 is the same gate seen from a different angle — a rule that hasn't been earned by repeated correction usually shouldn't exist.
 
 ## Step 2 — Write the rule
 
@@ -106,6 +118,8 @@ paths:
 - Short. A rule's whole reason for existing is "small enough not to belong in CLAUDE.md." If you're at 100+ lines, ask whether this should be a path-scoped skill (with bundled reference files) instead.
 - Apply the CLAUDE.md test to every line: would removing it change Claude's behavior? If not, cut.
 
+**Capability-agnostic phrasing.** Write rules that don't depend on tooling that may not exist. "Match the codebase's enforced style" survives a missing eslint config; "Always run eslint" silently fails when eslint isn't installed. Phrase rules around behaviors and outcomes, not specific commands or tools — let the agent discover the local capability and adapt. Tools change faster than conventions; rules pinned to specific tools rot first.
+
 **Portability discipline (personal-scope rules):**
 - Don't hardcode project-specific facts (token tables, file paths unique to one repo). They'll be wrong in the next project.
 - Tell Claude *how to discover* project specifics — e.g. "read `globals.css` for the project's `@theme` block before writing UI." The rule encodes the discovery pattern; the project files are the source of truth.
@@ -114,6 +128,8 @@ paths:
 ## Worked examples
 
 ### `src/api/**` conventions
+
+*Earned against:* three sessions where the agent introduced a bespoke error envelope when adding a new endpoint, requiring follow-up PRs to align with `{error: {code, message, details}}`. Once was a slip; three times was a rule.
 
 `.claude/rules/api-conventions.md`:
 
@@ -146,6 +162,8 @@ When Claude opens any file in `src/api/` or `tests/api/`, this loads. When worki
 
 ### Migration directory
 
+*Earned against:* a migration that edited a previously-committed migration in place, breaking idempotency for anyone who'd already run it locally. The rule encodes the post-mortem so the next agent starts where this one ended.
+
 `.claude/rules/migrations.md`:
 
 ```markdown
@@ -165,6 +183,8 @@ paths:
 ```
 
 ### Tests directory
+
+*Earned against:* repeated test-flake reports traced to `data-testid` selectors that drifted as the markup changed, and `waitForTimeout(500)` calls that were green locally but flaky in CI.
 
 `.claude/rules/tests.md`:
 
@@ -189,6 +209,8 @@ paths:
 (That last bullet is a useful pattern: the rule is the *summary* that lives in context when relevant, with a pointer to the deeper skill for the detailed framework.)
 
 ### Cross-project stack discipline (personal scope)
+
+*Earned against:* the same Tailwind v4 correction on every shadcn project — "use existing tokens, don't extend silently" — repeated enough across distinct repos to deserve personal-scope encoding instead of project-scope copies.
 
 `~/.claude/rules/shadcn-tailwind.md`:
 

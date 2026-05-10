@@ -6,6 +6,7 @@ when_to_use: |
   Triggers:
   - "set up CLAUDE.md", "create CLAUDE.md", "bootstrap CLAUDE.md", "init project for claude"
   - "review my CLAUDE.md", "audit my CLAUDE.md", "rewrite CLAUDE.md", "CLAUDE.md is too long", "split CLAUDE.md"
+  - "audit AGENTS.md", "tune AGENTS.md", "AGENTS.md is primary", "AGENTS.md is too long"
   - "add this to CLAUDE.md", "promote to CLAUDE.md", "update CLAUDE.md from this session"
   - "should this be in CLAUDE.md", "where do project conventions go"
   - "CLAUDE.md vs auto-memory", "CLAUDE.md vs rule", "CLAUDE.md vs AGENTS.md"
@@ -58,6 +59,7 @@ The user's phrasing plus the repo state usually settles it in one read.
 | CLAUDE.md exists; user says "review", "audit", "rewrite", "is too long", or it's >200 lines / feels generic | **Audit** |
 | CLAUDE.md exists; user wants to add a single specific learning from this session | **Tune** |
 | AGENTS.md exists, CLAUDE.md doesn't (or vice-versa) and user wants alignment | **Bootstrap** (with the import pattern) |
+| AGENTS.md is the primary instruction file; user wants to audit / tune it | Run the matching job in **AGENTS.md mode** — see *When AGENTS.md is primary* below |
 | User asks "should this go in CLAUDE.md?" — single fact, ambiguous | Run the **six-surface triage** below; the answer often isn't CLAUDE.md |
 
 If signals conflict, ask once. Don't loop on it.
@@ -128,6 +130,26 @@ When the recent session surfaced something useful and the user wants to encode i
 For quick capture without surface triage, the existing `/revise-claude-md` command is fine — it's the lighter-weight tool. Use this skill's tune job when the candidate matters enough to do the triage right.
 
 Worked example in [references/jobs.md](references/jobs.md#tune).
+
+## When AGENTS.md is primary
+
+Some repos use AGENTS.md as the agent-agnostic instruction file (per the agents.md spec) so Claude Code, Cursor, Codex, and other compatible tools all read the same source. CLAUDE.md, when present, is a thin Claude-only addendum — usually `@AGENTS.md` at the top followed by Claude-specific facts (skills the project ships, hooks in `.claude/settings.json`, plan-mode preferences).
+
+Recognition signals:
+
+- `AGENTS.md` exists at repo root with substantive content (not just `@CLAUDE.md`).
+- Repo ships to multiple agents (Codex / Cursor referenced in docs, scripts, contributor guidance, or commit history).
+- CLAUDE.md is absent, very thin, or opens with `@AGENTS.md`.
+
+When AGENTS.md is primary, the three jobs adapt:
+
+**Bootstrap (AGENTS.md mode).** Scaffold AGENTS.md first using the spec's recommended sections (dev environment tips, testing instructions, PR instructions) plus any project-specific surfaces. Create CLAUDE.md only if there's Claude-specific content to host. Lead CLAUDE.md with `@AGENTS.md` and keep the addendum to facts other tools shouldn't or wouldn't act on (skill triggers, hook config, plan-mode behavior).
+
+**Audit (AGENTS.md mode).** Run the six-surface triage on AGENTS.md content with one twist: *tool-specific content doesn't belong in AGENTS.md*. Claude skills, Cursor `.cursorrules` references, Codex slash-command conventions all move to the matching tool-specific addendum file. The remaining AGENTS.md content gets the same reason-first / quantitative-ceilings treatment as CLAUDE.md — and *capability-agnostic phrasing matters more here* because multiple tools with different available capabilities are reading it. "Match the codebase's enforced style" survives across tools; "Run `claude --debug` to verify" does not.
+
+**Tune (AGENTS.md mode).** When promoting a session learning, ask first: agent-agnostic or Claude-specific? Agent-agnostic facts (build commands, conventions, test discipline, PR rules) go to AGENTS.md. Claude-specific facts (skill triggers, hook configuration, plan-mode preferences, tool-allowance lists) go to the CLAUDE.md addendum.
+
+The agents.md spec is permissive about content shape, so the forge's quantitative ceilings (14-rule cliff, examples ≈ 3× rule cost, identity-prompt noise) and reason-first discipline apply unchanged. The Why / How-to-apply pattern works in AGENTS.md too — *Teaching Claude Why* generalizes to "reasoning + rule beats bare rule" across reading agents, not just Claude.
 
 ## Reason-first content shape
 

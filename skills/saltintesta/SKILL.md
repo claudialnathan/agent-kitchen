@@ -13,7 +13,7 @@ when_to_use: |
 
 # Writing Voice
 
-Saltintesta is the goal. The reader barely notices the words. The ideas leap into their head. The reaction to aim for is "fuck yes, true." A real idea in the fewest articulate words.
+Good writing pushes ideas into your head withiut noticing the words that got you there.
 
 That sounds easy and isn't. Plain writing is hard because writing isn't transcription. You don't sit down with the ideas already formed and pour them out clean. Half the ideas in any decent piece show up while you're writing it. The first version of a sentence is usually wrong. The first attempt at an opening paragraph is usually a guess at what the piece is about. So if your attention is going to "does this sound AI", it isn't going to "have I figured out what I think yet". The two compete, and the second one matters more.
 

@@ -18,6 +18,16 @@ It does **two** things in order:
 
 If you only learn one thing here: **a skill is content that lives in recurring context with a 1,536-character description budget per skill and a 5,000-token compaction budget**. Most skill design choices follow from that.
 
+## Step 0 — What failure did you observe?
+
+Before any triage, name the specific failure this skill is meant to prevent. Not "we might want X"; not "best practice says Y". A real moment where the agent did the wrong thing — or, for knowledge skills, a class of correction you've made three or more times in this codebase.
+
+If you can't name a real failure, stop. The cheapest answer is doing the work in the moment and waiting for the failure to recur. Speculative skills are the most expensive kind because they sit in recurring context paying rent until something forces removal.
+
+Write the failure down in one line — it becomes the skill's *why*. The triage that follows decides which surface fits, but the failure is upstream of that decision.
+
+If the failure is one the current model has stopped making, the skill is obsolete on arrival. Don't write it. Each non-trivial artifact records the model version it was earned against (see the repo's `Model-version pinning` convention) so the sunset audit has a trigger.
+
 ## Triage: should this be a skill?
 
 Before opening a `SKILL.md`, ask which extension surface fits. Skills are flexible but not free — every visible skill consumes description budget every turn, and every invocation pins content into context for the rest of the session. If another surface fits better, use it instead.
@@ -195,6 +205,8 @@ Two short ones to ground the patterns. Each one corresponds to a kind from the c
 
 ### Workflow kind — `/commit-staged`
 
+*Earned against:* three sessions in March 2026 where Claude committed the diff without running lint, leaving formatter churn for the next reviewer to clean up. The skill exists because the same correction kept landing in code review.
+
 ```yaml
 ---
 description: Stages, lints, and commits the current diff with a message inferred from the changes. Use when the user says "commit this", "ship it", "make a commit", or asks for a quick commit on a clean diff. Skip when the diff is large enough to warrant review.
@@ -218,6 +230,8 @@ If the diff is empty, say so and stop. If lint fixes touch files outside the ori
 Why this shape: workflow ⇒ `disable-model-invocation`. Side effects ⇒ tightly-scoped `allowed-tools`. Live state via dynamic injection so Claude sees it without a tool call. Standing instructions ("if the diff is empty…") at the bottom. Note: each `[INJECT: ...]` placeholder above is where the real skill would use the literal inline-injection syntax; the placeholder is used here because this very file is itself a skill, and writing the literal would trip the loader (see the authoring footgun section).
 
 ### Forked research kind — `/audit-deps`
+
+*Earned against:* a session where unscoped `npm audit` output flooded the main thread with ~3,000 tokens of transitive-dependency noise before any analysis could happen. Forking the work into an Explore subagent kept the verbose audit out of the parent context.
 
 ```yaml
 ---
@@ -294,6 +308,16 @@ Before saving, walk this list:
 - [ ] Every frontmatter field is on the recognized list. No `metadata:` or other unknown parent keys; trigger phrases live at top-level `when_to_use:`, not nested. Unrecognized fields load silently and do nothing.
 - [ ] Scope check: the body actually delivers what the description promises. If the description says the skill covers a stack (Next.js + Vercel + shadcn + Supabase) and the body is only Next.js, either narrow the description or expand the body. Overpromising in the description is worse than admitting a narrower scope.
 - [ ] Sanity-tested in a fresh session against two natural-language prompts.
+
+## When this skill stops earning its keep
+
+Skills are written against a specific failure observed against a specific model. Both move. The deletion side of the Ratchet:
+
+1. On each major model release (or quarterly, whichever comes first), re-run the failure that earned this skill. Does the agent still make the mistake without the skill loaded?
+2. If no, delete the skill. The model has absorbed what the harness was teaching.
+3. If yes but the failure has shifted, rewrite the skill against the *new* failure rather than layering on top of the old one.
+
+Skills accumulate silently because each one only costs description budget when the model considers invoking it — but the cost is real, and a tree of obsolete skills crowds the discovery surface for the ones still doing work. Audit on each major model release.
 
 ## See also
 

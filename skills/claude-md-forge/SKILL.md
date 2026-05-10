@@ -34,6 +34,20 @@ Three jobs share the triage and shape; the body opens with a quick dispatch.
 
 If you only learn one thing here: **CLAUDE.md is loaded in full every turn. Every line is a recurring token cost. The minute a rule's *why* could be guessed wrong, it needs to be stated.**
 
+## Step 0 — What failure did you observe?
+
+Every CLAUDE.md entry, every rule, every promotion from auto-memory should answer one question: *what mistake does this prevent?* The May 2026 *Teaching Claude Why* finding made this measurable — rules earned by failure, with their reason stated, beat unreasoned rules by ~7× on misalignment. The same logic applies upstream: rules earned by *speculation* underperform rules earned by *observation*.
+
+Before any triage, name the failure:
+
+- A specific incident (the agent did X; we had to revert).
+- A repeated correction (you've said the same thing three or more times).
+- A class of failure visible in code review on this codebase.
+
+If you can't name one, the entry is speculative. The cheapest place for a "we might want X" rule is *not yet anywhere*. Wait for the failure.
+
+If the failure is one the current model has stopped making, this entry is obsolete on arrival. Don't write it. Record the model version this entry is earned against (see the repo's `Model-version pinning` convention) so the audit job has a deletion trigger.
+
 ## Quick dispatch — which job is this?
 
 The user's phrasing plus the repo state usually settles it in one read.
@@ -93,6 +107,7 @@ When CLAUDE.md exists and the user wants a structural review (or the file is ove
 4. **Apply the rewrite.** Keep CLAUDE.md focused on always-on, broadly applicable, reasoned facts. Spin up `.claude/rules/<name>.md` files for path-scoped content (rule-forge handles their design). Open issues for hooks the user should write (hook-forge handles those). Note auto-memory duplication explicitly so the user can decide whether to drop or promote.
 5. **Re-check size and reasoning.** Under 200 lines. Every non-obvious entry has a Why.
 6. **Cross-link.** If the audit produces new rules, mention them at the relevant section of CLAUDE.md ("framework conventions: see `.claude/rules/api.md`"). Don't duplicate content.
+7. **Sunset by model version.** For each entry, ask: *if I pull this rule, does the failure it prevents still happen on the current model?* If not, delete. The trigger for this audit is each major model release — rules earned against an older model often outlive their failure mode. Harnesses don't shrink, they move; the audit is the move.
 
 If the user only wants quality grading (commands present? architecture documented?), invoke `claude-md-management:claude-md-improver` instead — its 0–100 rubric is well-tuned for that single purpose. The forge restructures by surface; the improver scores and touches up. They coexist.
 
@@ -136,6 +151,17 @@ Skip Why:
 
 The audit job flags rules-without-why and asks per-rule: obvious convention or missing reason?
 
+## Quantitative ceilings
+
+Empirical findings from Osmani's May 2026 study on CLAUDE.md compliance, distilled into operating limits:
+
+- **Past 14 rules, compliance drops sharply** (76% → 52% in the study). Stay at or under 14 top-level rules. If the file has more, split by surface: path-scoped rules to `.claude/rules/`, workflows to skills, hard guarantees to hooks. The 200-line ceiling and the 14-rule ceiling are different cuts of the same finding — past either, content gets pattern-matched as "rules exist" without being read.
+- **Examples cost ~3× as much context as rules** and induce overfitting (the model anchors on the example's specifics rather than the underlying principle). Prefer rules-as-statements over rules-as-examples. Use a single concrete example only when the rule's edge cases can't be named in prose.
+- **Identity prompts and adverb noise underperform.** "Be careful," "think hard," "really focus," "act like a senior engineer" — compliance hovers around 30%. The model already thinks it's senior; the gap is between thinking and doing, and adverbs don't close it. Replace with concrete imperatives ("state assumptions explicitly", "stop when confused, name what's unclear").
+- **Capability-agnostic phrasing.** Rules that depend on tooling that may not exist break silently when it isn't there. "Match the codebase's enforced style" survives a missing eslint; "Always run eslint" fails silently. Phrase around behaviors and outcomes, not specific tools — let the agent discover the local capability and adapt.
+
+These compound. A 200-line CLAUDE.md with 18 rules, three examples per rule, and "be careful" openers is doing roughly nothing. A 90-line CLAUDE.md with 12 reasoned, capability-agnostic rules is doing real work.
+
 ## 2026 harness affordances most often missed
 
 | Affordance | Use for |
@@ -172,6 +198,17 @@ Before saving the rewrite or commit:
 - [ ] No duplication with auto-memory; stable per-user notes promoted, ephemeral ones left where they are.
 - [ ] Pre-ship: `bin/preship-check` clean; loader-trigger greps return zero matches.
 - [ ] Sanity-tested: open a fresh session, see whether CLAUDE.md still reads as the on-ramp the user wanted.
+
+## When CLAUDE.md content stops earning its keep
+
+CLAUDE.md is loaded every turn. Every line that doesn't earn its tokens is paying rent on context that other content needs. The deletion side of the Ratchet:
+
+1. On each major model release, re-test the failures that earned each rule. If a rule's `Why` cites an incident the current model can no longer reproduce, pull the rule.
+2. Rules whose failures have shifted: rewrite against the new failure rather than layering on top.
+3. Generic boilerplate that was never tied to a project failure: cut on first audit. The Karpathy-anti-default boilerplate pattern is the most common offender.
+4. Path-narrow rules that crept in: relocate to `.claude/rules/<name>.md` rather than letting them tax everyone else's context.
+
+The audit job is the structured form of this. Run it on each major model release at minimum.
 
 ## When this skill doesn't apply
 

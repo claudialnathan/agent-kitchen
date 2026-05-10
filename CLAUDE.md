@@ -50,6 +50,16 @@ The user comes to this repo specifically to design new skills, rules, and hooks.
 
 Propose updates to skill-forge / hook-forge / rule-forge based on what surfaced — not as a separate ask the user has to remember, but as part of finishing the work. The forges sharpen with use; an artifact that revealed a gap is more valuable as a forge improvement than as a one-off.
 
+## Model-version pinning
+
+Skills, hooks, rules, and CLAUDE.md entries are earned against a specific model. Both the failure and the model move. The discipline that keeps the forge tree honest:
+
+- Each non-trivial artifact records the model version it was earned against, in the artifact's `Why` line or as a stripped HTML comment (e.g., `<!-- Earned against: Sonnet 4.4, 2026-03-15 -->`). HTML comments cost zero context tokens.
+- On each major model release, re-test the failures that earned the artifacts. Delete the ones whose failures no longer reproduce; rewrite the ones whose failures have shifted.
+- This is the deletion side of the Ratchet — failures earn rules, capable models retire them. The forges have `When … stops earning its keep` sections that reference this convention.
+
+Without the pin, the audit has no trigger and obsolete scaffolding accumulates. Harnesses don't shrink, they move; the move only happens if the audit happens.
+
 ## Trajectory and governance
 
 Current trajectory: workshop-scale, evidence-driven growth into more meta-forges and more applied skills (B + C in `guides/trajectory-2026-05-08.md`). ECC-scale catalogues and public-template repositioning are off the table. Two governance gates before adding a new forge or applied skill: (1) **triage gap is real** — there's a class of artifact the existing forges don't cover, or discipline that gets retyped in a stack; (2) **first worked example is in hand** — never ship an empty forge or stack-tagged skill. Tier 1 maintenance touch-ups (auditing existing forges against current harness affordances) are exempt from gate 2. The candidate-moves inventory in the trajectory doc is not a backlog to drain.

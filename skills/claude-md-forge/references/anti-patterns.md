@@ -227,6 +227,32 @@ and are refreshed via the refresh token endpoint at `/auth/refresh`...
 
 ---
 
+## 15. The noise-phrasing rule
+
+**Looks like:**
+```
+- Always think hard before writing code.
+- Be careful with refactors.
+- Really focus on the test coverage.
+- Act like a senior engineer.
+- Take your time.
+```
+
+**Failure mode:** identity prompts and adverb-laden imperatives don't translate to behavior. Osmani's May 2026 study found compliance with these around 30% — they read as filler. The model already thinks it's senior; the gap is between thinking and doing, and "be careful" doesn't close that gap.
+
+**Should be:** concrete imperatives that name the action, testable enough that you could check whether the agent followed them.
+
+```
+- Don't refactor what isn't broken; touch only what the task requires.
+- Every test must encode the *why* of the behavior, not just that the function returned something.
+- State assumptions explicitly; ask before guessing.
+- Stop when confused; name what's unclear.
+```
+
+The rule passes when you could write a checklist item that catches a violation. "Senior engineer" isn't a checklist item; "state assumptions explicitly" is.
+
+---
+
 ## Quick reference: pattern → surface
 
 | Pattern | Should be |
@@ -245,3 +271,4 @@ and are refreshed via the refresh token endpoint at `/auth/refresh`...
 | Verbose | Compress |
 | Contradicts another CLAUDE.md or rule | Consolidate |
 | Setting in disguise | `permissions.deny` |
+| Identity prompt / adverb noise | Concrete imperative |

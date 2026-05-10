@@ -119,6 +119,8 @@ Don't carpet-bomb frontmatter. Each field exists for a reason; setting it withou
 - `arguments:` (named args) — only if you have 2+ positional arguments and named substitution makes the body readable. For one arg, `$ARGUMENTS` is cleaner.
 - `hooks:` — for skills that need a deterministic guardrail (`PreToolUse` validation) while active.
 
+**Unrecognized fields are silently ignored.** The loader reads only the fields above. Any other top-level key, or nesting recognized fields under unknown parents (e.g., `metadata: trigger: ...` instead of top-level `when_to_use:`), produces dead bytes that look like configuration but do nothing. The skill still loads. There is no warning. If a setting seems to have no effect, verify the field name is on the list above before debugging anything else. Real failure mode: a skill shipped with `metadata.trigger:` and a top-level `description:`; the trigger phrases never reached the discovery surface, but everything looked correct in the file.
+
 The full reference, including substitutions (`$ARGUMENTS`, `$N`, `$name`, `${CLAUDE_SKILL_DIR}`, `${CLAUDE_SESSION_ID}`, `${CLAUDE_EFFORT}`), lives in [references/frontmatter.md](references/frontmatter.md).
 
 ## Write the body for the lifecycle, not for one turn
@@ -285,6 +287,7 @@ Before saving, walk this list:
 - [ ] Anti-patterns checked: no hook-shaped, CLAUDE.md-shaped, or MCP-shaped instructions.
 - [ ] Grepped the skill tree for the two trigger sequences (bang-then-backtick and three-backticks-then-bang); zero matches. (See the authoring-footgun section.)
 - [ ] Pre-ship proofread: parsed the YAML through a parser (or `yq`/`yamllint`) to catch unescaped quotes; read the body straight through looking for typos, broken backticks, and sentences that get cut off mid-thought. Models drop sentences sometimes and the loss isn't obvious without reading. Especially watch numbered lists where the next bullet's number can mask a truncated previous bullet.
+- [ ] Every frontmatter field is on the recognized list. No `metadata:` or other unknown parent keys; trigger phrases live at top-level `when_to_use:`, not nested. Unrecognized fields load silently and do nothing.
 - [ ] Scope check: the body actually delivers what the description promises. If the description says the skill covers a stack (Next.js + Vercel + shadcn + Supabase) and the body is only Next.js, either narrow the description or expand the body. Overpromising in the description is worse than admitting a narrower scope.
 - [ ] Sanity-tested in a fresh session against two natural-language prompts.
 

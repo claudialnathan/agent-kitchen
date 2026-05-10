@@ -2,6 +2,17 @@
 
 Every frontmatter field, when it's worth setting, when it's noise, and the substitution variables you can use in the body. Synthesized from the current docs (May 2026); always defer to the live skills page if you see drift.
 
+## Unrecognized fields are silently ignored
+
+Read this before debugging anything else. The loader reads only the fields catalogued below. Two failure modes look like working configuration but do nothing:
+
+1. **Top-level keys not on the list.** A field named `trigger:` at top level, for example, is dead bytes. The skill still loads. There is no warning.
+2. **Recognized field names nested under unknown parents.** Putting `trigger:` or `paths:` or `when_to_use:` under a `metadata:` block, an `extra:` block, or any other unrecognized parent has the same effect. The nested key never reaches the loader.
+
+Real failure: a skill shipped with `metadata: trigger: ...` and a top-level `description:`. Description appeared in the listing; the trigger phrases never did. Nothing flagged it.
+
+If a frontmatter setting seems to have no effect, check the field name (and its parent, if any) against the catalogue below before assuming the loader is broken or the cache is stale.
+
 ## Field reference
 
 ### `name`

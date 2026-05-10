@@ -14,17 +14,92 @@ shadcn 4.x's canonical base imports three things at the top of `globals.css`:
 
 `tw-animate-css` is the source of `animate-in`, `animate-out`, `fade-in-0`, `zoom-in-95`, `slide-in-from-top-2` and the rest of the shadcn animation utility set. It also provides helpers that compose with Base UI's `[data-starting-style]` lifecycle. If you reach for `animate-in fade-in-0` and the class doesn't apply, the import is missing.
 
+**Tailwind v4 also ships first-party animation primitives**: `transition`, `transition-{property}`, `duration-{ms}`, `ease-{linear|in|out|in-out|initial}`, `animate-{spin|ping|pulse|bounce|none}`. Custom animations register at `@theme` via `--animate-<name>`, with `@keyframes <name>` declared in the same file. See [Tailwind animation docs](https://tailwindcss.com/docs/animation). The first reach for "animate this" is almost always one of these utilities — not Motion.
+
 ## Hierarchy of reach
 
-When you decide to animate something, walk this hierarchy top-to-bottom:
+When you decide to animate something, walk this hierarchy top-to-bottom. Stop at the first that fits — don't escalate without reason.
 
-1. **CSS-only via Base UI's `[data-starting-style]` / `[data-ending-style]`** — for simple enter/exit fades, scales, slides. No JS, no library, smallest blast radius.
-2. **Motion via `render` prop** — when the animation is *state-derived* (`animate={{ scale: open ? 1 : 0.95 }}`) or you need spring physics, gestures, or layout animations.
-3. **Motion + AnimatePresence + `keepMounted` Portal** — for popup-class components (Dialog, Popover, ContextMenu, Menu, Tooltip, AlertDialog) whose Portal controls its own mount lifecycle.
+1. **Tailwind's built-in animation utilities** — `transition`, `transition-{property}`, `duration-*`, `ease-*`, `animate-{spin|pulse|...}`, plus custom `--animate-<name>` registered at `@theme`. Plus `tw-animate-css`'s `animate-in fade-in-0 zoom-in-95 slide-in-from-top-2` set, which composes with Base UI's `[data-starting-style]` lifecycle automatically. Most "fade in", "scale on hover", "slide drawer in", and standard enter/exit cases live here. Cheapest reach, and the one most aligned with how Tailwind expects you to author animation. See [Tailwind animation docs](https://tailwindcss.com/docs/animation).
+2. **Custom CSS transitions targeting Base UI's `[data-starting-style]` / `[data-ending-style]`** — when Tailwind's utility set doesn't cover what you need (multi-property orchestration with different timings, origin-aware scale + opacity + filter, `data-instant` overrides). Cheap, works everywhere, no JS, correct interruption behavior.
+3. **Motion via `render` prop** — when the animation is *state-derived* (`animate={{ scale: open ? 1 : 0.95 }}`) or you need spring physics, gestures, or layout animations CSS can't express.
+4. **Motion + AnimatePresence + `keepMounted` Portal** — for popup-class components (Dialog, Popover, ContextMenu, Menu, Tooltip, AlertDialog) whose Portal controls its own mount lifecycle and need behavior CSS / Tailwind utilities can't deliver.
 
-Default down the hierarchy. If CSS does it, don't reach for Motion. If Motion without AnimatePresence does it, don't reach for AnimatePresence.
+Default down the hierarchy. If a Tailwind utility does it, don't reach for `[data-starting-style]`. If `[data-starting-style]` does it, don't reach for Motion. If Motion without AnimatePresence does it, don't reach for AnimatePresence.
 
-## Layer 1 — CSS-only with Base UI's data-* lifecycle
+## Layer 1 — Tailwind's built-in animation utilities
+
+Tailwind v4's first-party utilities cover most "animate this" cases without ever touching Base UI's data-attribute lifecycle directly. Reach for these first.
+
+### Built-in utilities
+
+```tsx
+{/* Hover scale */}
+<button className="transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.97]">…</button>
+
+{/* Color transitions */}
+<a className="transition-colors duration-150 ease-out hover:text-primary">…</a>
+
+{/* Built-in keyframe animations */}
+<div className="animate-pulse" />            {/* skeleton */}
+<div className="animate-spin" />              {/* loader */}
+<div className="animate-bounce" />            {/* attention nudge */}
+```
+
+Tailwind's named easings: `ease-linear`, `ease-in`, `ease-out`, `ease-in-out`, `ease-initial`. For UI you almost always want `ease-out` (entering) or a custom curve at the token layer — `ease-in` starts slow at the moment users are watching, which feels wrong.
+
+### shadcn's `tw-animate-css` set (composes with Base UI)
+
+Already imported at the top of `globals.css`. Pair with Base UI's `data-state` for popup-class enter/exit:
+
+```tsx
+<Popover.Popup className="
+  data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95
+  data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95
+  data-[side=bottom]:slide-in-from-top-2
+  data-[side=top]:slide-in-from-bottom-2
+">…</Popover.Popup>
+```
+
+This is what shadcn ships in its component templates. **It already composes with Base UI's lifecycle correctly** — Base UI's `getAnimations()` detects the running animation and gates unmount. No `keepMounted`, no AnimatePresence, no Motion.
+
+### Custom keyframes at the token layer
+
+When Tailwind's built-in animations don't cover what you need, register custom ones at `@theme` — never as inline arbitrary `animate-[...]` strings.
+
+```css
+/* globals.css */
+@theme {
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-fade-up: fade-up 240ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+```
+
+Now `animate-shimmer` and `animate-fade-up` are first-class Tailwind utilities. See [Tailwind animation docs](https://tailwindcss.com/docs/animation) for the full configuration surface.
+
+**Anti-pattern**: `animate-[shimmer_2s_linear_infinite]` inline. The string-encoded form bypasses the token system, isn't searchable, and makes prefers-reduced-motion overrides per-component instead of token-level.
+
+### When this layer is enough
+
+If the answer to "how should this animate?" is one of:
+- Hover / focus state change on a button, card, or link.
+- Skeleton loader, spinner, attention pulse.
+- Open/close of a Base UI popup with stock fade+scale or slide.
+- Self-contained looping animation (shimmer, marquee, indicator).
+
+…then Tailwind utilities are the answer. Don't escalate to layers 2-4 because you saw a Motion example.
+
+## Layer 2 — Custom CSS transitions on Base UI's data-* lifecycle
 
 Base UI components expose their open/close state via data attributes. Style transitions against them and Base UI uses `element.getAnimations()` to detect running transitions before unmounting. **No mount-race, no `keepMounted` needed for simple cases.**
 
@@ -95,7 +170,7 @@ Worked example, NavigationMenu Popup with the full surface:
 
 Base UI sets `data-instant` for you in these cases — your job is to honor it with `transition-none` (or `transition-duration: 0`) under the attribute selector.
 
-## Layer 2 — Motion via the `render` prop
+## Layer 3 — Motion via the `render` prop
 
 Base UI's `render` prop replaces Radix's `asChild`. It accepts a JSX element; Base UI merges its props (refs, ARIA, behavior) onto your element.
 
@@ -117,7 +192,7 @@ import { motion } from "motion/react"
 
 **When to use Motion via `render`**: state-derived animation on a single element. Spring physics. Gesture handling (`whileTap`, `whileHover`, `whileDrag`). Layout animations. Anything CSS can't express.
 
-## Layer 3 — Motion + AnimatePresence + `keepMounted` for popup-class components
+## Layer 4 — Motion + AnimatePresence + `keepMounted` for popup-class components
 
 The components that own their mount lifecycle (Dialog, Popover, ContextMenu, Menu, Tooltip, AlertDialog) need a three-part recipe so AnimatePresence can run exit animations:
 
@@ -171,6 +246,8 @@ Fix: include `opacity` in every exit object even if you don't visually need it.
 exit={{ opacity: 0, height: 0 }}  // ✓ opacity satisfies the detection
 exit={{ height: 0 }}              // ✗ exit appears to skip
 ```
+
+**Note on `interpolate-size: allow-keywords`.** When this is baked at `:root` (it is, in this workshop's [`baseline-bakein-2026-05-09.md`](../../../guides/baseline-bakein-2026-05-09.md)), height transitions can interpolate from `auto` / `min-content` / `max-content`. That's a separate problem from the Base UI race above — `interpolate-size` makes height-from-keyword *possible*; it doesn't change what `getAnimations()` reports. The "include opacity in exit" fix still applies, because the issue isn't whether the height animation runs, it's whether Base UI's lifecycle detection sees it. The `<details>` content-toggle pattern in the bake-in doc shows the working shape: the layout-track transition runs alongside `transition-behavior: allow-discrete` for `content-visibility`, but for Base UI popups the compositor-property requirement is non-negotiable.
 
 ### The AnimatePresence rule everyone gets wrong
 

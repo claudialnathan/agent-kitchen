@@ -316,7 +316,9 @@ For component-internal focus (when the outline would be clipped by `overflow: hi
 
 ## Stack of reach — layout decision tree
 
-When you face a layout question, walk this tree top-to-bottom. Stop at the first match.
+First, check whether the simple form is enough — `flex flex-col gap-N`, `grid grid-cols-N`, shadcn's existing components. If it works at every viewport without layout shift or content-driven breakage, stop there. Don't refactor working layouts into named primitives just because the primitives have names.
+
+When the simple form *isn't* enough — layout shifts at narrow widths, responsiveness needs content-driven thresholds, you're rebuilding the same flex/grid math by hand — walk this tree top-to-bottom. Stop at the first match.
 
 1. Does this need to wrap inline? → **Cluster**.
 2. Does this stack vertically? → **Stack** (or `flex-col gap-N`).

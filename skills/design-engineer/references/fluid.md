@@ -211,6 +211,8 @@ The rule isn't "clamp() everything." It's "consider whether the value scales wit
 - Media query inside a reusable component (use container query).
 - `clamp()` with `vw` and no `rem` floor (breaks user font-size scaling — clamp should always include `rem` in the slope to honor root font size).
 - Hard-coded type scale per component instead of token-driven (drift accumulates as the codebase grows).
+- **Inline arbitrary fluid utilities** — `text-[clamp(...)]`, `p-[clamp(...)]`, `gap-[clamp(...)]`. Configure the ramp at `@theme` once; let components consume named tokens (`text-xl`, `py-section-lg`). Inline arbitrary clamps are token-system bypasses; each one drifts the codebase further from the configured scale.
+- Applying fluid type/spacing on a project that hasn't configured a fluid ramp at `@theme`. Propose configuring the ramp first; don't quietly start sprinkling clamps that no other component shares.
 
 ## Further reading
 

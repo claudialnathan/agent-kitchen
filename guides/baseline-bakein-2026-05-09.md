@@ -7,15 +7,15 @@ A copyable starter pack for `globals.css`. Drop into the base of any project on 
 ## Layout of a typical `globals.css` after these additions
 
 ```css
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
 /* Animatable @property declarations (must come before @theme uses them) */
 @property --gradient-angle {
-  syntax: "<angle>";
+  syntax: '<angle>';
   inherits: false;
   initial-value: 0deg;
 }
@@ -26,11 +26,13 @@ A copyable starter pack for `globals.css`. Drop into the base of any project on 
 }
 
 /* View Transitions opt-in */
-@view-transition { navigation: auto; }
+@view-transition {
+  navigation: auto;
+}
 
 @layer base {
   :root {
-    /* Allow auto/min-content/max-content as transition endpoints */
+    /* browser support only 65% */
     interpolate-size: allow-keywords;
 
     /* Token-aware scrollbars, no layout shift on overflow */
@@ -42,17 +44,37 @@ A copyable starter pack for `globals.css`. Drop into the base of any project on 
     accent-color: var(--color-primary);
   }
 
-  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
   /* Headings balance, body pretty — set once at the type layer */
-  h1, h2, h3, h4, h5, h6 { text-wrap: balance; }
-  p, li, blockquote      { text-wrap: pretty; }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
+  }
+  p,
+  li,
+  blockquote {
+    text-wrap: pretty;
+  }
 
   /* Anchored sections clear sticky headers */
-  [id] { scroll-margin-top: 4rem; }
+  [id] {
+    scroll-margin-top: 4rem;
+  }
 
   /* iOS zoom-prevention on form fields */
-  input, select, textarea { font-size: max(16px, 1rem); }
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1rem);
+  }
 
   /* Universal focus-visible ring — currentColor adapts to dark mode */
   :focus-visible {
@@ -68,21 +90,32 @@ A copyable starter pack for `globals.css`. Drop into the base of any project on 
   @media (prefers-reduced-motion: reduce) {
     ::view-transition-group(*),
     ::view-transition-old(*),
-    ::view-transition-new(*) { animation: none !important; }
+    ::view-transition-new(*) {
+      animation: none !important;
+    }
   }
 
   /* <details> animated open/close — pairs with interpolate-size */
   details::details-content {
     block-size: 0;
     overflow-y: clip;
-    transition: block-size 200ms, content-visibility 200ms allow-discrete;
+    transition:
+      block-size 200ms,
+      content-visibility 200ms allow-discrete;
     transition-behavior: allow-discrete;
   }
-  details[open]::details-content { block-size: auto; }
+  details[open]::details-content {
+    block-size: auto;
+  }
 
   /* Image outlines (10% pure black/white, never tinted) */
-  img { outline: 1px solid rgb(0 0 0 / 0.1); outline-offset: -1px; }
-  .dark img { outline-color: rgb(255 255 255 / 0.1); }
+  img {
+    outline: 1px solid rgb(0 0 0 / 0.1);
+    outline-offset: -1px;
+  }
+  .dark img {
+    outline-color: rgb(255 255 255 / 0.1);
+  }
 }
 
 @utility field-auto {
@@ -92,7 +125,10 @@ A copyable starter pack for `globals.css`. Drop into the base of any project on 
 
 /* Optional: thin scrollbar utility for opt-in regions */
 @utility scrollbar-thin {
-  &::-webkit-scrollbar { width: 6px; height: 6px; }
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
   &::-webkit-scrollbar-thumb {
     background: var(--color-muted-foreground);
     border-radius: 9999px;
@@ -104,28 +140,28 @@ A copyable starter pack for `globals.css`. Drop into the base of any project on 
 
 Top recommendations ranked by impact-per-line. Cited browser-support is honest; some are full Baseline, some are progressive enhancement (your stack tolerates it — fall back is graceful).
 
-| Feature | Verdict | Status (May 2026) | Why |
-| :-- | :-- | :-- | :-- |
-| `interpolate-size: allow-keywords` | **Bake** | Progressive enhancement (Chrome stable; Safari/Firefox catching up) | Single declaration unlocks `transition: height` against `auto` / `min-content`. Removes the #1 reason to reach for JS to animate height. |
-| `@view-transition` + `::view-transition-*` | **Bake** | Same-document Baseline; cross-document landing | Smooth `<Link>` navigations once `experimental.viewTransition: true` is set in `next.config.js`. |
-| `@property` for animatable theme tokens | **Bake** | Baseline newly available | Without it, `transition: --gradient-angle` silently does nothing. Animated borders/conic spinners/shadow pulses driven by class toggles, no JS. |
-| `scrollbar-gutter: stable` + `scrollbar-color` | **Bake** | Baseline | Kills the 1px reflow when modal-open toggles `overflow: hidden`; ties scrollbars to the shadcn token system in both themes. |
-| `<details>::details-content` animated open/close | **Bake** | Progressive enhancement | Pairs with `interpolate-size`. Free animated FAQ accordions / disclosure widgets without Base UI Disclosure / zero JS on marketing pages. |
-| `field-sizing: content` | **`@utility field-auto`** | Progressive enhancement (Chrome stable) | Auto-resize textareas / inputs without resize observers. Don't bake globally — breaks shadcn `Input` height assumptions. Opt-in. |
-| `text-wrap: balance` / `text-wrap: pretty` | **Bake (already)** | Baseline | Set at the type layer once. Eliminates one-word last lines on headings; orphans on body. |
-| Subgrid (`grid-template-columns: subgrid`) | **Reach for it** | Baseline widely available (March 2026) | Use when card content (image/title/CTA) must align across siblings. See `design-engineer/references/layout.md`. |
-| Container queries (`@container`, `cqi`) | **Reach for it** | Baseline | Already in Tailwind v4 core (`@container`, `@xs:`/`@md:` variants). Component-scoped responsive — the right answer when you'd otherwise reach for a viewport breakpoint inside a component. |
-| New color spaces (`oklch`, `color-mix`, relative color syntax) | **Bake (already)** | Baseline | shadcn 4.x uses `oklch()` tokens by default. `color-mix()` is the cleanest hover-state strategy (avoids parallel hover-state tokens). |
-| Anchor positioning (`anchor-name`, `position-try`) | **Skip (in this stack)** | Baseline newly available | Base UI uses Floating UI internally. Adding `position-try` rules globally fights primitive-level positioning. Reach for it only outside Base UI primitives. |
-| Native Popover API + `popover` attribute + invoker commands (`command` / `commandfor`) | **Skip (in this stack)** | Baseline newly available | Base UI's Popover/Menu/Dialog have better focus-trap and a11y wiring. Use the native attribute only inside Base UI components if needed. |
-| `@scope` | **Skip** | Baseline newly available (Dec 2025) | Tailwind utility scoping + shadcn slot composition already solve the cascade problem. Mostly value for CMS-injected HTML you can't classname-control. |
-| `scrollend` event | **Skip (in CSS)** | Baseline newly available (Dec 2025) | JS feature, not CSS. Reach for it in components if you need it. Doesn't belong in `globals.css`. |
-| Niche typography units (`rcap`, `rch`, `ric`) | **Skip (in product UI)** | Baseline newly available (Jan 2026) | Useful in editor / typography stacks; for shadcn product UI, `rem`/`ch` cover it. Revisit if you ship long-form reading surfaces. |
-| `shape()` function | **Skip** | Baseline newly available (Feb 2026) | `clip-path: polygon()` covers 95% of cases. |
-| `font-family: math` | **Skip** | Baseline newly available (Dec 2025) | Narrow use case. |
-| `text-indent: each-line` / `hanging` | **Skip (until prose)** | Baseline newly available (Mar 2026) | Long-form prose only. Add to a `prose` utility when you ship a blog. |
-| Scroll-driven animations (`animation-timeline: view()`) | **`@utility` per use** | Progressive enhancement | High-impact but always opt-in per element. Ship one or two `@utility`s (`scroll-fade-in`, `view-reveal`) when needed; don't bake globally. |
-| `contain-intrinsic-size` + `content-visibility: auto` | **Reach for it** | Baseline widely available (March 2026) | Long-list virtualization-lite. Pair them when you build a long marketing page or feed. Not for `globals.css`. |
+| Feature                                                                                | Verdict                   | Status (May 2026)                                                   | Why                                                                                                                                                                                         |
+| :------------------------------------------------------------------------------------- | :------------------------ | :------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `interpolate-size: allow-keywords`                                                     | **Bake**                  | Progressive enhancement (Chrome stable; Safari/Firefox catching up) | Single declaration unlocks `transition: height` against `auto` / `min-content`. Removes the #1 reason to reach for JS to animate height.                                                    |
+| `@view-transition` + `::view-transition-*`                                             | **Bake**                  | Same-document Baseline; cross-document landing                      | Smooth `<Link>` navigations once `experimental.viewTransition: true` is set in `next.config.js`.                                                                                            |
+| `@property` for animatable theme tokens                                                | **Bake**                  | Baseline newly available                                            | Without it, `transition: --gradient-angle` silently does nothing. Animated borders/conic spinners/shadow pulses driven by class toggles, no JS.                                             |
+| `scrollbar-gutter: stable` + `scrollbar-color`                                         | **Bake**                  | Baseline                                                            | Kills the 1px reflow when modal-open toggles `overflow: hidden`; ties scrollbars to the shadcn token system in both themes.                                                                 |
+| `<details>::details-content` animated open/close                                       | **Bake**                  | Progressive enhancement                                             | Pairs with `interpolate-size`. Free animated FAQ accordions / disclosure widgets without Base UI Disclosure / zero JS on marketing pages.                                                   |
+| `field-sizing: content`                                                                | **`@utility field-auto`** | Progressive enhancement (Chrome stable)                             | Auto-resize textareas / inputs without resize observers. Don't bake globally — breaks shadcn `Input` height assumptions. Opt-in.                                                            |
+| `text-wrap: balance` / `text-wrap: pretty`                                             | **Bake (already)**        | Baseline                                                            | Set at the type layer once. Eliminates one-word last lines on headings; orphans on body.                                                                                                    |
+| Subgrid (`grid-template-columns: subgrid`)                                             | **Reach for it**          | Baseline widely available (March 2026)                              | Use when card content (image/title/CTA) must align across siblings. See `design-engineer/references/layout.md`.                                                                             |
+| Container queries (`@container`, `cqi`)                                                | **Reach for it**          | Baseline                                                            | Already in Tailwind v4 core (`@container`, `@xs:`/`@md:` variants). Component-scoped responsive — the right answer when you'd otherwise reach for a viewport breakpoint inside a component. |
+| New color spaces (`oklch`, `color-mix`, relative color syntax)                         | **Bake (already)**        | Baseline                                                            | shadcn 4.x uses `oklch()` tokens by default. `color-mix()` is the cleanest hover-state strategy (avoids parallel hover-state tokens).                                                       |
+| Anchor positioning (`anchor-name`, `position-try`)                                     | **Skip (in this stack)**  | Baseline newly available                                            | Base UI uses Floating UI internally. Adding `position-try` rules globally fights primitive-level positioning. Reach for it only outside Base UI primitives.                                 |
+| Native Popover API + `popover` attribute + invoker commands (`command` / `commandfor`) | **Skip (in this stack)**  | Baseline newly available                                            | Base UI's Popover/Menu/Dialog have better focus-trap and a11y wiring. Use the native attribute only inside Base UI components if needed.                                                    |
+| `@scope`                                                                               | **Skip**                  | Baseline newly available (Dec 2025)                                 | Tailwind utility scoping + shadcn slot composition already solve the cascade problem. Mostly value for CMS-injected HTML you can't classname-control.                                       |
+| `scrollend` event                                                                      | **Skip (in CSS)**         | Baseline newly available (Dec 2025)                                 | JS feature, not CSS. Reach for it in components if you need it. Doesn't belong in `globals.css`.                                                                                            |
+| Niche typography units (`rcap`, `rch`, `ric`)                                          | **Skip (in product UI)**  | Baseline newly available (Jan 2026)                                 | Useful in editor / typography stacks; for shadcn product UI, `rem`/`ch` cover it. Revisit if you ship long-form reading surfaces.                                                           |
+| `shape()` function                                                                     | **Skip**                  | Baseline newly available (Feb 2026)                                 | `clip-path: polygon()` covers 95% of cases.                                                                                                                                                 |
+| `font-family: math`                                                                    | **Skip**                  | Baseline newly available (Dec 2025)                                 | Narrow use case.                                                                                                                                                                            |
+| `text-indent: each-line` / `hanging`                                                   | **Skip (until prose)**    | Baseline newly available (Mar 2026)                                 | Long-form prose only. Add to a `prose` utility when you ship a blog.                                                                                                                        |
+| Scroll-driven animations (`animation-timeline: view()`)                                | **`@utility` per use**    | Progressive enhancement                                             | High-impact but always opt-in per element. Ship one or two `@utility`s (`scroll-fade-in`, `view-reveal`) when needed; don't bake globally.                                                  |
+| `contain-intrinsic-size` + `content-visibility: auto`                                  | **Reach for it**          | Baseline widely available (March 2026)                              | Long-list virtualization-lite. Pair them when you build a long marketing page or feed. Not for `globals.css`.                                                                               |
 
 ## Behavior notes — what each bake-item actually does
 
@@ -151,13 +187,13 @@ Pitch + visible effect + fallback for each of the five `globals.css` adds, plus 
 
 ### `@property`
 
-**What it does**: registers a CSS custom property with a typed syntax declaration. With a registered type, the browser knows how to *interpolate* between two values of that property — angles, percentages, colors, lengths.
+**What it does**: registers a CSS custom property with a typed syntax declaration. With a registered type, the browser knows how to _interpolate_ between two values of that property — angles, percentages, colors, lengths.
 
 **What you'll notice**: `transition: --gradient-angle 4s linear` actually rotates the gradient. Animated conic-gradient spinners, hue-shifting borders, pulsing box-shadow opacities all become reachable via class toggles.
 
 **Without it**: custom-property transitions are silently no-ops. The property snaps to the new value on the next frame.
 
-**Note**: only declare `@property` for custom properties you'll *actually animate*. Static tokens don't need it; over-declaring inflates the cascade with no benefit.
+**Note**: only declare `@property` for custom properties you'll _actually animate_. Static tokens don't need it; over-declaring inflates the cascade with no benefit.
 
 ### `scrollbar-gutter: stable` + `scrollbar-color`
 
@@ -197,14 +233,14 @@ Pitch + visible effect + fallback for each of the five `globals.css` adds, plus 
 
 Stock CSS easings (`ease`, `ease-in-out`) feel weak; they were tuned conservatively for backwards compatibility with 1990s motion sensibilities and never updated. Custom curves give you the punch that makes UI animation feel intentional.
 
-| Token | Curve | When to reach for it |
-| :-- | :-- | :-- |
-| `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Default for UI. Things entering, exiting, anything transient. Strong deceleration → user sees instant motion. |
-| `--ease-in-out` | `cubic-bezier(0.77, 0, 0.175, 1)` | Moving between two on-screen states (toggle, switch, position change). Strong acceleration in, strong deceleration out — feels deliberate. |
-| `--ease-drawer` | `cubic-bezier(0.32, 0.72, 0, 1)` | iOS-like sheet/drawer feel. Slight overshoot at the start, settles smoothly. Use for vertical sheets, drawers, modals on touch surfaces. |
-| `--ease-spring` (when supported) | `linear()` approximation of a spring | Decorative motion that should feel elastic. Conditional behind `@supports` — falls back gracefully on browsers without `linear()`. |
+| Token                            | Curve                                | When to reach for it                                                                                                                       |
+| :------------------------------- | :----------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ease-out`                     | `cubic-bezier(0.23, 1, 0.32, 1)`     | Default for UI. Things entering, exiting, anything transient. Strong deceleration → user sees instant motion.                              |
+| `--ease-in-out`                  | `cubic-bezier(0.77, 0, 0.175, 1)`    | Moving between two on-screen states (toggle, switch, position change). Strong acceleration in, strong deceleration out — feels deliberate. |
+| `--ease-drawer`                  | `cubic-bezier(0.32, 0.72, 0, 1)`     | iOS-like sheet/drawer feel. Slight overshoot at the start, settles smoothly. Use for vertical sheets, drawers, modals on touch surfaces.   |
+| `--ease-spring` (when supported) | `linear()` approximation of a spring | Decorative motion that should feel elastic. Conditional behind `@supports` — falls back gracefully on browsers without `linear()`.         |
 
-**Hard rule from `emil-design-eng`**: never `ease-in` for UI animation. It starts slow, exactly when the user is watching most closely, and reads as sluggish. A 200ms `ease-in` *feels* slower than a 200ms `ease-out` doing the same animation.
+**Hard rule from `emil-design-eng`**: never `ease-in` for UI animation. It starts slow, exactly when the user is watching most closely, and reads as sluggish. A 200ms `ease-in` _feels_ slower than a 200ms `ease-out` doing the same animation.
 
 **Don't hand-write `linear()` strings**. Use Jake Archibald's spring-easing tool or Easing Wizard to generate them; copy-paste. Hand-tuning is a tarpit.
 
@@ -219,8 +255,14 @@ If you find yourself reaching for these often, ship as `@utility` so they compos
   animation-range: entry 25% cover 50%;
 }
 @keyframes scroll-fade-in {
-  from { opacity: 0; transform: translateY(0.5rem); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @utility view-reveal {
@@ -229,12 +271,16 @@ If you find yourself reaching for these often, ship as `@utility` so they compos
   animation-range: entry 0% entry 60%;
 }
 @keyframes view-reveal {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 ```
 
-**What `animation-timeline: view()` does**: maps animation progress to *the element's position relative to the viewport* instead of to wall-clock time. The element animates as it enters/leaves the viewport.
+**What `animation-timeline: view()` does**: maps animation progress to _the element's position relative to the viewport_ instead of to wall-clock time. The element animates as it enters/leaves the viewport.
 
 **What `animation-range` does**: defines which slice of the entry/exit corresponds to animation 0%–100%. `entry 25% cover 50%` means: animation starts when the element is 25% into entering the viewport, finishes when it's 50% covered.
 
@@ -250,9 +296,9 @@ If you find yourself reaching for these often, ship as `@utility` so they compos
 
 ```css
 @theme {
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);          /* strong ease-out — UI default */
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);      /* strong ease-in-out — moves between states */
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);       /* iOS-like — drawers, sheets */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* strong ease-out — UI default */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1); /* strong ease-in-out — moves between states */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); /* iOS-like — drawers, sheets */
 
   --duration-fast: 180ms;
   --duration-medium: 240ms;
@@ -261,10 +307,7 @@ If you find yourself reaching for these often, ship as `@utility` so they compos
 
 @supports (animation-timing-function: linear(0, 1)) {
   @theme {
-    --ease-spring: linear(
-      0, 0.013 0.6%, 0.05 1.2%, 0.971 47.2%,
-      1.012 59.1%, 0.995 70.8%, 1
-    );
+    --ease-spring: linear(0, 0.013 0.6%, 0.05 1.2%, 0.971 47.2%, 1.012 59.1%, 0.995 70.8%, 1);
   }
 }
 
@@ -310,4 +353,4 @@ Baseline status moves every six months. Re-triage by **2026-11**. Specifically w
 
 ## Tying back to `design-engineer`
 
-This guide is the *additive* layer for the stack — what to put in `globals.css` once. The `design-engineer` skill is the *standing-instruction* layer — what to reach for while writing components. Use the skill to author UI; use this guide to set up a new project's base.
+This guide is the _additive_ layer for the stack — what to put in `globals.css` once. The `design-engineer` skill is the _standing-instruction_ layer — what to reach for while writing components. Use the skill to author UI; use this guide to set up a new project's base.

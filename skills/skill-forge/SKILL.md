@@ -38,10 +38,12 @@ Run through this triage ladder. The first match wins.
 
 If you've gotten here, continue to the next section. If not, **carry through to the redirected surface — don't just announce that it should be one**. Specifically:
 
+> **Caveat on companion forges.** The hook / rule / CLAUDE.md handoffs below reference `hook-forge`, `rule-forge`, and `claude-md-forge` — sibling skills bundled with `skill-forge` in the `claudia@harness` plugin. If the user has skill-forge alone, suggest installing the rest (`/plugin install claudia@harness`, or pointing at the source if installing manually) and proceed with the inline fallback in the meantime. Don't block on the install — the fallback paths below are complete on their own.
+
 - **Hook** → if `hook-forge` is installed, invoke it (`/hook-forge`) and design the hook there. Otherwise, walk the user through the hook configuration inline: which event, which matcher, which handler type, what the script returns. The triage isn't done until the actual `.claude/settings.json` (or skill/agent frontmatter `hooks:` block) is drafted.
 - **MCP** → propose the `claude mcp add` command for a known server, or design the inline `.mcp.json` entry. If domain-specific guidance is needed (schema, query patterns), that's a *companion* skill the user can build after the connection exists.
-- **CLAUDE.md** → propose the actual lines to add (or suggest a path-scoped rule file at `.claude/rules/<name>.md` if the content is more than a few lines and only applies to some files). For more than a few lines, structural restructuring, or AGENTS.md handling, hand off to `claude-md-forge`.
-- **Path-scoped rule** → draft the `.claude/rules/<name>.md` with `paths:` frontmatter and the rule body.
+- **CLAUDE.md** → if `claude-md-forge` is installed, hand off there for any non-trivial design (initial bootstrap, structural audit, surface-aware tune). Otherwise, propose the actual lines to add inline; suggest a path-scoped rule file at `.claude/rules/<name>.md` if the content is more than a few lines and only applies to some files; consult Anthropic's CLAUDE.md docs for AGENTS.md / structural questions you can't resolve from context.
+- **Path-scoped rule** → if `rule-forge` is installed, invoke it (`/rule-forge`) for the path-glob and body shape. Otherwise, draft the `.claude/rules/<name>.md` directly with `paths:` frontmatter and the rule body.
 - **Subagent** → propose the `.claude/agents/<name>.md` with frontmatter (tools, model, permissionMode) and the system prompt body.
 - **Nothing** → say so and stop. The cheapest answer is often "do this in the moment, don't encode it."
 

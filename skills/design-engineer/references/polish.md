@@ -203,9 +203,9 @@ For a stronger spring feel, hand the scale to Motion via `whileTap`:
 <motion.button whileTap={{ scale: 0.97 }} transition={{ type: "spring", duration: 0.3, bounce: 0 }}>
 ```
 
-## 9. Hit area — 40×40px floor
+## 9. Hit area — 40×40px floor (44 for AAA / primary touch)
 
-Every interactive element needs at least 40×40px of touchable area. Visible target can be smaller; **extend the hit area with a pseudo-element**:
+Every interactive element needs at least 40×40px of touchable area. **44×44 CSS pixels** is the WCAG SC 2.5.5 (AAA) recommendation and the Apple HIG target size; reach for 44 on primary touch surfaces or apps targeting AAA compliance. 40 is a pragmatic floor that respects shadcn's compact density on dense desktop UIs. Visible target can be smaller; **extend the hit area with a pseudo-element**:
 
 ```css
 .icon-btn {
@@ -410,6 +410,24 @@ Mobile keyboards adapt to input type:
 ```
 
 `type` controls validation; `inputMode` controls the keyboard. `autoComplete` enables system fill. Combine all three for the best mobile UX.
+
+## 21. Hover flicker — animate a child, not the element itself
+
+When a hover handler triggers a position change on the hovered element, the cursor can fall *off* the element mid-tween, the hover state ends, the element snaps back, the cursor catches up — flicker.
+
+```tsx
+// Wrong — hover lifts the box, cursor leaves, hover ends, element drops, repeat
+<div className="transition-transform duration-200 hover:-translate-y-2">…</div>
+
+// Right — outer parent owns the hover area; inner child is what moves
+<div className="group">
+  <div className="transition-transform duration-200 group-hover:-translate-y-2">…</div>
+</div>
+```
+
+The outer wrapper's bounding box stays still, so the hover state stays continuous. The inner child translates / scales / lifts.
+
+**Tailwind v4's `hover:` is device-aware**: it's automatically wrapped in `@media (hover: hover) and (pointer: fine)`, so accidental finger drag on touch devices won't trigger hover states. Don't manually wrap `hover:` utilities in a media query — Tailwind already does it.
 
 ## Pre-ship polish checklist
 

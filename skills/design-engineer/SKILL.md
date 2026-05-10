@@ -1,34 +1,39 @@
 ---
 name: design-engineer
-description: Single source of truth for design-engineering discipline on shadcn (Base UI) + Tailwind v4 + Next.js + Vercel. Slows down UI choices — fluid before fixed, layout primitives before custom layout, container queries before viewport breakpoints, frequency-aware motion (often = none), proactive polish (concentric radii, tabular numbers, text-wrap balance, scale-on-press, focus-visible rings) added unprompted. Composes with emil-design-eng (defers for deep animation craft) and web-design-guidelines (defers for Vercel checklist).
+description: Always-on design-engineering discipline for shadcn (Base UI) + Tailwind v4 + Next.js + Vercel — applied within the framework's conventions, not over them. Slows down UI choices — configures fluid type/spacing at the token layer (not inline arbitrary clamps), reaches for layout primitives when simpler patterns break, applies container queries where components live in varying-width slots, prefers Tailwind's built-in animation utilities before Motion, applies frequency-aware motion (often = none), and adds proactive polish (concentric radii, tabular numbers, text-wrap balance, scale-on-press, focus-visible rings) unprompted. Composes with emil-design-eng (defers for deep animation craft) and web-design-guidelines (defers for Vercel checklist).
 when_to_use: |
   Auto-loads on UI files. Also trigger on: "build a UI", "build a page / landing page / dashboard", "review my UI", "audit this", "this feels off", "make this feel better", "add an animation", "add some polish", "add micro-interactions", "make this responsive", "make this fluid", "container query", "lay out", "stack this", "grid this", "sidebar", "switcher", "Motion + Base UI", "shadcn animation", "render prop animation", "design engineer", "design like Emil / Rauno / Jakub".
 paths:
-  - "**/*.{tsx,jsx,mdx}"
-  - "**/components/**/*.{ts,tsx}"
-  - "**/app/**/*.{ts,tsx}"
-  - "**/globals.css"
-  - "**/app.css"
-  - "**/tailwind.css"
+  - "**/components/**/*.{ts,tsx,jsx}"
+  - "**/app/**/*.{tsx,jsx,mdx}"
+  - "**/pages/**/*.{tsx,jsx,mdx}"
+  - "**/src/components/**/*.{ts,tsx,jsx}"
+  - "**/*.mdx"
+  - "**/{globals,app,tailwind,index}.css"
+  - "**/styles/**/*.css"
 ---
 
 # design-engineer
 
-Stack assumed: shadcn (latest, on Base UI) + Tailwind v4 (`@theme` tokens in CSS) + Next.js (App Router) + Vercel. If the project is Tailwind v3 / shadcn 3.x / Radix, defer to that stack's idioms — most rules still hold, the syntax differs.
+Apply these principles within the host framework's conventions — don't fight them. The principles are stack-agnostic; the *implementation* must follow what the framework recommends. That means:
 
-This skill is the always-on disposition, the master rules, and the reflex stack. Depth lives in `references/<name>.md` — open one when needed; don't load everything.
+- Configure fluid type, fluid spacing, and custom animations at Tailwind's `@theme` (or v3's `tailwind.config.js`) — not as inline arbitrary utilities (`text-[clamp(...)]`, `p-[clamp(...)]`, `animate-[...]`). The token layer is where these patterns earn their keep.
+- Reach for the framework's own utilities first — [Tailwind's `transition-*` / `duration-*` / `ease-*` / `animate-*`](https://tailwindcss.com/docs/animation), shadcn's `tw-animate-css` (`animate-in fade-in-0 zoom-in-95 slide-in-from-top-2`), Base UI's `[data-starting-style]` / `[data-ending-style]` lifecycle. Only reach for Motion when the framework's tools genuinely don't cover it.
+- Honour framework-specific idioms: Base UI uses `render`, not Radix's `asChild`; Tailwind v4 uses `@theme` in CSS, not `tailwind.config.js`; Next.js App Router has its own component boundary rules. Read the docs when uncertain — applying a principle in a way that fights the framework is worse than not applying it.
+
+This skill is the discipline (when these patterns earn their keep), the master rule (frequency × novelty for motion), and the reflex stack (the right primitive when one is needed). Depth lives in `references/<name>.md` — open one when needed; don't load everything.
 
 ## The stance — apply on every UI choice
 
 You are a design engineer. Every CSS / HTML / React choice gets considered, not reflexively typed.
 
 1. **Pause before emitting.** Read what's there. Open `globals.css` (or `app.css` / `tailwind.css`) and skim the `@theme` block. Look at sibling components for the in-use pattern. The first reach should be a token or primitive that already exists.
-2. **Fluid before fixed.** Reach for `clamp()`, `min()`, `max()`, intrinsic sizing, container query units before reaching for breakpoint cliffs or hardcoded values. A type ramp, a section padding, a max-width — fluid by default.
-3. **Layout primitive before custom layout.** Stack, Cluster, Sidebar, Switcher, Cover, Center, Box, Grid (Every Layout). Most layouts are one of these eight. Reach for the primitive before composing flex/grid by hand. See [`references/layout.md`](references/layout.md).
-4. **Container query before viewport breakpoint.** Reusable components own their responsiveness via `container-type: inline-size` + `cqi` / `@container`. Viewport breakpoints belong to page-level shells, not card components.
+2. **Fluid where it earns it, configured at the token layer.** When type or section padding genuinely should scale across viewports, configure the ramp at `@theme` (or the framework's equivalent). Don't sprinkle `text-[clamp(...)]` or `p-[clamp(...)]` inline — that bypasses the token system and drifts as the codebase grows. Component-internal padding, icon sizes, and uniform spacing usually don't need fluid; respect Tailwind's defaults. The "free" fluid wins (input `font-size: max(16px, 1rem)` for iOS zoom, `min-h-dvh` for mobile chrome, section rhythm with `max(8vh, 2rem)`) belong everywhere — they don't need ramp configuration.
+3. **Reach for a named layout primitive when the simple form breaks.** Stack, Cluster, Sidebar, Switcher, Cover, Center, Box, Grid (Every Layout). If `flex flex-col gap-N` or shadcn's existing components already do the job, don't refactor them into the lobotomized owl. Reach for the primitive when the layout shifts at narrow widths, when responsiveness needs content-driven thresholds (Switcher, Sidebar), or when you find yourself rebuilding the same flex/grid math by hand for the third time. See [`references/layout.md`](references/layout.md).
+4. **Container query when the component genuinely lives in slots of varying widths.** A card that appears in both a sidebar and a hero is a real candidate; a page-level shell or a component that always lives at one width is not. Don't reach for `@container` because it's modern — reach for it because a viewport breakpoint would give the wrong answer (the card collapsing to mobile layout in a wide hero just because the *viewport* hit a threshold). Viewport breakpoints remain the right primitive for page-level responsiveness.
 5. **Token before arbitrary value.** Tailwind's named utility before `[1.25rem]`. The project's semantic token (`bg-card`, `text-muted-foreground`, `text-caption`) before raw palette colors or arbitrary lengths. For deep token discipline (no `px`, no hex, oklch only, `render` not `asChild`), see the `shadcn-tailwind` skill — it auto-loads on the same files.
-6. **Frequency-aware motion.** Most UI surfaces should not be animated. See *the master rule* below.
-7. **State the reason.** When you choose a value (scale, easing, duration, radius, shadow), you also state the one-line *why*. If you can't state the reason, you don't have the call yet. See *state the reason* below.
+6. **Frequency-aware motion, framework-native first.** Most UI surfaces should not be animated. When they should, reach for the framework's own utilities first ([Tailwind's `transition-*` / `animate-*`](https://tailwindcss.com/docs/animation), shadcn's `tw-animate-css`, Base UI's `[data-starting-style]`) before pulling in Motion. See *the master rule* below.
+7. **State the reason — and make it a real one.** When you choose a value (scale, easing, duration, radius, shadow), you also state the one-line *why*. If you can't, you don't have the call yet. If your reason is a pat phrase you've used before ("nothing in the real world appears from nothing"), that's a tell that you cited it instead of considering it. See *state the reason* below.
 
 ## The master rule: frequency × novelty
 
@@ -49,7 +54,11 @@ For animation craft itself (easing curves, spring physics, clip-path mechanics, 
 
 ## State the reason
 
-Emil Kowalski's `agents-with-taste`, lifted to authoring rule. Every taste call comes with a one-line *why*. Examples:
+Two modes of the same discipline. They look adjacent but apply at different moments — keep them straight.
+
+### Mode 1 — for outputs (when you're committing a value)
+
+Every taste call comes with a one-line *why*. Examples:
 
 - `transform: scale(0.95)` initial — *because nothing in the real world appears from nothing*.
 - `transition: transform 180ms` — *because UI animations under 300ms feel responsive; a 180ms dropdown beats an identical 400ms one*.
@@ -61,7 +70,11 @@ Emil Kowalski's `agents-with-taste`, lifted to authoring rule. Every taste call 
 
 If you can't state the reason, you don't have the call yet. Stop. Look at examples (`emil-design-eng`, the codebase, the references in this skill). Try again.
 
+### Mode 2 — for reviews (when you're judging existing code)
+
 When reviewing UI (yours or AI-generated): write the wrongness *and the reason* before regenerating. Articulating the reason is the training; the regenerate is the side effect.
+
+**Don't conflate the modes.** Self-review on your own outputs — when you've already committed a value — should rest on the Mode 1 reasoning that led to the call. It shouldn't loop back through Mode 2 first-principles re-derivation, which is the slow path. Mode 2 is for code that's *already there* and needs judging — yours, the codebase's, the AI's.
 
 ## Reflex stack — what to reach for first
 
@@ -97,13 +110,14 @@ Full patterns with JSX shapes: [`references/layout.md`](references/layout.md).
 
 Full patterns: [`references/fluid.md`](references/fluid.md).
 
-### Motion (with Motion + Base UI)
+### Motion (Tailwind-first, then Base UI, then Motion)
 
-The hierarchy of reach:
+The hierarchy of reach (stop at the first that fits):
 
-1. **CSS-only via Base UI's `[data-starting-style]` / `[data-ending-style]`** — for simple enter/exit. Cheap, works everywhere, no JS.
-2. **Motion via `render` prop** — when you need state-derived animation (`animate={{ scale: open ? 1 : 0.95 }}`).
-3. **Motion + AnimatePresence + `keepMounted` Portal** — for popup-class components (Dialog, Popover, ContextMenu, Menu, Tooltip, AlertDialog) that control their own mount lifecycle.
+1. **Tailwind's built-in utilities** — `transition-*`, `duration-*`, `ease-*`, `animate-*` for hover, focus, simple state changes. Plus shadcn 4.x's `tw-animate-css` (`animate-in fade-in-0 zoom-in-95 slide-in-from-top-2`) for popup-class enter/exit, which composes with Base UI's lifecycle automatically. Most "fade in this thing" / "scale on hover" / "slide drawer in" cases are this layer. See [Tailwind animation docs](https://tailwindcss.com/docs/animation). Custom keyframes live at `@theme` via `--animate-*`, not as inline arbitrary `animate-[...]` strings.
+2. **CSS transitions targeting Base UI's `[data-starting-style]` / `[data-ending-style]`** — when Tailwind utilities don't cover what you need on a Base UI primitive (custom timing, multi-property orchestration, origin-aware scaling). Cheap, works everywhere, no JS, correct interruption behavior.
+3. **Motion via `render` prop** — when the animation is state-derived (`animate={{ scale: open ? 1 : 0.95 }}`), needs spring physics, gestures, or layout animations CSS can't express.
+4. **Motion + AnimatePresence + `keepMounted` Portal** — for popup-class components (Dialog, Popover, ContextMenu, Menu, Tooltip, AlertDialog) needing complex enter/exit Motion handles better than CSS.
 
 **Hard rules**:
 
@@ -119,7 +133,7 @@ Stack-specific patterns and the full integration recipe: [`references/motion-bas
 
 ### Polish
 
-The proactive list — apply unprompted on every UI surface. Full reasoning per item: [`references/polish.md`](references/polish.md).
+The proactive list — propose where it fits the surface, after checking the codebase doesn't already handle it differently. Some items are universal (focus-visible, no `transition: all`, prefers-reduced-motion at the token layer); others are conditional on the design (concentric radii, image outlines, scroll-margin-top). Full reasoning per item: [`references/polish.md`](references/polish.md).
 
 | | Pattern | Why |
 | :-- | :-- | :-- |
@@ -132,15 +146,16 @@ The proactive list — apply unprompted on every UI surface. Full reasoning per 
 | 7 | **`scrollbar-gutter: stable`** on scroll containers | Prevents layout shift on overflow |
 | 8 | **`scroll-margin-top`** on anchored sections | Clears sticky headers |
 | 9 | **`-webkit-font-smoothing: antialiased`** at the root (macOS) | Crisper text |
-| 10 | **40×40px hit area** (pseudo-element extension for icon-only) | Touch target floor |
+| 10 | **40×40px hit area** (44 for AAA / primary touch); pseudo-element extension for icon-only | Touch target floor (WCAG SC 2.5.5) |
 | 11 | **No `transition: all`** — always specify properties | Prevents accidental animation on layout/paint |
 | 12 | **`will-change`** only on `transform`/`opacity`/`filter`, only when first-frame stutter is observed | Don't preemptively |
 | 13 | **`@media (prefers-reduced-motion: reduce)`** at the token layer | One rule covers every component |
 | 14 | **`aria-live="polite"`** on toast/error containers | Screen readers announce without focus theft |
+| 15 | **Hover-flicker pattern** — animate a child, not the element itself, when hover triggers a position change | Cursor leaving mid-tween ends hover; outer wrapper stays still |
 
 ## Add unprompted
 
-When you build a UI surface, the following go in even if the user didn't ask:
+When you build a UI surface, propose these where they fit and aren't already handled. Match the codebase's conventions first — if `tabular-nums` is consistently applied to similar surfaces, follow that pattern; if it isn't, propose adding it where dynamic numbers appear. Some items are universal (focus-visible, prefers-reduced-motion at the token layer); others are conditional on the design (concentric radii needs nested rounded surfaces; image outlines need content images). Use judgment, not a checklist:
 
 - Focus-visible ring on every interactive element.
 - Hit-area floor (40×40px) on every button — pseudo-element extension if visible target is smaller.
@@ -159,12 +174,11 @@ If a value is in the codebase as a token, use the token. If it isn't, **don't ad
 
 ## Composing with the always-loaded skills
 
-This skill is the *single source of truth* for design-engineering on this stack — except where two other skills are canonical:
+This skill is the *always-on disposition* for design engineering on this stack — the discipline that runs through every UI choice. Three sibling skills own canonical pieces of the work; this skill defers to them rather than duplicating:
 
-- **`emil-design-eng`** owns *animation craft itself*: the animation decision framework, easing curve internals, spring physics, clip-path craft, gesture mechanics (momentum, damping, pointer capture, multi-touch protection), transform-origin reasoning, 3D transforms, performance internals, the Sonner principles. **This skill defers there** — it gives the frequency × novelty decision and the Base UI integration; emil-design-eng gives the *what to animate and how*.
+- **`emil-design-eng`** owns *animation craft itself*: the animation decision framework, easing curve internals, spring physics, clip-path craft, gesture mechanics (momentum, damping, pointer capture, multi-touch protection), transform-origin reasoning, 3D transforms, performance internals, the Sonner principles. This skill gives the frequency × novelty decision and the Base UI integration; emil-design-eng gives the *what to animate and how*.
 - **`web-design-guidelines`** owns Vercel's specific review checklist (fetched fresh each time). When the user says "review my UI" or "audit", that skill's authoritative URL takes precedence over this skill's pre-ship list.
-
-This skill also composes with `shadcn-tailwind` (in this harness) — that one owns token discipline (no `px`, no hex, oklch, `render` not `asChild`, data-state attributes), and auto-loads on the same files. Don't duplicate it; cross-reference.
+- **`shadcn-tailwind`** (in this harness) owns token discipline (no `px`, no hex, oklch, `render` not `asChild`, data-state attributes), and auto-loads on the same files. Don't duplicate it; cross-reference.
 
 ## References
 
@@ -183,8 +197,8 @@ Open one file at a time. The skill body is the always-on layer; references are o
 
 Before saying "done":
 
-- [ ] Used a layout primitive (Stack / Cluster / Sidebar / Switcher / Cover / Grid / Center) where applicable, or had a stated reason not to.
-- [ ] Container query before viewport breakpoint for any reusable component.
+- [ ] Used a layout primitive (Stack / Cluster / Sidebar / Switcher / Cover / Grid / Center) when the simple form (`flex`, `grid`) wasn't sufficient, or stated why the simple form was enough.
+- [ ] Container query used where the component lives in slots of varying widths; viewport breakpoints used for page-level responsiveness. No fancy CSS for fancy CSS's sake.
 - [ ] Type and spacing read from tokens; no `[14px]` or raw palette colors without justification.
 - [ ] `text-balance` on headings; `text-pretty` on body paragraphs.
 - [ ] `dvh`/`svh` instead of `vh` on full-screen layouts.

@@ -452,3 +452,41 @@ The recurring tell: the user finds themselves typing "use shadcn best practices"
 If a batch-audit workflow is genuinely useful (scanning a directory pre-commit, checking a PR diff), keep it as a separate command-shaped skill that calls a script. But the discipline itself belongs in path-scoped context, not in a workflow.
 
 **Generalization:** Whenever you see a skill whose name starts with "audit" or "check" or "review-against," ask whether the knowledge inside it should be auto-loaded for the files it audits. If yes, the audit is the wrong shape; the rule (or path-scoped skill) is. If only the *workflow* is what's worth invoking — "scan this entire repo and produce a report" — keep the audit shape but extract the knowledge into a rule the audit can also reference.
+
+## 17. The directive skill that fights the framework
+
+```md
+## The stance
+
+1. **Fluid before fixed.** Reach for `clamp()`, `min()`, `max()` before breakpoint cliffs. A type ramp, a section padding, a max-width — fluid by default.
+2. **Layout primitive before custom layout.** Stack, Cluster, Sidebar, Switcher. Most layouts are one of these eight. Reach for the primitive before composing flex/grid by hand.
+3. **Container query before viewport breakpoint.** Reusable components own their responsiveness via `container-type: inline-size`.
+```
+
+**Why it's broken:** Two related issues, same root cause.
+
+The first is *voice*. Principle-shaped bullets ("X before Y") read as universal enforcement. The reader-Claude applies them whether or not the conditions for X-being-better-than-Y are present. "Fluid before fixed" gets cited when a button's padding doesn't need to be fluid; "container query before viewport breakpoint" gets cited on a page-level shell where the viewport is the relevant context. The bullet shape encodes a directive, not a judgment.
+
+The second is *framework awareness*. When a skill encodes discipline that lives alongside a framework with its own conventions (Tailwind, shadcn, Next.js, Rails, Django), principle-shaped bullets quietly override framework defaults. A "fluid before fixed" rule applied to a Tailwind v4 codebase that hasn't configured a fluid ramp at `@theme` results in inline `text-[clamp(...)]` arbitrary utilities — a direct token-system bypass. The skill's discipline beats the framework's recommended pattern, and the codebase drifts.
+
+The recurring tell: the user reads the skill back and says "but only when…" or "this would override how Tailwind is configured to work" or "I don't want this applied to every component." That's the bullets reading as universal when they should be conditional, and the discipline reading as override when it should be framework-respecting.
+
+**What fits:** Two writing-voice changes that compound.
+
+First, **condition-shaped bullets**. Same content, restated as judgment:
+
+```md
+1. **Fluid where it earns it, configured at the token layer.** When type or section padding genuinely should scale across viewports, configure the ramp at `@theme`. Don't sprinkle `text-[clamp(...)]` inline. Component-internal padding and uniform spacing usually don't need fluid.
+2. **Reach for a named layout primitive when the simple form breaks.** If `flex flex-col gap-N` already works, don't refactor it. Reach for the primitive when responsiveness needs content-driven thresholds or you're rebuilding the same flex/grid math by hand.
+3. **Container query when the component lives in slots of varying widths.** A card in both a sidebar and a hero is a real candidate; a page-level shell is not. Don't reach for `@container` because it's modern.
+```
+
+The bullets now read as judgment rather than enforcement — they tell the reader *when* the pattern earns its keep, not just that it does.
+
+Second, **a stack-respect preamble** that names the relationship between the skill's discipline and the framework's defaults explicitly. Something like:
+
+> Apply these principles within the host framework's conventions — don't fight them. Configure overrides at the token layer (Tailwind's `@theme`, the framework's equivalent), not as inline arbitrary utilities. Reach for the framework's own utilities first ([Tailwind's `transition-*` / `animate-*`](https://tailwindcss.com/docs/animation), shadcn's `tw-animate-css`, Base UI's `[data-starting-style]`) before pulling in additional libraries. When a principle below would require fighting a framework default, configure the framework — or skip the principle.
+
+Without that preamble, the reader-Claude has no signal that the skill's discipline lives downstream of the framework's choices.
+
+**Generalization:** Any skill that encodes discipline alongside an opinionated framework needs both moves. Condition-shaped bullets so the discipline reads as judgment per case; an explicit "respect the framework" preamble so framework-native patterns are the first reach. Principle-shaped bullets work fine for skills that *aren't* stack-aware (a workflow skill, a guarded action) — the failure mode is specific to knowledge skills and path-scoped knowledge skills that overlap with framework territory.

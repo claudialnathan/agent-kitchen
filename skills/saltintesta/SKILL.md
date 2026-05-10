@@ -29,6 +29,16 @@ First, state the claim. One sentence: what's true and at least slightly novel ab
 
 Second, frame the piece. What question is the piece answering, and where should the reader be at the end that they weren't at the start? Knowing those two things before drafting is what makes a piece go somewhere instead of meander. Voice fixes the local; structure fixes the global. A piece can be saltintesta-clean sentence by sentence and still wander.
 
+## Respect the brief
+
+The brief sets shape, not just topic. "A short note." "A tweet." "Three bullets." "A paragraph." Those are length caps, not soft preferences. Without paying attention, prose drifts toward whatever shape that kind of piece usually takes — the README voice, the essay voice, the post voice — even when the brief says short. That drift is the failure mode.
+
+Before drafting, write the minimum-viable version. One sentence, two sentences, whatever the brief implies. If that conveys what's needed, ship it. Don't add prose to fill space the brief didn't ask for.
+
+When you do add, ask: am I adding this because the piece needs it, or because pieces of this kind usually have it? A header, an inviting close, a three-verb call-to-action belong to the genre, not necessarily to this piece. A three-line README doesn't need a tagline or an outro. Add them only when something specific is missing without them.
+
+The diagnostic tell: an opening that names the topic, a body that defends the framing, a closing line for emphasis. When all three appear in something the brief asked to be short, that's the genre talking, not the piece. Strip it back to what the brief asked for.
+
 ## Write like you'd say it
 
 This is the easiest filter and most of the work. After every sentence: would I say this to a friend, in conversation, out loud? If the answer is no, you'll hear the clank when the sentence hits the page. Replace it with the way you'd actually say it.
@@ -51,11 +61,15 @@ The final check. Three questions. Would this embarrass me said aloud to a friend
 
 ## What sentences do
 
-Trust the reader. Skip the softening, the justification, the hand-holding. If you'd cut it explaining the same idea over dinner, cut it here. If a sentence does rhetorical work instead of informational work, cut it. If it can be cut without losing information, cut it.
+Trust the reader. Skip the softening, the justification, the hand-holding. If you'd cut it explaining the same idea over dinner, cut it here.
+
+After every sentence, ask: what does this say that the previous sentence didn't? If the answer is rhythm, emphasis, or "lands the close," cut it. The reader skips vibe-only sentences anyway. This check has to fire at draft time, not just in the after-pass — the rhythm sentence you write at draft time is the one you'll defend in the after-pass, because it now feels load-bearing.
 
 Specific beats vague. Name the thing. The architect designing a sculptural house in a town of traditional cabins, not "a stakeholder navigating constraints." Cursor's agent mode with Claude Sonnet, not "modern AI tooling." Pike's Peak is near the middle of Colorado. Not "somewhere in Colorado." Not "the exact middle," because that goes too far and becomes false.
 
 Build arguments through stacked concrete examples. Karri does this: the architect, the sushi chef, the cabinetmaker, the kitchen. Josh names specific developers, cites specific studies, points to specific tools. Abstraction without grounding doesn't land.
+
+Embed metaphors; don't announce them. When the piece is built around a metaphor (a workshop, a kitchen, a dance), work it into a sentence rather than declare it. "I run a workshop in the garage" embeds. "This is a workshop, not a hardware store" announces, then defends, then reveals. The announced metaphor reaches for drama. The embedded one just talks. Tell: if the metaphor needs its own sentence to introduce it, you're announcing.
 
 First person. Own the claim. "I think." "My feeling is." "I might be proven wrong." They mark precise certainty. They beat hiding behind "one might consider" or "it could be argued."
 

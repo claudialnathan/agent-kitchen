@@ -21,7 +21,7 @@ Apply these principles within the host framework's conventions — don't fight t
 - Reach for the framework's own utilities first — [Tailwind's `transition-*` / `duration-*` / `ease-*` / `animate-*`](https://tailwindcss.com/docs/animation), shadcn's `tw-animate-css` (`animate-in fade-in-0 zoom-in-95 slide-in-from-top-2`), Base UI's `[data-starting-style]` / `[data-ending-style]` lifecycle. Only reach for Motion when the framework's tools genuinely don't cover it.
 - Honour framework-specific idioms: Base UI uses `render`, not Radix's `asChild`; Tailwind v4 uses `@theme` in CSS, not `tailwind.config.js`; Next.js App Router has its own component boundary rules. Read the docs when uncertain — applying a principle in a way that fights the framework is worse than not applying it.
 
-This skill is the discipline (when these patterns earn their keep), the master rule (frequency × novelty for motion), and the reflex stack (the right primitive when one is needed). Depth lives in `references/<name>.md` — open one when needed; don't load everything.
+**What this skill is for: shifting attention from UI mechanics to the calls that actually carry taste** — the frequency × novelty decision, the stated reason behind each value, the 10% novel surfaces that earn the user's attention. The mechanics are *the discipline* below (when patterns earn their keep), *the master rule* (frequency × novelty for motion), and *the reflex stack* (the right primitive when one is needed) so they become reflex; the freed attention lands on judgment. Depth lives in `references/<name>.md` — open one when needed; don't load everything.
 
 ## The stance — apply on every UI choice
 
@@ -213,8 +213,6 @@ Before saying "done":
 - [ ] Empty / loading / error states present.
 - [ ] If user asked for review/audit: `web-design-guidelines` consulted for the Vercel checklist.
 
-## What attention this skill frees up
+## The move, restated
 
-Mechanics — typing flex/grid by hand, recalling clamp formulas, remembering tabular-nums, debating whether to animate this hover. Those are reflex now.
-
-What it should free attention *toward*: **the frequency × novelty call, the stated reason, the proactive polish list.** The 10% novel surfaces that earn the user's attention. The articulated taste that survives the agent loop.
+Opening said it; closing reminds. **Mechanics** — flex/grid math, clamp formulas, tabular-nums, hover-animation debates — are reflex now. **Freed attention goes toward** the frequency × novelty call, the stated reason, the proactive polish list. The 10% novel surfaces that earn the user's attention. The articulated taste that survives the agent loop.

@@ -71,6 +71,26 @@ If you can't articulate what attention this skill frees up and where it redirect
 
 Read [references/skill-kinds.md](references/skill-kinds.md) for a worked example of each kind, including which frontmatter fields matter and which are noise. The additive-vs-transformative distinction is covered there in more depth.
 
+## State the reason — every section earns its keep
+
+Classify asked which *kind* of skill this is. This step asks the discipline that applies inside any kind: every section, frontmatter field, and reference doc you add gets a one-line *why*. If you can't state it, you don't have the call yet. This is the same pattern `design-engineer` enforces for UI taste calls — promoted here as a forge-level principle because skill design is itself a design problem.
+
+**As you draft.** Before committing a section or field, name the move it makes:
+
+- `paths:` glob → *because the skill should only load when relevant files are open; otherwise it eats description budget out of scope*.
+- Bundled `scripts/foo.py` → *because three users would write three different generators; the script is deterministic and free (executed, not loaded into context)*.
+- An "Anti-patterns" section → *because the failure mode teaches more cheaply by negative example than by enumerated procedure*.
+- A `references/` file → *because this content is on-demand depth, not always-on instruction*.
+- A `disable-model-invocation: true` line → *because the side effect shouldn't fire because Claude thinks the code "looks ready"*.
+
+If your reason is a pat phrase ("for clarity", "to be thorough", "best practice"), that's a tell that you cited it instead of considering it. Stop. Look at examples. Try again.
+
+**When reviewing.** Write the wrongness *and the reason* before regenerating. Articulating the reason is the training; the edit is the side effect. Don't conflate modes — self-review on your own draft should rest on the as-you-draft reasoning that led to the call, not loop back through first-principles re-derivation. That's the slow path; reserve it for code that's *already there* and needs judging.
+
+The single highest-leverage application is **naming the move**: what attention does this skill free up, and toward what does it redirect that attention? Make it explicit — in the `description`, in the opening paragraph, or as a closing summary that crystallizes the shift. Don't bury it as one bullet in a 20-item checklist. If the answer is "nothing, it just shortens work," the skill is additive — and that's a higher bar to justify the recurring context cost.
+
+This discipline applies inside every meta-forge in this plugin (`skill-forge`, `hook-forge`, `rule-forge`, `claude-md-forge`) and in any artifact they produce.
+
 ## Description first
 
 The description is the *only* thing the model sees when deciding whether to invoke. Skills with vague descriptions silently under-trigger — Claude consults skills only when it needs help, and a generic description loses against a specific one.
@@ -253,7 +273,7 @@ Before saving, walk this list:
 
 - [ ] Triaged: confirmed this should be a skill, not a hook/MCP/CLAUDE.md/subagent/path-rule.
 - [ ] Classified: one of the seven kinds; frontmatter matches the kind.
-- [ ] Named the move: I can say in one sentence what attention this skill frees up and what it redirects toward. If the answer is "nothing, it just shortens work," I've decided that shortening is worth the recurring context cost.
+- [ ] Named the move (per *State the reason* above): I can say in one sentence what attention this skill frees up and what it redirects toward, and that statement is visible in the skill itself — not implicit. If the answer is "nothing, it just shortens work," I've decided that shortening is worth the recurring context cost.
 - [ ] `name:` set explicitly (don't rely on the directory-name default — the file is more readable and the skill's identity less filesystem-coupled when `name:` is in the frontmatter).
 - [ ] `description` is the *what*; trigger phrases live in `when_to_use` as a separate field. Splitting keeps the description scannable and lets the trigger list grow without bloating the lead sentence.
 - [ ] If this skill is about a specific framework, library, or test stack, `paths:` is set so the description doesn't load when out-of-scope. Knowledge skills tied to a slice of the codebase are the most common case.

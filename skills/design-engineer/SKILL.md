@@ -153,6 +153,12 @@ The proactive list — propose where it fits the surface, after checking the cod
 | 13 | **`@media (prefers-reduced-motion: reduce)`** at the token layer | One rule covers every component |
 | 14 | **`aria-live="polite"`** on toast/error containers | Screen readers announce without focus theft |
 | 15 | **Hover-flicker pattern** — animate a child, not the element itself, when hover triggers a position change | Cursor leaving mid-tween ends hover; outer wrapper stays still |
+| 16 | **Safe-area insets** on fixed/sticky bars (`pb-[max(…,env(safe-area-inset-bottom))]`) + `viewport-fit=cover` | iOS home indicator and notch clip fixed bars otherwise |
+| 17 | **Fixed `z-index` scale** at the token layer — no `z-[N]` arbitrary | Stops the z-9999 spiral |
+| 18 | **Pause looping animations off-screen** (IntersectionObserver or `animation-timeline: view()`) | Off-screen compositor work costs battery; nobody sees it |
+| 19 | **Animated blur: radius ≤ 8px, one-shot, small surfaces** — large/continuous blur fades opacity instead | Large blur animation drops frames; the cost is in animating it, not rendering it |
+
+**Anti-slop reflex** (taste.md owns the table): no decorative purple/multicolor gradients, no glow as primary affordance, one accent color per view — unless the brief explicitly asks. These are the three visual tells of AI-generated UI.
 
 ## Add unprompted
 
@@ -170,6 +176,10 @@ When you build a UI surface, propose these where they fit and aren't already han
 - Semantic input types (`type="email"`, `inputMode="numeric"`) for mobile keyboards.
 - Empty state with a real message (not a blank panel).
 - Loading state via skeleton (preserves layout) for any waiting beyond ~300ms.
+- Safe-area insets on fixed bars, bottom sheets, and full-bleed mobile surfaces.
+- `AlertDialog` (not `Dialog`) for destructive or irreversible actions.
+- `z-index` read from the token scale; no `z-[N]` arbitrary.
+- One accent color per view — greys carry the rest. A second only when it earned the seat.
 
 If a value is in the codebase as a token, use the token. If it isn't, **don't add a new token unless asked** — flag it for discussion. (`shadcn-tailwind` covers token discipline.)
 
@@ -212,6 +222,9 @@ Before saying "done":
 - [ ] No `transition: all` and no `transition: all`-in-disguise (no Tailwind `transition` without specifier).
 - [ ] Image outlines added; concentric radii on nested rounded surfaces.
 - [ ] Empty / loading / error states present.
+- [ ] Safe-area insets on fixed/sticky elements; `viewport-fit=cover` set.
+- [ ] `z-index` from the token scale; no `z-[N]` arbitrary. Destructive actions use `AlertDialog`, not `Dialog`.
+- [ ] Anti-slop pass: no decorative purple/multicolor gradients, no glow primary affordances, ≤1 accent color per view — unless the brief asked.
 - [ ] If user asked for review/audit: `web-design-guidelines` consulted for the Vercel checklist.
 
 ## The move, restated

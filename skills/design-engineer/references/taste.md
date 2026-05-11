@@ -108,6 +108,18 @@ Practical applications:
 - A dashboard card hover *cannot* carry novelty because users see it every minute.
 - A marketing site can be experimental in ways a product UI cannot — different audience, different cost-of-attention.
 
+## Anti-slop calls — what AI defaults to that you override
+
+Independent of frequency × novelty, three visual choices read as "generated, not designed." Refuse them on every UI surface unless the brief explicitly asks.
+
+| Default | Override | Reason |
+| :-- | :-- | :-- |
+| Decorative gradients (especially purple/multicolor) on cards, panels, backgrounds | Solid semantic token (`bg-card`, `bg-muted`), or a single subtle gradient on one hero — never on every surface | Multicolor gradients are the universal AI-image aesthetic. They communicate "generated" before they communicate anything else. |
+| Glow effects (`shadow-[0_0_40px_<color>]`, neon outlines) as primary affordances | Real depth via the shadow scale + concentric radii + image outlines | Glow reads as desktop-screensaver, not product. |
+| Multiple accent colors competing in one view (purple CTA + cyan badge + magenta highlight) | One accent per view; greys carry the rest | Two accents read as undecided; three read as a Figma free-template. |
+
+The tell: `bg-gradient-to-br from-purple-500 to-pink-500` without a stated reason means the model reached for "make it pretty." Replace with the design token and ask whether the gradient was earning its place. Same test for `shadow-[0_0_…px_<accent>]` and a third accent color creeping into a view that already has two.
+
 ## Depth as a design move
 
 (Rauno's `craft/depth`.)

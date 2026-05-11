@@ -429,6 +429,96 @@ The outer wrapper's bounding box stays still, so the hover state stays continuou
 
 **Tailwind v4's `hover:` is device-aware**: it's automatically wrapped in `@media (hover: hover) and (pointer: fine)`, so accidental finger drag on touch devices won't trigger hover states. Don't manually wrap `hover:` utilities in a media query — Tailwind already does it.
 
+## 22. Safe-area insets on fixed and sticky elements
+
+iOS clips fixed bottom bars under the home indicator; notched devices clip top bars. Reserve the gap with `env(safe-area-inset-*)`.
+
+```tsx
+<nav className="fixed inset-x-0 bottom-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]" />
+```
+
+```css
+.bottom-bar { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+.top-bar    { padding-top:    max(0.75rem, env(safe-area-inset-top));    }
+```
+
+**Pair with `viewport-fit=cover`** in the viewport meta — without it, `env(safe-area-inset-*)` resolves to `0` and the rule silently does nothing. In Next.js App Router, set `viewportFit: "cover"` in the `viewport` export.
+
+## 23. Fixed `z-index` scale at the token layer
+
+Arbitrary `z-[9999]` spirals as the app grows. Define a layer scale once; every component reads from it.
+
+```css
+@theme {
+  --z-base:     0;
+  --z-dropdown: 10;
+  --z-sticky:   20;
+  --z-overlay:  30;
+  --z-modal:    40;
+  --z-popover:  50;
+  --z-toast:    60;
+}
+```
+
+No arbitrary `z-[N]`. A new layer = a new token, not a new magic number. shadcn primitives already ship with z values — read those before adding one. When two layers conflict, the fix is reordering the scale, not bumping a number.
+
+## 24. Never animate `letter-spacing`/`tracking-*`
+
+Tracking changes reshape the line — glyph positions recompute, the layout jiggles, the eye reads it as broken. Static tracking adjustments belong in the type tokens; *animating* them is the trap.
+
+If a heading should feel like it's settling, animate `opacity` + `transform: translateY` — not the spacing. Reveal effects that genuinely call for tracking motion are rare enough to be explicitly briefed; default is no.
+
+## 25. Pause looping animations off-screen
+
+Marquees, pulses, gradient rotations: pause when not visible. Continuous compositor work off-screen still costs battery; with `backdrop-filter`, it costs repaint budget too.
+
+```tsx
+const ref = useRef<HTMLDivElement>(null);
+useEffect(() => {
+  const el = ref.current;
+  if (!el) return;
+  const io = new IntersectionObserver(([entry]) => {
+    el.style.animationPlayState = entry.isIntersecting ? "running" : "paused";
+  });
+  io.observe(el);
+  return () => io.disconnect();
+}, []);
+```
+
+For scroll-driven motion specifically, prefer CSS `animation-timeline: view()` — it pauses by definition and degrades to no animation in unsupported browsers (the right fallback).
+
+## 26. Animated blur — small radius, one-shot, small surfaces
+
+`filter: blur()` and `backdrop-filter: blur()` are GPU-expensive. Bounds when animating:
+
+- **Radius ≤ 8px.** Larger values dominate the frame budget.
+- **One-shot, never `infinite`.** Continuous blur animation is the most reliable way to drop frames.
+- **Small surfaces only.** A chip or avatar can animate blur; a full-screen overlay should fade `opacity` instead.
+- **Stack `opacity` + `translate` first.** If they carry the intent, leave blur on the floor.
+
+Static backdrop-blur (section 18) is fine — the cost is in *animating* large blur, not in rendering it once.
+
+## 27. `AlertDialog`, not `Dialog`, for destructive or irreversible actions
+
+Delete, archive, charge, send, publish, unsubscribe — anything the user can't easily walk back. Base UI's `AlertDialog` differs from `Dialog` in two ways: it requires an explicit confirm/cancel choice (no dismiss-by-outside-click, no escape-to-dismiss without intent) and announces with `role="alertdialog"` so screen readers convey urgency.
+
+```tsx
+<AlertDialog.Root>
+  <AlertDialog.Trigger render={<Button variant="destructive">Delete</Button>} />
+  <AlertDialog.Portal>
+    <AlertDialog.Backdrop />
+    <AlertDialog.Popup>
+      <AlertDialog.Title>Delete project?</AlertDialog.Title>
+      <AlertDialog.Description>This cannot be undone.</AlertDialog.Description>
+      <AlertDialog.Close render={<Button>Cancel</Button>} />
+      <Button variant="destructive" onClick={onConfirm}>Delete</Button>
+    </AlertDialog.Popup>
+  </AlertDialog.Portal>
+</AlertDialog.Root>
+```
+
+A regular `Dialog` with a "Delete" button is wrong here — outside-click dismiss can swallow the intent at exactly the moment the user meant to confirm.
+
 ## Pre-ship polish checklist
 
 Before saying "done":
@@ -453,6 +543,11 @@ Before saying "done":
 - [ ] Stagger limited to 30–80ms between items.
 - [ ] Empty / loading / error states present.
 - [ ] Semantic input types on every form field.
+- [ ] Safe-area insets on fixed/sticky elements; `viewport-fit=cover` set.
+- [ ] `z-index` from the token scale; no `z-[N]` arbitrary.
+- [ ] Looping animations paused off-screen (IntersectionObserver or scroll-timeline).
+- [ ] No animated `tracking-*`; animated blur radius ≤ 8px, one-shot, small surfaces only.
+- [ ] `AlertDialog` (not `Dialog`) for destructive/irreversible actions.
 
 ## Further reading
 

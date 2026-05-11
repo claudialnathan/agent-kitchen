@@ -66,6 +66,17 @@ Walk this at the end of any UI task before saying "done." Group by concern; tick
 - [ ] `initial={false}` on AnimatePresence at app shell (no enter on first paint).
 - [ ] Stagger limited to 30–80ms between items.
 - [ ] Backdrop blur for overlays (Z-axis demotion); edge-fade masks on horizontal scrollers.
+- [ ] Safe-area insets on fixed/sticky bars; `viewport-fit=cover` set in viewport meta.
+- [ ] `z-index` from the token scale; no `z-[N]` arbitrary.
+- [ ] Looping animations paused off-screen (IntersectionObserver or scroll-timeline).
+- [ ] No animated `tracking-*`; animated blur radius ≤ 8px, one-shot, small surfaces only.
+- [ ] `AlertDialog` (not `Dialog`) for destructive/irreversible actions.
+
+## Anti-slop (taste-layer reflex)
+
+- [ ] No decorative purple/multicolor gradients on cards or panels (one subtle hero gradient max — if briefed).
+- [ ] No glow effects (`shadow-[0_0_…px_<color>]`, neon outlines) as primary affordances.
+- [ ] One accent color per view; second only if it earned the seat.
 
 ## Accessibility
 

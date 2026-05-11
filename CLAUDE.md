@@ -8,8 +8,10 @@ This repo is a single-plugin Claude Code marketplace. Layout mirrors `claudialna
 
 - `.claude-plugin/{marketplace,plugin}.json` — marketplace + plugin manifests.
 - `skills/<name>/` — the skills. Each stands alone. Source of truth for all three tools (Claude / Cursor / Codex).
+- `rules/<name>.md` — path-scoped rules produced by `rule-forge`. Source of truth; Claude-only surface.
 - `.claude/skills/` — symlink → `../skills`, so project-scope discovery still works inside this repo while authoring.
-- `commands/`, `hooks/`, `agents/` — plugin commands/hooks/subagents (populated as needed).
+- `.claude/rules/` — symlink → `../rules`, same idea for rules.
+- `hooks/`, `agents/` — plugin hooks/subagents (populated as needed). No `commands/` — custom commands were merged into skills as of May 2026.
 - `bin/sync-cross-tool` — idempotent symlink syncer into `~/.cursor/skills/` and `~/.codex/skills/`.
 - `bin/preship-check` — runs the validation gates from this file (loader-trigger greps, frontmatter required fields, frontmatter size, reference orphans/dangling). Run before commits.
 - `FYI.md` — install/update/troubleshoot playbook. Not loaded into context; read when setting up the publish flow or debugging propagation.

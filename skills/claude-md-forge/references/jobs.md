@@ -102,7 +102,9 @@ When CLAUDE.md exists, the user wants a structural review, the file is over 200 
    - Auto-memory `~/.claude/projects/<project>/memory/MEMORY.md` (the first 200 lines that load each session).
    - `.claude/settings.json` and `.claude/settings.local.json` if relevant (especially `claudeMdExcludes` and `autoMemoryEnabled`).
 
-2. **Score per-line, not per-file.** For each entry, decide one of:
+2. **Verify structural claims against the filesystem.** If CLAUDE.md has a Layout / directory-map section, cross-check it: empty directories listed are a smell (propose delete or populate), directories listed but absent are stale (delete the mention), directories present but unlisted are undocumented or belong in `.gitignore`. Layout sections describe what *should* exist; filesystem describes what *does*; drift accumulates silently. (May 2026: a `commands/` folder in this very repo sat empty for ~6 months after the surface merge because nothing prompted a check.)
+
+3. **Score per-line, not per-file.** For each entry, decide one of:
    - **Keep** — broadly applicable, reasoned, not duplicated.
    - **Move to rule** — path-scoped (which paths?).
    - **Move to skill** — procedural, multi-step, or large knowledge body.
@@ -112,20 +114,20 @@ When CLAUDE.md exists, the user wants a structural review, the file is over 200 
    - **Delete** — already obvious from code, one-off, stale, restated elsewhere.
    - **Add Why** — non-obvious rule missing reason; ask user for the reason or infer from context.
 
-3. **Output a triage table** before any edits. Two columns: the entry (or short paraphrase if long), the verdict. A third column for short justification. Get user approval to proceed.
+4. **Output a triage table** before any edits. Two columns: the entry (or short paraphrase if long), the verdict. A third column for short justification. Get user approval to proceed.
 
-4. **Apply the rewrite.**
+5. **Apply the rewrite.**
    - Edit CLAUDE.md down to the *keep* and *add-Why* set.
    - For each *move to rule*: hand off to rule-forge to design the rule, then write the file. Add a one-line pointer in CLAUDE.md if the rule isn't auto-discoverable enough on its own.
    - For each *move to skill / hook*: open a follow-up note (or a new task) for the user; don't try to design these mid-audit. Add pointers in CLAUDE.md when the skill/hook ships.
    - For each *delete*: just remove.
    - For each *move to auto-memory*: ask user to confirm; if yes, add to the auto-memory directory's relevant file (or just delete and let auto-memory pick it up next time the user re-explains).
 
-5. **Re-check size and reasoning.** Final CLAUDE.md under 200 lines (or the user has accepted bigger, which is sometimes valid). Every non-obvious rule has a Why or has been explicitly tagged as obvious-enough-to-skip-Why.
+6. **Re-check size and reasoning.** Final CLAUDE.md under 200 lines (or the user has accepted bigger, which is sometimes valid). Every non-obvious rule has a Why or has been explicitly tagged as obvious-enough-to-skip-Why.
 
-6. **Update AGENTS.md if relevant.** If the audit produced a clean separation of "Claude-only" content from "shared with Codex" content, this is the moment to introduce the `@AGENTS.md` import pattern (or update an existing one).
+7. **Update AGENTS.md if relevant.** If the audit produced a clean separation of "Claude-only" content from "shared with Codex" content, this is the moment to introduce the `@AGENTS.md` import pattern (or update an existing one).
 
-7. **Cross-link.** If new rules were created, the rule files need to be linked from CLAUDE.md only when the rule's `paths:` aren't enough on their own (most aren't — rules auto-load when paths match, so a CLAUDE.md pointer is redundant unless the user wants a discoverability surface).
+8. **Cross-link.** If new rules were created, the rule files need to be linked from CLAUDE.md only when the rule's `paths:` aren't enough on their own (most aren't — rules auto-load when paths match, so a CLAUDE.md pointer is redundant unless the user wants a discoverability surface).
 
 ### Worked example
 
@@ -134,16 +136,17 @@ User: "My CLAUDE.md is 320 lines, half of it is API conventions, and Claude keep
 Steps in action:
 
 1. Read CLAUDE.md (320 lines), `.claude/rules/` (empty), `MEMORY.md` (notices `feedback_api_pagination.md` says "user prefers cursor pagination — corrected three times").
-2. Score:
+2. Verify structural: Layout section lists `scripts/` but the directory has been empty since the last script moved to a Makefile target. Flag for delete-the-mention in the rewrite.
+3. Score:
    - 80 lines on API conventions → move all to `.claude/rules/api.md` with `paths: ["src/api/**/*.ts"]`. Hand off to rule-forge.
    - 30 lines of "we use TypeScript", "the frontend is React", etc. → delete (obvious from code).
    - 12 lines on a deploy procedure → move to a skill candidate (`/deploy`); don't design here, flag for skill-forge.
    - "ALWAYS run typecheck before commit" → move to a `PreToolUse` hook (or a CI check); flag for hook-forge.
    - "Cursor pagination, not offset" already in CLAUDE.md but missing Why; auto-memory's `feedback_api_pagination.md` has the why. Promote: write into the new `.claude/rules/api.md` reason-first. The auto-memory entry can stay as a personal record.
    - The remaining 80 lines (build commands, directory map, anti-defaults) → keep, mostly already reasoned.
-3. Output triage table; user approves.
-4. Apply: write `.claude/rules/api.md` (rule-forge designs it), trim CLAUDE.md to ~90 lines, flag two follow-ups.
-5. Final size: 88 lines. Every non-obvious rule has a Why.
+4. Output triage table; user approves.
+5. Apply: write `.claude/rules/api.md` (rule-forge designs it), trim CLAUDE.md to ~90 lines (Layout section drops the `scripts/` mention), flag two follow-ups.
+6. Final size: 88 lines. Every non-obvious rule has a Why.
 
 ### Edge case: monorepo audit
 

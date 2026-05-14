@@ -1,17 +1,25 @@
 {
-  "name": "harness",
+  "name": "claudia",
   "owner": {
     "name": "Claudia Nathan",
     "url": "https://github.com/claudialnathan"
   },
   "plugins": [
     {
-      "name": "claudia",
-      "source": "./",
-      "description": "Skill workshop: meta-skills (skill-forge, hook-forge, rule-forge, claude-md-forge) for designing Claude Code artifacts, plus applied skills (cache-aware-testing, shadcn-tailwind, design-engineer).",
+      "name": "cook",
+      "source": "./cook",
+      "description": "Meta-forges that design Claude Code artifacts (skill-forge, hook-forge, rule-forge, claude-md-forge). The reusable design layer.",
       "version": "0.1.0",
       "license": "MIT",
-      "keywords": ["claude-code", "skills", "meta-skills", "harness"]
+      "keywords": ["claude-code", "skills", "meta-skills", "forge"]
+    },
+    {
+      "name": "serve",
+      "source": "./serve",
+      "description": "Applied skills: cache-aware-testing, shadcn-tailwind, design-engineer, saltintesta. Stack-specific discipline served on top of cook.",
+      "version": "0.1.0",
+      "license": "MIT",
+      "keywords": ["claude-code", "skills", "applied"]
     }
   ]
 }

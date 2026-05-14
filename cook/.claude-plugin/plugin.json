@@ -1,0 +1,10 @@
+{
+  "name": "cook",
+  "version": "0.1.0",
+  "description": "Meta-forges that design Claude Code artifacts: skill-forge, hook-forge, rule-forge, claude-md-forge. The reusable design layer of the kitchen.",
+  "author": {
+    "name": "Claudia Nathan"
+  },
+  "license": "MIT",
+  "keywords": ["claude-code", "skills", "meta-skills", "forge"]
+}

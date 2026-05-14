@@ -1,4 +1,4 @@
-This is a workshop for designing Claude Code/Agent skills and harness extensions. Not a product. Skills here are the single source of truth: Claude Code in other repos installs them as a plugin from this repo, and `bin/sync-cross-tool` links them into Cursor and Codex on this machine. The delivery mechanism may change; the single-source-of-truth intent will not. Skills are written to be portable across the tools that use the same SKILL.md format (Claude Code, Cursor, Codex); the meta-forges, which design other artifacts, are gated to Claude via `harness-targets: [claude]`.
+This is a workshop for designing Claude Code/Agent skills and harness extensions. Not a product. Skills here are the single source of truth, split into two plugins under one `claudia` marketplace: `cook/` holds the meta-forges (which design other artifacts), and `serve/` holds the applied stack-specific skills. Claude Code in other repos installs them as `cook@claudia` and `serve@claudia`; `bin/sync-cross-tool` links them flat into Cursor and Codex (and this repo's `.claude/skills/`) on this machine. The delivery mechanism may change; the single-source-of-truth intent will not. Skills are written to be portable across the tools that use the same SKILL.md format (Claude Code, Cursor, Codex); the meta-forges in `cook/` are gated to Claude via `harness-targets: [claude]`.
 
 This file holds intent and durable traps about how the harness reads this place. It does not depict the current state of the repo. The filesystem does that, and CLAUDE.md restating it would only go stale. If a statement here contradicts what you see in the code, the code is authoritative; flag the drift before relying on the rule.
 
@@ -24,7 +24,7 @@ Without the pin, audits have no trigger; obsolete scaffolding accumulates instea
 
 ## Trajectory and governance
 
-The work here is small and evidence-driven: meta-forges and applied skills, added when discipline accumulates. Bigger trajectories (public-template repo, large hyper-specific-skill catalogue) are off the table.
+The work here is small and evidence-driven: meta-forges and applied skills, added when discipline accumulates.
 
 Two gates before adding a new forge or applied skill:
 

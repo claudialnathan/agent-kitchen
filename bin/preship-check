@@ -10,8 +10,8 @@ fail=0
 
 # 1. Loader-trigger byte sequences. CLAUDE.md: "This has caused two real failures already."
 echo "Loader-trigger sequences (must be empty):"
-m1=$(grep -rln $'\x60\x60\x60!' skills/ 2>/dev/null || true)
-m2=$(grep -rln $'!\x60' skills/ 2>/dev/null || true)
+m1=$(grep -rln $'\x60\x60\x60!' cook/skills/ serve/skills/ 2>/dev/null || true)
+m2=$(grep -rln $'!\x60' cook/skills/ serve/skills/ 2>/dev/null || true)
 if [ -n "$m1$m2" ]; then
   echo "  FAIL"
   [ -n "$m1" ] && { echo "    triple-backtick + bang in:"; printf '%s\n' "$m1" | sed 's/^/      /'; }
@@ -25,7 +25,7 @@ fi
 echo
 echo "Required frontmatter (name, description):"
 fm_fail=0
-for d in skills/*/; do
+for d in cook/skills/*/ serve/skills/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   if ! awk '/^name:/{n=1} /^description:/{de=1} END{exit !(n && de)}' "$md"; then
@@ -41,7 +41,7 @@ done
 #    not the full frontmatter (which can hold paths, hooks, harness-targets, etc.).
 echo
 echo "Description + when_to_use chars (1,536 budget):"
-for d in skills/*/; do
+for d in cook/skills/*/ serve/skills/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   combined=$(awk '
@@ -68,7 +68,7 @@ done
 echo
 echo "Reference orphans (in references/ but not pointed at by SKILL.md):"
 ref_fail=0
-for d in skills/*/; do
+for d in cook/skills/*/ serve/skills/*/; do
   [ -d "$d/references" ] || continue
   for ref in "$d/references"/*.md; do
     [ -f "$ref" ] || continue
@@ -85,7 +85,7 @@ done
 echo
 echo "Dangling references (mentioned in SKILL.md but missing on disk):"
 dangle_fail=0
-for d in skills/*/; do
+for d in cook/skills/*/ serve/skills/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   for ref in $(grep -oE 'references/[a-zA-Z0-9_.-]+\.md' "$md" | sort -u); do

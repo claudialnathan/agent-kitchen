@@ -72,7 +72,7 @@ If you got here from skill-forge, you already triaged. If not, run a brief rever
 - **Settings (`permissions.deny`)** is right when the rule is just "this tool can't be used here" — no logic needed. Don't write a hook for what a deny rule expresses cleanly.
 - **CLAUDE.md** is right when the rule is a fact Claude should hold every session. Hooks can't replace context.
 
-If you're sure a hook is the answer, continue.
+If you're sure a hook is the answer, continue. If reverse-triage moved the work to a different surface than the user asked for, apply the *announce → confirm → carry through* gate from `skill-forge` — name the redirect in one line and get a go-ahead before invoking the companion forge.
 
 ## Step 2 — Pick the event
 

@@ -99,6 +99,8 @@ Deeper notes on the boundary cases, with examples of content that looks like one
 
 The auto-memory boundary catches people. Auto-memory is per-user, machine-local, captured by Claude. CLAUDE.md is committed, team-shared, authored by humans. They are not interchangeable. When an auto-memory entry stabilizes into a fact useful to anyone working in the repo, promote it. That is a tune-job moment.
 
+**Confirm before handing off.** If the user asked for *this* fact to land in CLAUDE.md and triage moves it elsewhere (rule, hook, skill, auto-memory), apply the *announce → confirm → carry through* gate from `skill-forge`. Name the redirect in one line and wait for the go-ahead before invoking the companion forge. (Bulk audits don't need a confirm per filtered line; surface the pattern in the audit summary instead.)
+
 ## Quick dispatch — which job is this?
 
 | Signal | Job |

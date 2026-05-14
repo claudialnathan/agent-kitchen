@@ -281,4 +281,4 @@ Things that were research previews or moving fast at the time of writing:
 
 ---
 
-*Last reviewed: 2026-05-14. Treat dated content as a snapshot; verify against current docs before relying on details. PRs and corrections welcome.*
+*Last reviewed: 2026-05-14 against Claude Code v2.1.141 (per-version changelog at `code.claude.com/docs/en/changelog`). Treat dated content as a snapshot; verify against current docs before relying on details. PRs and corrections welcome.*

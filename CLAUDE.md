@@ -47,4 +47,4 @@ When a skill name in this repo collides with one at `~/.claude/skills/<name>/`, 
 
 ## Dates
 
-Use absolute YYYY-MM-DD in skills, references, and memory. Relative phrases ("last month", "recently") rot fast. For artifacts tied to Claude Code behavior — STATE.md, model-pinned skills/hooks/rules — also record the Claude Code version (from `code.claude.com/docs/en/changelog`) and the latest weekly digest week + version range (from `code.claude.com/docs/en/whats-new`), e.g. `2026-05-14, v2.1.141 (latest digest: Week 19, v2.1.128–v2.1.136)`. The two URLs can disagree by a few versions because the per-version changelog ships continuously and the weekly digest lands on Friday — record both. The pin scopes which features and fixes were live when the artifact was earned.
+Use absolute YYYY-MM-DD in skills, references, and memory. Relative phrases ("last month", "recently") rot fast. For artifacts tied to Claude Code behavior — STATE.md, model-pinned skills/hooks/rules — also record the Claude Code version from `code.claude.com/docs/en/changelog`, e.g. `2026-05-14, v2.1.141`. The version scopes which features and fixes were live when the artifact was earned.

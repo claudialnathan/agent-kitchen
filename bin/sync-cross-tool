@@ -2,11 +2,15 @@
 # bin/sync-cross-tool — link artifacts from this repo into the right cross-tool
 # locations.
 #
-# Skills (skills/<name>/) sync to ~/.cursor/skills and ~/.codex/skills. Each
-# SKILL.md may declare `harness-targets:` in its frontmatter (e.g.
-# `harness-targets: [claude]` for claude-only). Default when absent is
-# `[claude, cursor, codex]`. Claude itself consumes skills via the marketplace
-# plugin defined in .claude-plugin/, so we don't symlink those here.
+# Skills live under two source roots after the cook/serve split:
+#   cook/skills/<name>/    — meta-forges
+#   serve/skills/<name>/   — applied skills
+# Both roots are walked and synced flat (one level deep) into
+# ~/.cursor/skills and ~/.codex/skills. Each SKILL.md may declare
+# `harness-targets:` in its frontmatter (e.g. `harness-targets: [claude]` for
+# claude-only). Default when absent is `[claude, cursor, codex]`. Claude
+# itself consumes skills via the marketplace plugins defined in
+# .claude-plugin/, so we don't symlink those here.
 #
 # Rules (rules/<name>.md) sync to ~/.claude/rules only. Cursor's rule format
 # (.mdc, project-scoped) and Codex's lack of a rules concept mean cross-tool
@@ -20,7 +24,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SKILLS_DIR="$REPO_ROOT/skills"
+SKILLS_DIRS=("$REPO_ROOT/cook/skills" "$REPO_ROOT/serve/skills")
 RULES_DIR="$REPO_ROOT/rules"
 
 DRY_RUN=0
@@ -28,7 +32,7 @@ case "${1:-}" in
   --dry-run|-n) DRY_RUN=1 ;;
   ""|--help|-h)
     if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then
-      sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
     fi
     ;;
@@ -70,47 +74,52 @@ sync_one_tool() {
   local wanted_list=""
 
   # First pass: ensure each desired link exists and points at this repo.
-  local skill_dir
-  for skill_dir in "$SKILLS_DIR"/*/; do
-    [[ -d "$skill_dir" ]] || continue
-    local name; name=$(basename "$skill_dir")
-    local md="$skill_dir/SKILL.md"
-    [[ -f "$md" ]] || continue
-    local targets; targets=$(read_targets "$md" "claude cursor codex")
-    if echo " $targets " | grep -q " $tool "; then
-      wanted_list+=" $name"
-      local link="$dest/$name"
-      if [[ -L "$link" ]]; then
-        local cur; cur=$(readlink "$link")
-        if [[ "$cur" == "$SKILLS_DIR/$name" ]]; then
-          echo "  = $name"
-          unchanged=$((unchanged + 1))
+  # Walk both source roots (cook/skills, serve/skills) and link them flat.
+  local src_root skill_dir
+  for src_root in "${SKILLS_DIRS[@]}"; do
+    [[ -d "$src_root" ]] || continue
+    for skill_dir in "$src_root"/*/; do
+      [[ -d "$skill_dir" ]] || continue
+      local name; name=$(basename "$skill_dir")
+      local md="$skill_dir/SKILL.md"
+      [[ -f "$md" ]] || continue
+      local targets; targets=$(read_targets "$md" "claude cursor codex")
+      if echo " $targets " | grep -q " $tool "; then
+        wanted_list+=" $name"
+        local want="$src_root/$name"
+        local link="$dest/$name"
+        if [[ -L "$link" ]]; then
+          local cur; cur=$(readlink "$link")
+          if [[ "$cur" == "$want" ]]; then
+            echo "  = $name"
+            unchanged=$((unchanged + 1))
+          else
+            if (( DRY_RUN )); then
+              echo "  ~ $name (would re-point: $cur -> $want)"
+            else
+              ln -snf "$want" "$link"
+              echo "  ~ $name (re-pointed: $cur -> $want)"
+            fi
+            repointed=$((repointed + 1))
+          fi
+        elif [[ -e "$link" ]]; then
+          echo "  ! $name -- refusing to overwrite non-symlink at $link"
+          refused=$((refused + 1))
         else
           if (( DRY_RUN )); then
-            echo "  ~ $name (would re-point: $cur -> $SKILLS_DIR/$name)"
+            echo "  + $name -> $want"
           else
-            ln -snf "$SKILLS_DIR/$name" "$link"
-            echo "  ~ $name (re-pointed: $cur -> $SKILLS_DIR/$name)"
+            ln -s "$want" "$link"
+            echo "  + $name -> $want"
           fi
-          repointed=$((repointed + 1))
+          added=$((added + 1))
         fi
-      elif [[ -e "$link" ]]; then
-        echo "  ! $name -- refusing to overwrite non-symlink at $link"
-        refused=$((refused + 1))
-      else
-        if (( DRY_RUN )); then
-          echo "  + $name -> $SKILLS_DIR/$name"
-        else
-          ln -s "$SKILLS_DIR/$name" "$link"
-          echo "  + $name -> $SKILLS_DIR/$name"
-        fi
-        added=$((added + 1))
       fi
-    fi
+    done
   done
 
-  # Second pass: remove orphan symlinks pointing into this repo for skills no
-  # longer desired (deleted, renamed, or retagged claude-only).
+  # Second pass: remove orphan symlinks pointing into either source root for
+  # skills no longer desired (deleted, renamed, or retagged claude-only).
   local entry
   for entry in "$dest"/*; do
     [[ -L "$entry" ]] || continue
@@ -119,7 +128,11 @@ sync_one_tool() {
       continue
     fi
     local cur; cur=$(readlink "$entry")
-    if [[ "$cur" == "$SKILLS_DIR/"* ]]; then
+    local owned=0 src
+    for src in "${SKILLS_DIRS[@]}"; do
+      if [[ "$cur" == "$src/"* ]]; then owned=1; break; fi
+    done
+    if (( owned )); then
       if (( DRY_RUN )); then
         echo "  - $name (would unlink: was -> $cur)"
       else
@@ -218,4 +231,5 @@ sync_rules() {
 
 sync_one_tool cursor "$HOME/.cursor/skills"
 sync_one_tool codex  "$HOME/.codex/skills"
+sync_one_tool claude "$REPO_ROOT/.claude/skills"  # project-local for in-repo Claude sessions
 sync_rules    claude "$HOME/.claude/rules"

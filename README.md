@@ -1,6 +1,6 @@
 ## `agent-kitchen`
 
-This is where I workshop my personal skills, hooks, rules and other harness-related files. I access them via a custom plugin, so I have a single source of truth and updates cascade wherever they're used.
+This is where I workshop my personal skills, hooks, rules and other harness-related files. I access them via a Claude Code marketplace (`claudia`) that publishes two plugins — `cook` for the meta-forges, `serve` for the applied skills — so I have a single source of truth and updates cascade wherever they're used.
 
 The harness has six places to put behavior (CLAUDE.md, path-scoped rules, skills, subagents, hooks, MCP servers), and they each have different costs and reach. Skills are the most expensive: every visible skill spends description-token budget on every turn, and once invoked, the body sits in context for the rest of the session. Most things that feel like they want to be a skill should be a hook (which only fires on the matching event), a rule (which only loads when matching files are open), or a CLAUDE.md entry. The interesting design question is which of the six.
 
@@ -26,17 +26,19 @@ The applied skills are narrow. They'll only help if your stack overlaps with min
 
 The meta-forges encode which behavior belongs in which surface. That's the thing I had to learn the hard way about Claude Code. Read them as opinions, not templates. They'll be more useful that way.
 
-Every skill stands alone in its own directory with a `SKILL.md`. Drop the directory in `.claude/skills/`, `~/.cursor/skills/`, or `~/.codex/skills/` and it works. SKILL.md is a cross-tool format now. You can also `/plugin marketplace add` this repo for Claude Code.
+Every skill stands alone in its own directory with a `SKILL.md`. Drop the directory in `.claude/skills/`, `~/.cursor/skills/`, or `~/.codex/skills/` and it works. SKILL.md is a cross-tool format now. For Claude Code, `/plugin marketplace add` this repo and then install the two plugins it publishes: `/plugin install cook@claudia` (meta-forges) and `/plugin install serve@claudia` (applied skills).
 
 ### Layout
 
 ```
-skills/<name>/      each skill stands alone
-rules/<name>.md     path-scoped rules
-.claude/            local symlinks for project-scope discovery
-bin/sync-cross-tool syncs skills to ~/.cursor/skills/ and ~/.codex/skills/
-bin/preship-check   validation gates
-guides/             local design notes (gitignored)
-STATE.md            living reference for Claude Code and coding agents
-CLAUDE.md           how this repo wants to be worked on
+cook/skills/<name>/    meta-forges (cook plugin source)
+serve/skills/<name>/   applied skills (serve plugin source)
+.claude-plugin/        marketplace manifest (claudia: cook + serve)
+rules/<name>.md        path-scoped rules
+.claude/               local symlinks for project-scope discovery
+bin/sync-cross-tool    syncs skills flat into ~/.cursor/skills, ~/.codex/skills, .claude/skills
+bin/preship-check      validation gates
+guides/                local design notes (gitignored)
+STATE.md               living reference for Claude Code and coding agents
+CLAUDE.md              how this repo wants to be worked on
 ```

@@ -17,26 +17,26 @@ Skills and hooks are *not* substitutable with CLAUDE.md. CLAUDE.md is context; s
 
 ## CLAUDE.md
 
-**Belongs there:** facts that apply to the whole repo, every session, that Claude can't easily infer from the code, and that don't have edge cases requiring per-file scoping.
+**Belongs there:** content that survives a refactor, applies repo-wide, and that the model interprets (not enforces).
 
-- Build commands and quick-start.
-- Project-wide conventions ("we use pnpm not npm").
-- Architecture map (one or two paragraphs, no more).
-- Anti-defaults you keep re-explaining ("don't add error handling for impossible cases", "don't refactor adjacent code in a bug fix").
-- Pointers to skills and rules that exist elsewhere (so Claude finds them).
+- **Intent.** What this project is for, why it exists, what it is not. ("A workshop for designing Claude Code skills. Not a product.")
+- **Spirit.** Dispositions that frame the work where the model would not infer them. ("Treat new artifacts as feedback for the forge that produced them.")
+- **Durable harness traps.** Failures about how Claude Code reads the repo (loader behavior, tool precedence) that survive any refactor.
+- **Pointers to skills, rules, hooks.** "Skills here are gated to Claude via `harness-targets:`." Name them once; do not restate their content.
+- **Framing caveats.** Especially "treat this file as intent; if the code contradicts it, the code is authoritative."
 
 **Does not belong there:**
-- Per-directory facts (→ rule).
-- Procedural workflows (→ skill).
-- Enforcement that must hold every time (→ hook).
-- Per-user preferences (→ `~/.claude/CLAUDE.md` or auto-memory).
-- Information already obvious from the code or `package.json`.
-- One-off fixes from past incidents that don't recur.
-- Verbose explanations — every line is a recurring token cost.
+- Current state of the code (layouts, dependencies, framework versions, build commands, lint configuration). The code says it; CLAUDE.md restating it goes stale on the next commit.
+- Per-directory facts. → `.claude/rules/<name>.md` with `paths:`.
+- Procedural workflows. → skill.
+- Enforcement that must hold every time. → hook (or `permissions.deny` in settings).
+- Per-user preferences. → `~/.claude/CLAUDE.md` or auto-memory.
+- Personal project notes. → `CLAUDE.local.md`.
+- One-off fixes from past incidents that do not recur.
 
-**Size discipline:** target under 200 lines. The Anthropic docs use this number. When you're over, prefer splitting to a path-scoped rule before deleting content the user actually relies on.
+**Size discipline:** target under 200 lines and 14 top-level rules. The Anthropic docs use 200 lines; Osmani's May 2026 study found compliance drops sharply past 14 rules. When you are over either, the right move is almost always cutting current-state depictions, not splitting to rules.
 
-**The `@import` escape valve:** CLAUDE.md can `@AGENTS.md` or `@docs/something.md` to keep the visible file short. Imports still expand into context at launch — they organize, they don't reduce cost. Use for shared content (AGENTS.md), not for hiding bloat.
+**The `@import` escape valve:** CLAUDE.md can `@AGENTS.md` or `@docs/something.md` to keep the visible file short. Imports still expand into context at launch; they organize, they do not reduce cost. Use for shared content (AGENTS.md), not for hiding bloat.
 
 ## `.claude/rules/<name>.md` with `paths:`
 

@@ -35,25 +35,31 @@ harness-targets: [claude]
 
 # hook-forge
 
-Designs hooks that fire when they should, do exactly what they should, and don't fire when they shouldn't. Hooks are the *deterministic* surface — the model interprets skills, the harness executes hooks. That difference is the whole point. Get it wrong and you either get rules-as-suggestions (the skill version of a hook) or have the harness blocking work it shouldn't (the hook that's too aggressive).
+A hook removes a concern from Claude's reach. The harness enforces the rule before the model interprets, decides, or attends to it. This is the strongest form of attention redirection in the toolkit: a skill redirects, a hook eliminates. The same rule shaped as a skill is interpretation the model can talk itself out of; shaped as a hook, it fires every time without the model in the loop.
 
-Three questions to hold in foreground for any hook design:
+The skill / hook confusion is the canonical authoring mistake. Get the shape wrong and you produce either toothless rules (a skill where a hook was needed) or surprise blocks (a hook where guidance would have done).
 
-1. **Event.** Which lifecycle moment is this rule about? Different events fire at different times and have different blocking semantics. A rule about "before this tool runs" is `PreToolUse`; a rule about "after a file changes" is `PostToolUse`; a rule about "before Claude reads the prompt" is `UserPromptSubmit`. Picking the wrong event is the most common cause of "my hook didn't fire."
+Three questions hold throughout any hook design:
 
-2. **Determinism mode.** Is this a hard guarantee (block / enforce) or a soft signal (run a check, return information Claude should use)? Hard guarantees use exit code 2 or `decision: "block"`. Soft signals return `additionalContext` or systemMessage. The wrong choice produces either toothless rules (a "block" that's actually advice) or surprise blocks (a "check" that prevents work).
+1. **Event.** Which lifecycle moment is this rule about? PreToolUse and PostToolUse cover the bulk; UserPromptSubmit, SessionStart, Stop, and the file/cwd events cover specific cases. Different events fire at different times with different blocking semantics. The wrong event is the most common cause of "my hook didn't fire."
 
-3. **Handler shape.** Five types: `command` (subprocess), `http` (POST to endpoint), `mcp_tool` (call connected MCP server tool), `prompt` (LLM yes/no), `agent` (subagent). Most hooks should be `command`. Reach for `prompt` or `agent` only when you genuinely need LLM judgment — they're slower and more expensive than a deterministic check.
+2. **Determinism mode.** Hard guarantee (block, exit 2 or `decision: "block"`) or soft signal (run a check, return information Claude reads)? Hard guarantees use exit code 2 or `decision: "block"`; soft signals return `additionalContext` or systemMessage. The wrong mode produces toothless rules or surprise blocks.
 
-## Step 0 — What failure did you observe?
+3. **Handler shape.** Five types: `command` (subprocess), `http` (POST to endpoint), `mcp_tool` (call connected MCP server tool), `prompt` (LLM yes/no), `agent` (subagent). Most hooks should be `command`. Reach for `prompt` or `agent` only when LLM judgment is genuinely required; they are slower and more expensive than a deterministic check.
 
-Hooks are the canonical Ratchet surface: the agent did the wrong thing, you write a hook so it can't do it again. Before any of the three questions above, name the failure.
+## Step 0 — Name the failure, name the attention removed
 
-- "Claude wrote to `.env` twice in one week despite CLAUDE.md saying not to." → that's the failure; the hook is the response.
-- "PRs landed without lint output ever running on the diff." → that's the failure.
-- "A subagent ran a destructive `rm -rf` we didn't authorize." → that's the failure.
+Two questions before any of the three above.
 
-If you can't name a specific incident or repeated correction, stop. CLAUDE.md or a path-scoped rule is cheaper than a hook for things that *might* go wrong. Hooks earn their keep by enforcing what already went wrong.
+**What failure did you observe?** Hooks are the canonical Ratchet surface: the agent did the wrong thing, you write a hook so it can't do it again.
+
+- "Claude wrote to `.env` twice in one week despite CLAUDE.md saying not to."
+- "PRs landed without lint output ever running on the diff."
+- "A subagent ran a destructive `rm -rf` we didn't authorize."
+
+If you cannot name a specific incident or repeated correction, stop. CLAUDE.md or a path-scoped rule is cheaper for things that *might* go wrong. A hook is the response to what already went wrong.
+
+**What attention does this hook remove?** A hook does not just enforce; it eliminates a concern from Claude's reach. Naming what's eliminated keeps the hook from over-fitting to one incident. Block on `.env` writes: removes "should I write to .env?" from the decision tree, freeing attention for the actual work. Lint after every edit: removes "did I leave style debt?" from Claude's responsibility, freeing attention for substance. Inject git status on prompt submit: removes "where am I?" discovery calls from the opening of every session. If you cannot articulate the attention shift, suspect the hook is solving a one-off in a way that does not generalize; a different surface may fit better.
 
 If the failure is one the current model has stopped making, don't write the hook. Record the model version this hook is earned against (see the repo's `Model-version pinning` convention) so the sunset audit has a trigger.
 
@@ -139,7 +145,7 @@ This is the single most-misunderstood area of hook authoring. The default assump
 
 **Rule of thumb:** if you want to block, exit `2`. Anything else (including `1`) does not block. This catches a lot of authors who write `if (bad) { exit 1 }` and wonder why the bad thing keeps happening.
 
-**Success silent, failures verbose.** Hooks should be invisible when they pass and loud when they fail. A `command` PostToolUse hook that prints "lint clean" on every edit is noise that pollutes the next turn's context for every reader downstream. Print nothing on success; print the actionable error on failure. The exit-code semantics encode this — exit 0 with empty stdout costs nothing; exit 2 with stderr is the loud failure path Claude reads and reacts to. If the hook is doing observability, log to a file rather than stdout; only the agent-actionable part belongs in the harness loop.
+**Success silent, failures verbose.** Hooks should be invisible when they pass and loud when they fail. A `command` PostToolUse hook that prints "lint clean" on every edit is noise that pollutes the next turn's context for every reader downstream. Print nothing on success; print the actionable error on failure. The exit-code semantics encode this: exit 0 with empty stdout costs nothing, exit 2 with stderr is the loud failure path Claude reads and reacts to. If the hook is doing observability, log to a file rather than stdout; only the agent-actionable part belongs in the harness loop.
 
 For events that can use JSON output for richer control (`PreToolUse` `permissionDecision`, `UserPromptSubmit` `decision`, `Stop` `decision`), see [references/handlers.md](references/handlers.md).
 
@@ -161,15 +167,26 @@ Two locations, with different scoping:
 - Always-on for you across projects → `~/.claude/settings.json`.
 - Active only when a specific skill or subagent is running → frontmatter on that skill/agent.
 
-A hook in skill frontmatter is *automatically scoped to that skill's lifetime* — you don't have to add gates to the script that check whether to run.
+A hook in skill frontmatter is *automatically scoped to that skill's lifetime*; the script doesn't need gates that check whether to run.
 
-## Step 7 — Test the hook
+## Step 7 — Verify against the harness, then test
 
-Three checks before you ship:
+Two passes. Most hook bugs come from misremembered semantics, not buggy scripts.
+
+**Verify assumptions against the canonical docs.** Before testing, cross-check `https://code.claude.com/docs/en/hooks` for the specific event you're using:
+
+- Does this event support blocking, or is it observability-only?
+- What exit codes and JSON output does the event actually accept?
+- What matcher rules apply (tool-name match? event-specific values? regex semantics?)?
+- Has the event's input or output schema changed since you last used it?
+
+The hook surface evolves: new events get added, schemas get richer, exit-code semantics for new events ship as they land. Trust the canonical page over memory and over this skill.
+
+**Test in a fresh session.** Three checks before you ship:
 
 1. **Does it fire?** Trigger the event manually (run the matched tool, submit a prompt, etc.) and check the debug log (`claude --debug`). If the hook didn't fire, the matcher is probably wrong.
-2. **Does it block / not-block correctly?** For blocking hooks, deliberately violate the rule and confirm the action is blocked. For non-blocking, confirm the action proceeds and the side effect happens.
-3. **Does it return useful information?** Stderr on exit 2 is fed to Claude — write it as if Claude is reading it (which Claude is). "Blocked: command tries to write to .env. Use the .env.example template instead." not "rejected."
+2. **Does it block or not-block correctly?** For blocking hooks, deliberately violate the rule and confirm the action is blocked. For non-blocking, confirm the action proceeds and the side effect happens.
+3. **Does it return useful information?** Stderr on exit 2 is fed to Claude. Write it as a message Claude reads, not a one-word rejection. "Blocked: command tries to write to .env. Use the .env.example template instead." beats "rejected."
 
 ## Worked examples
 
@@ -296,15 +313,15 @@ Before saving:
 - [ ] If `command` handler: script reads JSON from stdin, returns useful exit code, doesn't ingest its own source into context.
 - [ ] Sanity-tested: the rule fires when expected, doesn't fire when not, blocks correctly, surfaces the right message.
 
-## When this hook stops earning its keep
+## When to delete a hook
 
-Hooks accumulate. A hook earned against a specific model failure may be redundant once the model improves, but unlike skills hooks fire every session — dead hooks are a permanent tax. The deletion side of the Ratchet:
+Hooks accumulate. A hook earned against a specific model failure may be redundant once the model improves, but unlike skills hooks fire every session: dead hooks are a permanent tax. The deletion side of the Ratchet:
 
 1. On each major model release, pick a hook and re-run the failure scenario without it. Does the agent still make the mistake?
 2. If no, delete the hook. The harness no longer needs to enforce what the model now gets right.
 3. If yes but the failure has shifted, rewrite rather than layering more hooks on top of the old one.
 
-Hooks that block tools nobody uses, or enforce conventions that have moved, fire every turn for nothing. Periodic audit is the cost of keeping the harness honest.
+Watch for the second kind of staleness too: hooks that target conventions that have moved (a matcher tied to a tool nobody uses anymore, a script that checks a path the project no longer has). The hook still fires every turn; the failure it was preventing no longer exists. Periodic audit is the cost of keeping the harness honest.
 
 ## When this skill doesn't apply
 

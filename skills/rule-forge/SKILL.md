@@ -26,7 +26,9 @@ harness-targets: [claude]
 
 # rule-forge
 
-Designs path-scoped rules — the simplest extension surface in Claude Code. A rule is a markdown file at `.claude/rules/<name>.md` with a `paths:` glob in its frontmatter and declarative content in the body. When Claude works with files matching the glob, the rule loads. When it doesn't, the rule sleeps.
+A rule redirects attention when Claude opens files matching a `paths:` glob. Inside the slice, the rule loads and the agent's attention shifts from "how do I structure this?" to "what already-decided convention applies?" Outside the slice, the rule sleeps; it costs no description budget and no body context.
+
+Path-scoped rules are the cheapest extension surface in the harness when the redirection is genuinely scoped. The whole design surface is "what paths, what body, vs CLAUDE.md and vs path-scoped skill."
 
 Rules are the right surface when **all four** of these hold:
 
@@ -37,15 +39,19 @@ Rules are the right surface when **all four** of these hold:
 
 If any of those is false, rules aren't the right surface.
 
-## Step 0 — Three corrections, then encode
+## Step 0 — Three corrections, then verify, then encode
 
-Rules are earned by repeated correction, not designed up front. The bar:
+Two checks before a rule earns its place.
 
-- You've corrected the agent on the same convention three or more times in this codebase (or, for personal-scope rules, across three or more projects on the same stack).
-- The correction is path-scoped — only matters in some files — or you wouldn't be reaching for a rule.
+**Three corrections.** Rules are earned by repeated correction, not designed up front:
+
+- You have corrected the agent on the same convention three or more times in this codebase (or, for personal-scope rules, across three or more projects on the same stack).
+- The correction is path-scoped: it only matters in some files. If it applied everywhere, CLAUDE.md or a skill would be the right surface.
 - The convention is stable enough that you expect to re-apply it for at least the next few weeks.
 
-If any of those is missing, don't encode it yet. The cheapest place to put a one-time correction is in the conversation. Rules are content that lives in context every time matching files are open — they only earn that recurring cost when the correction has been made enough times to extrapolate.
+If any is missing, do not encode yet. The cheapest place for a one-time correction is the conversation. A rule is content that lives in context every time matching files are open; it deserves that recurring cost only when the correction has been made enough times to extrapolate.
+
+**Verify the convention against the slice.** A rule encodes "what is already decided here." Before writing, open three or four files in the path glob and check that the convention is already followed. If only some of the files in `src/api/` follow the envelope you are about to encode, the rule is wishful, not earned. Either the convention is in flux (revisit when it settles) or some files are out of compliance (fix them first, then encode). A rule that contradicts the code is recurring wrong context, and the agent will mirror whichever it last read.
 
 If the correction is one the current model has stopped needing, the rule is obsolete on arrival. Record the model version this rule is earned against (see the repo's `Model-version pinning` convention) so the sunset audit has a trigger.
 
@@ -64,14 +70,14 @@ A rule belongs in personal scope when: the convention follows you across repos, 
 
 ### Rule vs CLAUDE.md
 
-CLAUDE.md is *always* in context. Rules are *only* in context when matching files are open. The split:
+CLAUDE.md is always in context. Rules load only when matching files are open. They serve different jobs:
 
-- **CLAUDE.md** — facts that apply to the whole project all the time. Build commands, project-wide conventions, "we use pnpm not npm." Keep under ~200 lines; over that, parts of it should be rules.
-- **Rules** — facts that apply only when working with specific files. Per-directory conventions, framework-specific patterns inside a slice of the repo.
+- **CLAUDE.md** holds intent and durable traps about the whole project: what this place is for, dispositions that frame the work, harness traps that survive any refactor, pointers to where the rest of the discipline lives. Not current state of the code; the filesystem already shows that. Keep under ~200 lines.
+- **Rules** hold conventions that apply to a slice of the codebase. Per-directory patterns, framework-specific defaults inside a part of the repo, behavioral defaults for files matching a glob.
 
-If you're tempted to add to CLAUDE.md "for the API directory we do X" — that's a rule, not a CLAUDE.md fact.
+If you are tempted to add to CLAUDE.md "for the API directory we do X," that's a rule, not a CLAUDE.md fact.
 
-For designing the CLAUDE.md side itself (or splitting an over-long one), hand off to `claude-md-forge` — its audit job triages CLAUDE.md content across all six surfaces and produces the matching rule files in lockstep.
+For designing the CLAUDE.md side itself (or splitting an over-long one), hand off to `claude-md-forge`; its audit job triages content across all surfaces and produces the matching rule files in lockstep.
 
 ### Rule vs path-scoped skill
 
@@ -88,7 +94,7 @@ Rules and hooks are completely different surfaces despite both being "things tha
 
 ### Rule vs nothing
 
-The cheapest answer. If the convention is something Claude already infers from the code, don't write a rule. The three-corrections bar from Step 0 is the same gate seen from a different angle — a rule that hasn't been earned by repeated correction usually shouldn't exist.
+The cheapest answer. If the convention is something Claude already infers from the code, don't write a rule. The three-corrections bar from Step 0 is the same gate seen from a different angle: a rule that has not been earned by repeated correction usually should not exist.
 
 ## Step 2 — Write the rule
 
@@ -248,18 +254,31 @@ The shape worth noticing: lives in **personal scope** (loads across every projec
 
 - **Globs that don't match.** `src/api/*.ts` (no `**`) only matches files directly in `src/api/`, not subdirectories. Test by listing matches: `find . -path "<glob>"`.
 - **Rules that grow into mini-skills.** A 200-line rule is probably a skill that wants to be invocable. Move it to `.claude/skills/<name>/` with `paths:` and the same body.
-- **Rules that duplicate CLAUDE.md.** If CLAUDE.md already says "we use Tailwind v4," don't put it in a rule too. The fact lives in one place.
+- **Rules that auto-load but do not steer.** The glob matches, the rule appears in context, the agent proceeds as if it were not there. Usually the body is too vague to reframe attention ("be careful with API code") or restates the model's defaults so nothing actually shifts. Read a transcript: is the agent citing or applying the rule? If not, sharpen the conventions or cut the rule.
+- **Rules that duplicate CLAUDE.md.** If CLAUDE.md already speaks to the same intent, do not echo it in a rule. The thing lives in one place.
 - **Rules that should be hooks.** "Never edit `.env`" is a hook (`PreToolUse` with exit 2), not a rule. Rules add context; hooks enforce.
+- **Rules that depict current state.** "We use `Vitest` and `Playwright` for tests" is in `package.json` and the configs. A rule restating it costs tokens to be wrong the next time tooling changes. Phrase rules around behaviors and outcomes; let the agent discover the local capability.
 - **Conventions that change frequently.** Rules are written into the repo; if the conventions are still in flux, conversation-level corrections are cheaper than maintaining a rule that's wrong.
 
 ## Closing checklist
 
-- [ ] Confirmed this should be a rule, not CLAUDE.md / a path-scoped skill / a hook / nothing.
+- [ ] Confirmed this should be a rule, not CLAUDE.md, a path-scoped skill, a hook, or nothing.
+- [ ] Verified the convention is already followed in the slice. If not, the rule is wishful and likely to contradict the code.
 - [ ] `paths:` glob is narrow enough to scope correctly and broad enough to cover the actual files.
 - [ ] Tested the glob against the file structure (or at least listed matches).
 - [ ] Body is declarative, concrete, under ~100 lines.
-- [ ] No duplication with CLAUDE.md or another rule.
+- [ ] Capability-agnostic phrasing: rules describe behaviors and outcomes, not specific tools that may not be present.
+- [ ] No duplication with CLAUDE.md or another rule. No depiction of current state already visible in the code.
 - [ ] No procedural steps (those want a skill); no enforcement (that wants a hook).
+- [ ] Sanity-tested in a fresh session: the rule loads when expected, and the transcript shows it actually steering, not just appearing in context.
+
+## When to delete a rule
+
+Rules are written against specific failures on a specific model in a specific slice of the repo. All three can shift.
+
+1. **On each major model release**, re-run the corrections that earned the rule. If the agent no longer needs the convention spelled out, delete.
+2. **When the slice moves.** If the file structure changes and the `paths:` glob no longer matches what it used to match, the rule is firing for the wrong files or not at all. Re-glob, or retire.
+3. **When the convention moves.** If the codebase shifts away from what the rule encodes, the rule is now wrong context loaded every time matching files open. Bring the code back into compliance and keep the rule, or update the rule, or delete.
 
 ## When this skill doesn't apply
 

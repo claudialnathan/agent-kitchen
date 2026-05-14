@@ -36,19 +36,21 @@ CLAUDE.md *can* describe the hook for visibility ("This project has a pre-commit
 
 ---
 
-## 3. The restated-obvious info
+## 3. The current-state depiction
 
 **Looks like:**
 ```
 - This is a TypeScript project.
 - The frontend is React.
 - We use Tailwind for styling.
-- The package manager is pnpm. (in a repo where pnpm-lock.yaml exists)
+- The package manager is pnpm.
+- Tests live in `tests/`, source in `src/`.
+- Build commands: `pnpm build`, `pnpm test`.
 ```
 
-**Failure mode:** every line is a recurring token cost, and Claude already infers all of this from `package.json`, file extensions, and lockfiles in the first read.
+**Failure mode:** every line is a recurring token cost, and the code already says it. `package.json` names the dependencies, the lockfile names the package manager, the directory tree shows the layout, and the scripts section holds the build commands. Worse, the next refactor falsifies the file. Repos change; CLAUDE.md does not, until someone notices and rewrites it.
 
-**Should be:** cut. CLAUDE.md is for things Claude can't guess. The pnpm one is borderline — *which* package manager you use is sometimes worth restating because Claude defaults to npm when the tooling is mixed; that's the kind of judgment call where a Why earns the line ("Use pnpm. **Why:** mixed npm/pnpm in our other repos has caused lockfile drift; the pnpm-lock.yaml is authoritative here.").
+**Should be:** cut. CLAUDE.md is for what the agent cannot or should not infer from the code. If the agent reaches for npm in a pnpm repo, the fix is `permissions.deny` in settings (or `allowed-tools` on the relevant skill), not a recurring reminder in always-on context. The exception — a fact genuinely invisible from the filesystem — is rare and worth flagging when used.
 
 ---
 

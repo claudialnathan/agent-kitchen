@@ -281,4 +281,4 @@ Things that were research previews or moving fast at the time of writing:
 
 ---
 
-*Last reviewed: 2026-05-14. Treat dated content as a snapshot; verify against current docs before relying on details. PRs and corrections welcome.*
+*Last reviewed: 2026-05-14 12:00 AWST (Australia/Perth). Treat dated content as a snapshot; verify against current docs before relying on details. PRs and corrections welcome.*

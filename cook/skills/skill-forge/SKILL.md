@@ -63,6 +63,8 @@ Run the triage ladder. The first match wins.
 
 If you've gotten here, continue to the next section. If not, **carry through to the redirected surface — don't just announce that it should be one**. Specifically:
 
+> **Surface the redirect before executing it.** When triage moves the work to a different surface than the user originally asked for, name the redirect in one line and confirm before invoking the companion forge — e.g., "This looks like a path-scoped rule, not a skill, because [the reason from the triage ladder]. Hand off to `/rule-forge`?". Wait for the go-ahead. If the user pushes back with new context, re-triage with that info rather than overriding their call. The shape is *announce → confirm → carry through* — never *announce and leave*, and never *silently switch*.
+
 > **Caveat on companion forges.** The hook / rule / CLAUDE.md handoffs below reference `hook-forge`, `rule-forge`, and `claude-md-forge` — sibling skills bundled with `skill-forge` in the `claudia@harness` plugin. If the user has skill-forge alone, suggest installing the rest (`/plugin install claudia@harness`, or pointing at the source if installing manually) and proceed with the inline fallback in the meantime. Don't block on the install — the fallback paths below are complete on their own.
 
 - **Hook** → if `hook-forge` is installed, invoke it (`/hook-forge`) and design the hook there. Otherwise, walk the user through the hook configuration inline: which event, which matcher, which handler type, what the script returns. The triage isn't done until the actual `.claude/settings.json` (or skill/agent frontmatter `hooks:` block) is drafted.

@@ -96,6 +96,10 @@ Rules and hooks are completely different surfaces despite both being "things tha
 
 The cheapest answer. If the convention is something Claude already infers from the code, don't write a rule. The three-corrections bar from Step 0 is the same gate seen from a different angle: a rule that has not been earned by repeated correction usually should not exist.
 
+### Confirm before handing off
+
+If triage decided this belongs on a different surface than the user originally asked for — a skill they wanted is actually a CLAUDE.md fact, a rule they wanted is actually a hook — apply the *announce → confirm → carry through* gate from `skill-forge`. Name the redirect in one line and wait for the go-ahead before invoking the companion forge. Don't silently switch surfaces.
+
 ## Step 2 — Write the rule
 
 Frontmatter is just `paths:`. That's the entire design surface for the file.

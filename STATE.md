@@ -2,7 +2,7 @@
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
-If you've been away for a few months, read this first; the surface has shifted faster than the mental models. Last reviewed against Claude Code v2.1.141 and the docs at `code.claude.com/docs` as of mid-May 2026.
+If you've been away for a few months, read this first; the surface has shifted faster than the mental models. Last reviewed against Claude Code v2.1.141 (Week 20, v2.1.137–v2.1.145) and the docs at `code.claude.com/docs` as of mid-May 2026.
 
 ## The six surfaces of Claude Code, and how they coexist
 
@@ -281,4 +281,4 @@ Things that were research previews or moving fast at the time of writing:
 
 ---
 
-*Last reviewed: 2026-05-14. Treat dated content as a snapshot; verify against current docs before relying on details. PRs and corrections welcome.*
+*Last reviewed: 2026-05-14 against Claude Code v2.1.141 (Week 20, v2.1.137–v2.1.145; see `code.claude.com/docs/en/changelog`). Treat dated content as a snapshot; verify against current docs before relying on details. PRs and corrections welcome.*

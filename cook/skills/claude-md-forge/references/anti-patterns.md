@@ -255,6 +255,26 @@ The rule passes when you could write a checklist item that catches a violation. 
 
 ---
 
+## 16. The cross-project import
+
+<!-- Earned against: Opus 4.7, 2026-05-22 -->
+
+**Looks like:** content adapted from another project's CLAUDE.md — even a *good* one like Bun's or Anthropic's — pulled in verbatim or with section-by-section substitution.
+
+```
+- Build commands: `<runner> test <file>`. Never use the test runner directly.
+- All branches created during automated work must start with `claude/`.
+- Don't use `setTimeout` in tests; await the condition.
+```
+
+**Failure mode:** another project's CLAUDE.md is a *snapshot of its specific failures and current state*. The wrapper command is current state. The branch-naming convention is hook-shaped. The `setTimeout` rule is path-narrow. Each line worked there because it was earned against that codebase's reality. Imported, they keep the donor project's voice (often hook-shaped or current-state) and most don't survive triage.
+
+**Should be:** run each line through Step 0 individually. Most go to hooks, path-rules, or the cut pile. The rare spirit/intent line that survives all three filters is worth keeping ("a test is not valid if it passes against the broken code" is one). The shape of the donor's CLAUDE.md is not portable; the discipline of triage is.
+
+This pattern is adjacent to #9 (Karpathy-anti-default boilerplate) but distinct: #9 is generic motivational filler that fails because it's abstract; this one is concrete, project-tailored content that fails because the project it was tailored to isn't yours.
+
+---
+
 ## Quick reference: pattern → surface
 
 | Pattern | Should be |
@@ -274,3 +294,4 @@ The rule passes when you could write a checklist item that catches a violation. 
 | Contradicts another CLAUDE.md or rule | Consolidate |
 | Setting in disguise | `permissions.deny` |
 | Identity prompt / adverb noise | Concrete imperative |
+| Imported from another project's CLAUDE.md | Triage line-by-line through Step 0 |

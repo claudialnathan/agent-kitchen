@@ -70,7 +70,7 @@ After the filters, the residue is small. Five kinds of content:
 
 **Intent.** What this place is for, in a paragraph. Why it exists. What it is not. ("A workshop for designing Claude Code skills. Not a product. Artifacts here get copied into other repos when wanted.") Survives any refactor because it is about the project, not the code.
 
-**Spirit.** Dispositions that frame how to relate to the work here, where the disposition matters and the agent would not infer it. ("Treat every new artifact as feedback for the forge that produced it. Propose forge improvements as part of finishing the work.") Specific enough to act on; not enforceable.
+**Spirit.** Dispositions that frame how to relate to the work here, where the disposition matters and the agent would not infer it. ("Treat every new artifact as feedback for the forge that produced it. Propose forge improvements as part of finishing the work." Or, generically, in any project with tests: "A test is not valid if it passes against the broken code.") Specific enough to act on; not enforceable.
 
 **Durable harness traps.** Failures about how the harness reads the repo, not about the code. The skill-loader scanning for shell-injection markers regardless of markdown context is an example: the loader behavior is constant, the warning survives any refactor. These are rare and worth their tokens.
 
@@ -144,7 +144,7 @@ Worked example in [references/jobs.md](references/jobs.md#audit).
 
 ## Job 3 — Tune
 
-A recent session surfaced a durable insight. The user wants it encoded. The bar is high; most session insights do not pass Step 0.
+A recent session surfaced a durable insight. The user wants it encoded. The bar is high; most session insights do not pass Step 0. A rough add-threshold: the same correction has landed twice in real sessions, or the failure cost something concrete (a debugging hour, a reverted PR). Once is noise; twice is signal.
 
 1. Pick one candidate at a time. From the conversation, the diff, the user's pointer, or auto-memory's most recent entries.
 2. Run Step 0. If it fails any filter, propose the right surface and stop.

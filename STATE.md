@@ -1,8 +1,10 @@
-# The state of Claude Code and the coding-agent landscape — May 2026
+# The state of Claude Code and the coding-agent landscape
+
+Last updated: 21 May 2026 | Version: v2.1.146
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
-If you've been away for a few months, read this first; the surface has shifted faster than the mental models. Last reviewed against Claude Code v2.1.141 and the docs at `code.claude.com/docs` as of mid-May 2026.
+If you've been away for a few months, read this first; the surface has shifted faster than the mental models. For verification against current docs, see the **URLs to keep handy** section below — `code.claude.com/docs/en/changelog` is authoritative for per-version changes.
 
 ## The six surfaces of Claude Code, and how they coexist
 
@@ -19,11 +21,11 @@ There are six places to put behavior, and they don't substitute for each other:
 
 The key shift from earlier in 2025: **custom slash commands have been merged into skills**. A file at `.claude/commands/foo.md` and a skill at `.claude/skills/foo/SKILL.md` both create `/foo`. Skills are the canonical surface; commands files keep working but aren't the recommended path.
 
-Cross-reference: FLUE (`flueframework.com`) frames the agent stack as four layers — Model / Harness / Sandbox / Filesystem. The six-surface taxonomy above is scoped to authoring inside Claude Code (the surfaces *are* what you author against); FLUE's framing is more useful when designing runtime-deployed autonomous agents.
+Cross-reference: FLUE (`flueframework.com`) frames the agent stack as four layers — Model / Harness / Sandbox / Filesystem. The six-surface taxonomy above is scoped to authoring inside Claude Code (the surfaces _are_ what you author against); FLUE's framing is more useful when designing runtime-deployed autonomous agents.
 
 ## The cost model nobody tells you about up front
 
-Every visible skill consumes description budget *every turn*. Once invoked, the skill body lives in conversation context for the rest of the session. This is the most-misunderstood thing about skills.
+Every visible skill consumes description budget _every turn_. Once invoked, the skill body lives in conversation context for the rest of the session. This is the most-misunderstood thing about skills.
 
 Hard numbers:
 
@@ -60,7 +62,7 @@ Features that changed how skills get built, in rough order of impact:
 ### Forked subagents (`/fork`, w17)
 
 - `CLAUDE_CODE_FORK_SUBAGENT=1` enables fork mode.
-- A fork inherits the *full conversation history* (unlike a normal subagent which starts fresh). Same system prompt, tools, model, prompt cache.
+- A fork inherits the _full conversation history_ (unlike a normal subagent which starts fresh). Same system prompt, tools, model, prompt cache.
 - `/fork <directive>` spawns one. Useful for try-this-and-keep-going workflows.
 
 ### Monitor tool (w15, v2.1.98)
@@ -90,12 +92,13 @@ Features that changed how skills get built, in rough order of impact:
 - Adaptive reasoning is always on for 4.7 (no fixed-budget mode).
 - `/effort` opens an interactive slider when called without args.
 - 1M context window included for Max/Team/Enterprise on Opus.
+- Fast mode defaults to Opus 4.7 as of v2.1.142 (pin to 4.6 with `CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE=1`).
 
 ### Agent view (`claude agents`, research preview)
 
 - `claude agents` opens a unified list of every Claude Code session — running, blocked on you, or done.
 - New top-level CLI surface for managing parallel/background work, agent teams, and previously-backgrounded sessions.
-- `claude agents --cwd <path>` scopes the list to a directory.
+- `claude agents --cwd <path>` scopes the list to a directory; `claude agents --json` (v2.1.145) emits live sessions as JSON for scripting (status bars, tmux-resurrect, session pickers).
 
 ### `/goal` command
 
@@ -155,7 +158,7 @@ The hook surface has accumulated several useful fields:
 - **Compaction can drop skills** if many were invoked. Re-invoke load-bearing ones after `/compact` triggers.
 - **Skills don't re-read** after invocation. Edits to SKILL.md don't show up in the same session unless the skill is re-invoked.
 - **Personal scope (`~/.claude/skills/`) overrides project scope (`.claude/skills/`)** for same-named skills. Plugin namespacing avoids this; renaming or `skillOverrides: "off"` are the workarounds.
-- **`.claude/skills/` *is* loaded from `--add-dir` directories** (exception to general `--add-dir` rules). Other config (`.claude/agents/`, `.claude/rules/`) is not.
+- **`.claude/skills/` _is_ loaded from `--add-dir` directories** (exception to general `--add-dir` rules). Other config (`.claude/agents/`, `.claude/rules/`) is not.
 - **Skills don't trigger on simple prompts.** Claude only consults skills when it can't easily handle the task itself. A `/read-pdf` skill never triggers on "show me this PDF" regardless of description quality.
 - **Description is the trigger; body is the standing instruction.** Vague descriptions silently under-trigger. Procedural bodies (one-time steps) waste recurring tokens.
 - **Hooks for guarantees, skills for guidance.** A hook enforces "never edit .env." A skill suggests "when editing .env, prefer adding new keys to changing existing ones."
@@ -164,7 +167,7 @@ The hook surface has accumulated several useful fields:
 
 These exist in stock Claude Code; building parallel skills competes for description budget:
 
-- **`/simplify`** (skill) — three-agent parallel review of recently changed code; aggregates findings; applies fixes.
+- **`/code-review`** (skill, renamed from `/simplify` in v2.1.146) — three-agent parallel review of recently changed code; aggregates findings; applies fixes. Accepts an optional effort level (e.g. `/code-review high`).
 - **`/batch <instruction>`** (skill) — decomposes large changes into 5–30 units; spawns one background agent per unit in isolated worktrees; opens PRs.
 - **`/debug`** (skill) — captures debug logs from current point forward; analyzes issues.
 - **`/loop`** (skill) — recurring or self-paced prompt execution.
@@ -188,18 +191,18 @@ The full list is at `https://code.claude.com/docs/en/commands` — worth re-chec
 
 Claude Code is one tool in a category that's converged on a recognizable shape: a CLI or IDE-resident agent that reads/writes files, runs shell, and calls tools through MCP. The major players, neutrally:
 
-| Tool | Surface | Distinguishing trait |
-|------|---------|----------------------|
-| **Claude Code** | CLI + IDE extensions + web | Anthropic's first-party agent; hooks, skills, plugins, 1M context |
-| **Cursor** | Dedicated IDE (VS Code fork) | Inline-edit UX; multi-model |
-| **OpenAI Codex CLI** | CLI + cloud Codex | OpenAI's first-party agent; ChatGPT integration |
-| **Aider** | CLI | Open source; git-native commit-per-edit; BYOM |
-| **Cline** | VS Code extension | Open source; BYOM |
-| **Continue** | IDE extension (VS Code/JetBrains) | Open source; BYOM; configurable assistant |
-| **Windsurf** | Dedicated IDE | Owned by Cognition; ships SWE-1.5 agent model |
-| **GitHub Copilot** | IDE extension + Copilot Workspace | Microsoft/GitHub; broad enterprise distribution |
-| **Devin** | Cloud platform | Autonomous background engineer; long-running tasks |
-| **Gemini CLI / Jules** | CLI / cloud | Google's first-party agents |
+| Tool                   | Surface                           | Distinguishing trait                                              |
+| ---------------------- | --------------------------------- | ----------------------------------------------------------------- |
+| **Claude Code**        | CLI + IDE extensions + web        | Anthropic's first-party agent; hooks, skills, plugins, 1M context |
+| **Cursor**             | Dedicated IDE (VS Code fork)      | Inline-edit UX; multi-model                                       |
+| **OpenAI Codex CLI**   | CLI + cloud Codex                 | OpenAI's first-party agent; ChatGPT integration                   |
+| **Aider**              | CLI                               | Open source; git-native commit-per-edit; BYOM                     |
+| **Cline**              | VS Code extension                 | Open source; BYOM                                                 |
+| **Continue**           | IDE extension (VS Code/JetBrains) | Open source; BYOM; configurable assistant                         |
+| **Windsurf**           | Dedicated IDE                     | Owned by Cognition; ships SWE-1.5 agent model                     |
+| **GitHub Copilot**     | IDE extension + Copilot Workspace | Microsoft/GitHub; broad enterprise distribution                   |
+| **Devin**              | Cloud platform                    | Autonomous background engineer; long-running tasks                |
+| **Gemini CLI / Jules** | CLI / cloud                       | Google's first-party agents                                       |
 
 BYOM = bring-your-own-model. The list is not exhaustive; new entrants appear monthly.
 
@@ -281,4 +284,4 @@ Things that were research previews or moving fast at the time of writing:
 
 ---
 
-*Last reviewed: 2026-05-14 against Claude Code v2.1.141 (per-version changelog at `code.claude.com/docs/en/changelog`). Treat dated content as a snapshot; verify against current docs before relying on details. PRs and corrections welcome.*
+_Treat dated content as a snapshot; verify against current docs before relying on details. PRs and corrections welcome._

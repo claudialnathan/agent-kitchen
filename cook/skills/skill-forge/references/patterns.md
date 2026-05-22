@@ -127,7 +127,7 @@ This skill also composes with `<co-located-skill>` (same auto-load surface) — 
 **Where it hurts:**
 - **Implicit defer.** "For motion craft, see Emil." With no skill name, the model doesn't know there's a separate skill to invoke. Always name it: "invoke `emil-design-eng`" or "see the `emil-design-eng` skill."
 - **Defer where you should cross-reference.** If both skills auto-load on the same files (`paths:` overlap), they're already composing — write a short cross-reference line, not a full defer-point block. Reserve full defer-points for skills that don't auto-trigger together.
-- **Defer-as-excuse for thinness.** A skill that defers most of its content and keeps only a triage layer is a dispatcher, not an SoT skill. If that's the actual shape, use the **Dispatcher** kind (kind 7).
+- **Defer-as-excuse for thinness.** A skill that defers most of its content and keeps only a triage layer is a dispatcher, not an SoT skill. If that's the actual shape, use the **Dispatcher** kind (kind 8).
 
 **Three relationships, three prose shapes:**
 

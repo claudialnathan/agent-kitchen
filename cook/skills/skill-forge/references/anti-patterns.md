@@ -490,3 +490,27 @@ Second, **a stack-respect preamble** that names the relationship between the ski
 Without that preamble, the reader-Claude has no signal that the skill's discipline lives downstream of the framework's choices.
 
 **Generalization:** Any skill that encodes discipline alongside an opinionated framework needs both moves. Condition-shaped bullets so the discipline reads as judgment per case; an explicit "respect the framework" preamble so framework-native patterns are the first reach. Principle-shaped bullets work fine for skills that *aren't* stack-aware (a workflow skill, a guarded action) — the failure mode is specific to knowledge skills and path-scoped knowledge skills that overlap with framework territory.
+
+## 18. The synthesis-output skill that pads, paraphrases, or flattens
+
+The previous 17 anti-patterns are about the skill itself — what its description says, what its frontmatter sets, what its body encodes. This one is about the *artifact* a skill produces when its job is to derive output from inputs (a research orchestrator, a summarizer, anything that takes a corpus and returns a synthesis). The skill can be cleanly designed at every other level and still produce a brief that quietly degrades the downstream step.
+
+Three concrete failure modes share a shape:
+
+**18a. The kitchen-sink brief.** The synthesis grows to 4,000+ tokens "to be thorough", reasoning that more coverage is better. But the brief is the *small* artifact that survives into the next step (a forge, a planning session, a code generator). The next step then runs against a brief that's already eaten most of its remaining context budget; the synthesis has paid in tokens without paying back in clarity.
+
+**18b. The paraphrase smuggle.** A subagent that returns "the source argues that X" instead of a verbatim quoted excerpt has paraphrased. The synthesis then treats the paraphrase as authoritative — it has the *shape* of a citation (a source attribution) without the *substance* (verbatim text the reader can verify). Once paraphrase enters the brief, the downstream step has no way to tell which claims are quoted and which are inferred.
+
+**18c. The empty rough edge.** The brief has all its structural sections (agreement, contention, sources), but the "what did the sources add beyond training priors" section is a bullet-pointed restatement of the agreement section. The sources didn't actually add anything; the synthesis is a more expensive way to read out priors.
+
+**Why this anti-pattern matters:** these failure modes all look like *success* from the outside. The brief was produced. It has the right sections. It compiles, ships, and the next forge consumes it. The degradation is invisible until the downstream artifact is reviewed against what the sources actually said — by which point the work has already been done.
+
+**What fits:**
+
+- **Bound the synthesis explicitly.** Encode a token cap on the brief as a standing instruction, with the failure mode named: "agreement + contention together stay under ~2,000 tokens. If you're approaching that, cut weaker quotes; don't expand the brief." The model needs to be told the cap and what crossing it costs.
+- **Reject paraphrase output at synthesis time.** The dispatch contract for per-source agents must require verbatim quotes, and any return that lacks them must be re-dispatched, not papered over. This is architecturally enforced quote-extraction (Anthropic's "quote into a scratchpad before answering" pattern, codified into the skill's contract).
+- **Make the rough edge mandatory and load-bearing.** The brief's structure should require a section that names what the sources add beyond priors. If the model can't fill it in 2–4 sentences, the sources didn't add anything and the brief should say so explicitly — and the downstream forge step should be skipped. Manufacturing an artifact for a non-failure is the failure mode this section exists to prevent.
+
+**Example:** `/ground` (a Research orchestrator, kind 5) encodes all three defenses. See `cook/skills/ground/SKILL.md` for the full pattern and `cook/skills/ground/references/failure-modes.md` for the primary-source citations behind each defense.
+
+**Generalization:** Any skill that produces a derived artifact from inputs is exposed to this anti-pattern. Research orchestrators are the canonical instance, but the same shape applies to any summarizer (a `/recap` variant that compresses a session), any extractor ("pull all decisions from this thread"), any aggregator. The general defenses: cap output size explicitly, require quote-level evidence (not paraphrase), and include a load-bearing section that fails honestly when the inputs didn't add anything.

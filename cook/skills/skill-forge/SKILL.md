@@ -34,6 +34,8 @@ Write both down in one line each. They become the skill's _why_ — the failure 
 
 If the failure is one the current model has stopped making, the skill is obsolete on arrival. Don't write it. Each non-trivial artifact records the model version it was earned against (see the repo's `Model-version pinning` convention) so the sunset audit has a trigger.
 
+If the user wants to proceed without an observed failure — article-derived skills, "I read this, should it be a skill?", proactively encoding something interesting — the partial discipline is: name a *proxy failure* (the training-data default the skill would redirect against); tag the skill as speculative in the provenance comment; define the audit trigger explicitly (on the next major model release, re-test the proxy default in a fresh session and delete if absorbed). Treat the article as the evidence basis, not the failure itself. The skill earns its keep until the proxy failure stops appearing.
+
 ## Triage: which surface should hold the redirection?
 
 The redirection needs a home. The harness has six surfaces, each redirecting attention at a different abstraction level:
@@ -76,9 +78,39 @@ If you've gotten here, continue to the next section. If not, **carry through to 
 
 Read [references/triage.md](references/triage.md) for the longer form, including how to combine surfaces (e.g., MCP + skill, hook + skill).
 
+## Relate: how does this sit alongside skills that already exist?
+
+Triage chose the surface. Before classifying which kind of skill this is, look outward: is there already an adjacent skill — in any scope (project, personal, bundled-plugin, optional-plugin) — that covers part of the territory this new skill would touch? If yes, the relationship between them is a real design decision, and getting it wrong creates either silent duplication (two skills competing for description budget) or silent dependence (cross-references to skills that aren't always present in the sessions this one loads in).
+
+**Reliable-availability heuristic.** Whether you can defer to another skill depends on whether it's actually in the session.
+
+- **Bundled in the same plugin marketplace** as your new skill → reliable. Cross-references will load.
+- **Stock Claude Code skills** (`/code-review`, `/debug`, `/init`, etc.) → reliable.
+- **Personal scope** (`~/.claude/skills/`) → only on the author's machine. Not in CI, not on a teammate's machine, not in another agent runtime.
+- **Cross-tool symlinks set up via local script** (e.g., this workshop's `bin/sync-cross-tool`) → this machine only.
+- **Optional plugin in another marketplace** → never assume; users install à la carte.
+
+If the adjacent skill is in the bottom three buckets, cross-references silently degrade in sessions where it's absent. The skill that depended on it ends up gesturing at documentation that doesn't load.
+
+**Three relationships.** Once you know what's adjacent and how reliably it loads, pick one — or a deliberate mix.
+
+| Relationship                                                                                          | When it fits                                                                                 | Failure mode if wrong                                              |
+| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- | :----------------------------------------------------------------- |
+| **Sharpen** — narrow the new skill's scope; cite the rest by name                                     | Adjacent skill is reliably present; the boundary between the two is clean                    | Cross-refs degrade in sessions where the adjacent skill is absent  |
+| **Absorb** — copy the high-leverage ideas into this skill so it's self-sufficient                     | Adjacent skill isn't reliably present; budget allows the duplication                         | Description + body bloat; future drift between the source and your copy |
+| **Dispatch** — make this skill the entrypoint that routes to several others (the Dispatcher kind, below) | 3+ adjacent skills, all reliably present, where the routing logic is itself the recurring work | Routes to skills that vanish; the dispatcher becomes a list of dead pointers |
+
+- **Sharpen** is the cheapest option when it works. You own a narrow, well-defined slice; the rest is somebody else's skill, cited by name. The whole answer relies on those citations actually loading, which is why "reliably present" is the gate. The "Caveat on companion forges" callout in the Triage section is itself a Sharpen — and the reason each handoff has an inline fallback is exactly this gate failing.
+- **Absorb** is the right move when the adjacent skill is the source material you want but can't depend on. Copy what's load-bearing; restate, don't paraphrase thinly; keep provenance outside the skill (commit message, worklog, design doc) so a future author can find the originals. The cost is description-and-body budget and the risk that the absorbed material drifts from the source — you've now signed up to keep what you copied current.
+- **Dispatch** is the Dispatcher kind from the Classify table below, applied at the relationship layer rather than across jobs inside one domain. The skill's value *is* the routing logic. Pre-req: the destinations are guaranteed.
+
+Mixing is fine — most real skills sharpen on some axes, absorb on others, and ignore the rest. The named relationships exist to make the call visible, not to enforce purity.
+
+**The call is reversible.** If your skill ecosystem shifts — a personal-scope skill becomes a bundled plugin, an upstream skill gets rewritten, a plugin you depended on gets removed — re-audit. Absorbed content can be deleted in favor of a cross-reference once the source becomes reliable; cross-references can be flattened into absorption once a source disappears. The auditing trigger is the same one as in Step 0: the failure that earned the original call has shifted or stopped.
+
 ## Classify: which kind of skill?
 
-Skills are not one shape. The seven kinds below have different goals and different SKILL.md structures. Pick one before drafting.
+Skills are not one shape. The eight kinds below have different goals and different SKILL.md structures. Pick one before drafting.
 
 | Kind                      | Purpose                                                                                                                                                | Default invocation                                                  | Default `context` | Body shape                                                   |
 | :------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------ | :---------------- | :----------------------------------------------------------- |
@@ -86,6 +118,7 @@ Skills are not one shape. The seven kinds below have different goals and differe
 | **Knowledge**             | Apply conventions/standards/patterns when relevant                                                                                                     | model-invocable (Claude picks it up)                                | inline            | declarative facts/rules                                      |
 | **Guarded action**        | Side-effect-having action with strict tool scope (`/post-to-slack`)                                                                                    | `disable-model-invocation: true` + `allowed-tools`                  | inline            | one-shot recipe                                              |
 | **Forked research**       | Investigate something without polluting the main thread                                                                                                | model-invocable, `context: fork`, `agent: Explore`                  | forked            | task prompt for a subagent                                   |
+| **Research orchestrator** | Parallel forks over a user-supplied corpus (URLs/files/text), then bounded synthesis into an artifact (`/ground`)                                      | `disable-model-invocation: true` (real cost per run)                | inline; spawns per-source forks | dispatch contract + bounded synthesis + handoff   |
 | **Path-scoped knowledge** | Conventions that only matter for some files                                                                                                            | model-invocable + `paths:` glob                                     | inline            | declarative, narrow scope                                    |
 | **Toolkit**               | Bundle scripts and examples Claude calls into for repeatable infrastructure (browser automation, file processing, report generation)                   | model-invocable; bundled `scripts/` and `examples/` carry the value | inline            | thin orientation pointing at the artifacts                   |
 | **Dispatcher**            | Triage and shape across 2+ related jobs under one skill, sharing the triage logic (e.g., `skill-forge`, `hook-forge`, `rule-forge`, `claude-md-forge`) | model-invocable; often `paths:`-scoped to the artifact type         | inline            | quick-dispatch table at top, shared triage, per-job sections |
@@ -204,6 +237,7 @@ Detail in [references/iteration.md](references/iteration.md), including the trai
 Read [references/anti-patterns.md](references/anti-patterns.md) before committing the skill. The most common ones in May 2026:
 
 - **The encoded-answer skill** — a body of imperative steps that just lists what to do. Saves typing; does not change what is foreground. Test: would the body still be doing work on turn 8, or is it facts Claude already executed? If the latter, the skill is additive and probably belongs as a one-off response, not a recurring artifact.
+- **The article-derived skill** — read something interesting and want to encode it as a skill before observing the agent get it wrong. The article is content; it isn't evidence. Either wait for the failure to recur in a real session and earn the skill against that, or proceed knowingly as speculative (see Step 0) with explicit provenance and an audit trigger on the next model bump.
 - **The silent-failure skill** — invoked, in context, but not steering Claude's behavior. Symptom: the original failure recurs anyway. Diagnostic: read the transcript, not just the final output. If Claude is not citing or applying the skill's framing, the description matched but the body did not reframe.
 - **The hook-shaped skill** — a skill that says "ALWAYS lint after edit" or "NEVER commit secrets". The model is being asked to enforce, which it can't reliably do. Convert to a `PostToolUse` hook.
 - **The CLAUDE.md-shaped skill** — five lines of conventions that should have stayed in CLAUDE.md.
@@ -272,6 +306,8 @@ Why this shape: investigation ⇒ `context: fork`. Read-only ⇒ `agent: Explore
 
 Project skills go in `.claude/skills/<name>/SKILL.md`. The directory name becomes the slash command. Use lowercase letters, numbers, and hyphens; max 64 chars. The skill name is the user's mental handle for the skill — make it short and obvious (`/commit-staged`, not `/staged-changes-commit-with-lint`).
 
+Name the *scope*, not the search keyword. If a skill covers reads, writes, and auth flows, naming it `optimistic-mutations` (the industry keyword for the write-only case) misrepresents the body. Pick the term that matches what the skill actually does; put the search keywords in the description, where they pull triggers without constraining scope.
+
 Custom slash commands were merged into skills in early 2026. A file at `.claude/commands/foo.md` and a skill at `.claude/skills/foo/SKILL.md` both create `/foo`; the skill wins if both exist. New work belongs in `skills/` — commands files keep working but aren't the recommended path.
 
 Precedence: enterprise > personal (`~/.claude/skills/`) > project (`.claude/skills/`) > plugins (namespaced as `<plugin>:<skill>`). If you create a project skill with the same name as a personal skill, the personal one wins. To avoid this, either rename, override visibility via `skillOverrides` in `.claude/settings.local.json` (set the personal one to `"off"`), or scope through a plugin.
@@ -311,7 +347,8 @@ Before saving, walk this list:
 
 - [ ] **Step 0 done:** failure named in one line; attention shift named in one line. Without both, the design is not ready.
 - [ ] Triaged: confirmed this should be a skill, not a hook/MCP/CLAUDE.md/subagent/path-rule.
-- [ ] Classified: one of the seven kinds; frontmatter matches the kind.
+- [ ] **Related** to existing skills: identified adjacent skills (any scope) and named the relationship — sharpen / absorb / dispatch / mix. Any skill cross-referenced is reliably present in this skill's deployment surface; otherwise it's been absorbed inline instead of cited.
+- [ ] Classified: one of the eight kinds; frontmatter matches the kind.
 - [ ] **Move visible in the artifact:** the attention shift from Step 0 is stated in the `description`, opening paragraph, or a closing summary — not left implicit. If the answer is "nothing, it just shortens work," I have decided shortening is worth the recurring context cost.
 - [ ] `name:` set explicitly (don't rely on the directory-name default — the file is more readable and the skill's identity less filesystem-coupled when `name:` is in the frontmatter).
 - [ ] `description` is the _what_; trigger phrases live in `when_to_use` as a separate field. Splitting keeps the description scannable and lets the trigger list grow without bloating the lead sentence.

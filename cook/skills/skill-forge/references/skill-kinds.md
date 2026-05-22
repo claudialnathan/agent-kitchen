@@ -1,4 +1,4 @@
-# The seven skill kinds
+# The eight skill kinds
 
 Different kinds of skills want different bodies. This is the catalog of structural archetypes — pick the kind first, then write to its template, not the other way around.
 
@@ -235,7 +235,39 @@ Report:
 Do not print the matched secret value. Print the file path and the variable name.
 ```
 
-## 5. Path-scoped knowledge
+## 5. Research orchestrator
+
+A research orchestrator dispatches *parallel* forked subagents over a user-supplied corpus (URLs, files, pasted text), receives quoted excerpts back, synthesizes them into a bounded artifact in the main thread, and hands off to the downstream step. Distinct from "Forked research" — that kind is one fork; this kind is N parallel forks plus a synthesis stage.
+
+**Frontmatter pattern:**
+
+```yaml
+---
+description: <reads N sources, returns bounded brief, hands off>
+disable-model-invocation: true
+---
+```
+
+**Body shape:**
+
+- A *dispatch contract* the per-source agents inherit — quote-only output, single source per agent, bound on excerpt count and length.
+- A *synthesis structure* — the sections the brief must contain (agreement, contention, the rough edge, open questions).
+- A *bound on synthesis size* — token cap on the brief; raise the relevance bar rather than expand the brief.
+- A *confirm-before-handoff step* — show the brief, name the recommended next step, wait for confirmation before invoking it.
+
+**Why `disable-model-invocation: true`:** spawning N parallel forks costs real tokens and time. The user opts in explicitly when they have sources worth grounding in.
+
+**Why quote-only in the dispatch contract:** Anthropic's documented counter to surface-skim is to force quote-extraction into a scratchpad before producing the downstream artifact. The dispatch contract makes the scratchpad architecturally enforced rather than optional best-practice. Paraphrase output from any subagent should be rejected and re-dispatched.
+
+**Why one source per agent:** parallel independent contexts surface poisoned-source contamination as visible disagreement (in the contention section) rather than silent averaging into one summary.
+
+**Why the mandatory "rough edge" section:** load-bearing test for whether the sources added anything beyond Claude's training priors. If empty, the brief says so and the downstream step is skipped — manufacturing an artifact for a non-failure is the failure mode the kind is supposed to prevent.
+
+**Example:** `/ground` — see `cook/skills/ground/SKILL.md` for the full SKILL.md and `cook/skills/ground/references/failure-modes.md` for the primary-source-cited failure-mode catalog the design defends against.
+
+**When this kind doesn't apply:** a single source (read it inline; parallel architecture has no leverage), a topic well-covered in training data, or a task that needs a quick answer rather than a designed artifact downstream.
+
+## 6. Path-scoped knowledge
 
 This is technically a knowledge skill, but the activation pattern matters enough to call out.
 
@@ -279,7 +311,7 @@ paths:
 - Submit button shows a spinner via `<Button loading>`, never disables without a visible reason.
 ```
 
-## 6. Toolkit
+## 7. Toolkit
 
 A toolkit skill bundles scripts and/or examples that Claude calls into. The body's job is not to encode procedure or knowledge; it's to teach Claude *how to invoke the toolkit and when*. The recurring context cost is small (the body is thin) but the bundled artifacts can be substantial — they execute, they don't load.
 
@@ -354,7 +386,7 @@ User asks for flow screenshots → Is the server already running?
 
 **When NOT to use the toolkit kind:** when the work is genuinely reasoning-heavy (judgment calls, design decisions, code review). Toolkits ossify; they're for deterministic infrastructure. If your scripts are doing things a model could do better with judgment, you're in the wrong kind — that's knowledge or workflow.
 
-## 7. Dispatcher
+## 8. Dispatcher
 
 A dispatcher skill bundles 2+ related jobs under one roof, sharing the triage logic and dispatching to the right job from observable signals. The harness's own forges — `skill-forge`, `hook-forge`, `rule-forge`, `claude-md-forge` — are dispatchers. Anything that asks "is this a creation, audit, or update task?" before doing the work fits this shape.
 

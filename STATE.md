@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 21 May 2026 | Version: v2.1.146
+Last updated: 23 May 2026 | Version: v2.1.150
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
@@ -99,6 +99,9 @@ Features that changed how skills get built, in rough order of impact:
 - `claude agents` opens a unified list of every Claude Code session — running, blocked on you, or done.
 - New top-level CLI surface for managing parallel/background work, agent teams, and previously-backgrounded sessions.
 - `claude agents --cwd <path>` scopes the list to a directory; `claude agents --json` (v2.1.145) emits live sessions as JSON for scripting (status bars, tmux-resurrect, session pickers).
+- **Pinned sessions** (`Ctrl+T` inside `claude agents`, v2.1.147) stay alive when idle, restart in place to apply Claude Code updates, and are shed under memory pressure only after non-pinned sessions.
+- `claude agents` accepts `--add-dir`, `--settings`, `--mcp-config`, `--plugin-dir`, `--permission-mode`, `--model`, `--effort`, and `--dangerously-skip-permissions` (v2.1.147) to configure dispatched background sessions. Sessions launched from the view now honor `permissions.defaultMode` instead of being forced into auto mode.
+- `/bg` and `←`-detach preserve session flags (`--mcp-config`, `--settings`, `--add-dir`, `--plugin-dir`, `--strict-mcp-config`, `--fallback-model`, `--allow-dangerously-skip-permissions`) across retire→wake (v2.1.147), so backgrounded workers keep their MCP servers and permission posture.
 
 ### `/goal` command
 
@@ -138,9 +141,11 @@ The hook surface has accumulated several useful fields:
 - **MCP elicitation** — MCP servers can request structured input mid-task via an interactive dialog (form fields or browser URL); intercepted via the `Elicitation` and `ElicitationResult` hooks.
 - **PostToolUse `updatedToolOutput`** — hooks can replace tool output for all tools (previously MCP-only).
 - **Skills can reference `${CLAUDE_EFFORT}`** in their content; `${CLAUDE_SKILL_DIR}` and `${CLAUDE_SESSION_ID}` also available.
-- **PowerShell tool** on Windows (preview) — opt-in via `CLAUDE_CODE_USE_POWERSHELL_TOOL`; permissions match Bash semantics.
+- **PowerShell tool** on Windows — opt-in preview via `CLAUDE_CODE_USE_POWERSHELL_TOOL`; permissions match Bash semantics. Default-enabled for Bedrock, Vertex, and Foundry users on Windows since v2.1.147 (opt out with `CLAUDE_CODE_USE_POWERSHELL_TOOL=0`).
 - **Custom themes** (`/theme`, `~/.claude/themes/`, plugin themes).
 - **`/team-onboarding`** — generates a teammate ramp-up guide from local usage history.
+- **`allowAllClaudeAiMcps`** managed setting (v2.1.149, enterprise) — loads claude.ai cloud MCP connectors alongside `managed-mcp.json` instead of requiring per-server allowlisting.
+- **GFM task list rendering** — markdown output renders `- [ ] todo` / `- [x] done` as checkboxes (v2.1.149).
 - **`/loop` self-paces** when no interval is given; `/proactive` is an alias.
 - **`/btw <question>`** — side question without polluting conversation context.
 - **`/fewer-permission-prompts`** — scans transcripts for common allowable Bash/MCP calls, builds an allowlist.
@@ -167,7 +172,7 @@ The hook surface has accumulated several useful fields:
 
 These exist in stock Claude Code; building parallel skills competes for description budget:
 
-- **`/code-review`** (skill, renamed from `/simplify` in v2.1.146) — three-agent parallel review of recently changed code; aggregates findings; applies fixes. Accepts an optional effort level (e.g. `/code-review high`).
+- **`/code-review`** (skill, renamed from `/simplify` in v2.1.147) — reports correctness bugs in the current diff at the requested effort level (e.g. `/code-review high`); `--comment` posts findings as inline GitHub PR comments. The earlier cleanup-and-fix behavior was dropped in the rename.
 - **`/batch <instruction>`** (skill) — decomposes large changes into 5–30 units; spawns one background agent per unit in isolated worktrees; opens PRs.
 - **`/debug`** (skill) — captures debug logs from current point forward; analyzes issues.
 - **`/loop`** (skill) — recurring or self-paced prompt execution.
@@ -180,7 +185,7 @@ These exist in stock Claude Code; building parallel skills competes for descript
 - **`/goal`** (skill) — set a completion condition; Claude keeps working across turns until met.
 - **`/team-onboarding`** — package a local Claude Code setup as a teammate ramp-up guide.
 - **`/recap`** — one-line session summary on demand.
-- **`/usage`** (= `/cost` = `/stats`) — usage breakdown showing what's driving limits.
+- **`/usage`** (= `/cost` = `/stats`) — usage breakdown showing what's driving limits. As of v2.1.149, splits the per-category breakdown across skills, subagents, plugins, and per-MCP-server cost.
 - **`/btw`** — side question without polluting context.
 - **`/fork`** / **`/branch`** — branch the conversation (or spawn a forked subagent if `CLAUDE_CODE_FORK_SUBAGENT=1`).
 - **`/rewind`** (= `/checkpoint` = `/undo`) — restore prior conversation/code state.

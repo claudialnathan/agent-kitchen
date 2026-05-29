@@ -1,6 +1,7 @@
 {
   "enabledMcpjsonServers": [
     "agentation",
-    "supabase"
+    "supabase",
+    "shadcn"
   ]
 }

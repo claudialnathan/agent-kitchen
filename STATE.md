@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 23 May 2026 | Version: v2.1.150
+Last updated: 29 May 2026 | Version: v2.1.156
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
@@ -45,6 +45,12 @@ Practical consequences:
 
 Features that changed how skills get built, in rough order of impact:
 
+### Dynamic workflows (`/workflows`, v2.1.154)
+
+- Ask Claude to create a workflow and it orchestrates work across tens to hundreds of agents in the background — for tasks too large for one context (large migrations, audits, broad sweeps).
+- `/workflows` shows your runs.
+- The heaviest fan-out option, alongside agent teams and `/batch`; the model decomposes and pipelines the work itself.
+
 ### Custom commands merged into skills
 
 - `.claude/commands/foo.md` and `.claude/skills/foo/SKILL.md` both create `/foo`.
@@ -56,7 +62,7 @@ Features that changed how skills get built, in rough order of impact:
 - Permission-mode `auto`: a classifier reviews tool calls, blocks risky ones, lets routine work proceed without prompts.
 - Available as `--permission-mode auto` or via `/permissions`.
 - New hook: `PermissionDenied` fires on classifier denials; `retry: true` lets the model try a different approach.
-- Available without `--enable-auto-mode` (the flag was removed).
+- No longer gated: the `--enable-auto-mode` flag was removed, and the first-use opt-in consent prompt is gone too (v2.1.152).
 - `settings.autoMode.hard_deny` defines classifier rules that block unconditionally regardless of user intent or allow exceptions — useful as a policy-grade backstop.
 
 ### Forked subagents (`/fork`, w17)
@@ -85,14 +91,14 @@ Features that changed how skills get built, in rough order of impact:
 - `/ultraplan` drafts a plan in a cloud session; review in browser; execute remotely or pull back to CLI.
 - `claude ultrareview [target]` runs the review non-interactively from CI or scripts (`--json` for raw output; exits 0 on completion, 1 on failure).
 
-### Opus 4.7 + xhigh effort (w16)
+### Opus 4.8 (now default, v2.1.154)
 
-- New default on Max and Team Premium.
-- Five effort levels on 4.7: `low`, `medium`, `high`, `xhigh` (recommended default for most coding/agentic work), `max`.
-- Adaptive reasoning is always on for 4.7 (no fixed-budget mode).
-- `/effort` opens an interactive slider when called without args.
+- Opus 4.8 (`claude-opus-4-8`) is the current default Opus; it defaults to **high** effort, with `/effort xhigh` reserved for the hardest tasks.
+- Effort levels: `low`, `medium`, `high`, `xhigh`, `max`. `/effort` opens an interactive slider when called without args (slider labels are now "Faster"/"Smarter").
+- The **lean system prompt** is now the default for Opus 4.8 and newer; Haiku, Sonnet, and Opus 4.7-and-earlier keep the full prompt. Smaller standing prompt, more room for your context.
 - 1M context window included for Max/Team/Enterprise on Opus.
-- Fast mode defaults to Opus 4.7 as of v2.1.142 (pin to 4.6 with `CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE=1`).
+- Fast mode on Opus 4.8 runs at 2× the standard rate for ~2.5× the speed. `CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE` is deprecated (removed 2026-06-01); for fast mode on 4.6, switch with `/model claude-opus-4-6[1m]` then `/fast on`.
+- Opus 4.7 (`claude-opus-4-7`) is still selectable via `/model`; it introduced the effort-level scale and always-on adaptive reasoning.
 
 ### Agent view (`claude agents`, research preview)
 
@@ -117,6 +123,7 @@ The hook surface has accumulated several useful fields:
 - **`args: string[]` exec form** — spawns the command directly without a shell, so path placeholders never need quoting.
 - **`continueOnBlock` for PostToolUse** — feeds the hook's rejection reason back to Claude and continues the turn instead of aborting.
 - **`terminalSequence` in hook output** — emit desktop notifications, window titles, and bells without a controlling terminal.
+- **`MessageDisplay` hook event** — transform or hide assistant message text as it's displayed (v2.1.152).
 - **Effort context** — hooks receive `effort.level` in their JSON input and `$CLAUDE_EFFORT` in their environment; Bash commands also get `$CLAUDE_EFFORT`.
 - **MCP servers receive `CLAUDE_PROJECT_DIR`** in their environment, matching hooks. Plugin configs can reference `${CLAUDE_PROJECT_DIR}` in commands.
 
@@ -155,6 +162,10 @@ The hook surface has accumulated several useful fields:
 - **`defer` permission decision** in `PreToolUse` hooks — `-p` sessions pause at the tool call and exit with `deferred_tool_use` payload, resumable with `--resume`.
 - **Vim visual mode** (v/V) in the prompt input.
 - **Computer use** in CLI (research preview) — Claude can drive native apps and verify changes via GUI.
+- **`disallowed-tools` frontmatter** (skills and slash commands) — removes named tools from the model while the skill is active; the inverse of `allowed-tools` (v2.1.152).
+- **`/reload-skills`** — re-scans skill directories without a restart; `SessionStart` hooks can return `reloadSkills: true` to surface skills they install mid-session.
+- **Plugin `defaultEnabled: false`** — a plugin can ship disabled by default (set in `plugin.json` or the marketplace entry); enable with `/plugin` or `claude plugin enable`. Dependencies of enabled plugins still auto-enable.
+- **`claude agents` shell sessions** — `! <command>` (or `claude --bg --exec '<command>'`) runs a shell command as an attachable, detachable background session.
 
 ## Constraints worth designing around
 
@@ -172,7 +183,8 @@ The hook surface has accumulated several useful fields:
 
 These exist in stock Claude Code; building parallel skills competes for description budget:
 
-- **`/code-review`** (skill, renamed from `/simplify` in v2.1.147) — reports correctness bugs in the current diff at the requested effort level (e.g. `/code-review high`); `--comment` posts findings as inline GitHub PR comments. The earlier cleanup-and-fix behavior was dropped in the rename.
+- **`/code-review`** (skill) — reports correctness bugs in the current diff at the requested effort level (e.g. `/code-review high`); `--comment` posts findings as inline GitHub PR comments, `--fix` applies them to the working tree.
+- **`/simplify`** (skill) — cleanup-only review of the diff (reuse, simplification, efficiency, altitude) that applies its fixes; a quality pass, not bug-hunting — use `/code-review` for bugs.
 - **`/batch <instruction>`** (skill) — decomposes large changes into 5–30 units; spawns one background agent per unit in isolated worktrees; opens PRs.
 - **`/debug`** (skill) — captures debug logs from current point forward; analyzes issues.
 - **`/loop`** (skill) — recurring or self-paced prompt execution.

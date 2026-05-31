@@ -5,3 +5,5 @@ CLAUDE.local.md
 .claude/skills/
 scratch/
 .settings.local.json
+.eval-runs/
+rebalance.md

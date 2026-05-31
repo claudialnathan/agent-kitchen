@@ -35,6 +35,8 @@ harness-targets: [claude]
 
 # hook-forge
 
+<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Craft pass 2026-05-30 (Opus 4.8, Claude Code v2.1.156): added the strictness spectrum (block/warn/log) and false-positive fatigue, and named the "block message teaches" principle, after a cross-forge audit found the anatomy well-covered but hook craft thin. Worked-example failures predate this; re-test on the next major model release. -->
+
 A hook removes a concern from Claude's reach. The harness enforces the rule before the model interprets, decides, or attends to it. This is the strongest form of attention redirection in the toolkit: a skill redirects, a hook eliminates. The same rule shaped as a skill is interpretation the model can talk itself out of; shaped as a hook, it fires every time without the model in the loop.
 
 The skill / hook confusion is the canonical authoring mistake. Get the shape wrong and you produce either toothless rules (a skill where a hook was needed) or surprise blocks (a hook where guidance would have done).
@@ -73,6 +75,16 @@ If you got here from skill-forge, you already triaged. If not, run a brief rever
 - **CLAUDE.md** is right when the rule is a fact Claude should hold every session. Hooks can't replace context.
 
 If you're sure a hook is the answer, continue. If reverse-triage moved the work to a different surface than the user asked for, apply the *announce → confirm → carry through* gate from `skill-forge` — name the redirect in one line and get a go-ahead before invoking the companion forge.
+
+## Strictness — block, warn, or log?
+
+Determinism mode (the second of the three opening questions) is not a binary. A hook sits somewhere on a strictness spectrum, and **after the skill/hook confusion, setting strictness too high is the most common hook-design mistake.** Decide this before wiring the mechanics — it changes the event and the exit-code semantics below.
+
+- **Block** (exit 2 / `decision: "block"`) — the action cannot proceed. Reserve for genuinely unrecoverable or policy-grade cases: a secret about to be committed, a write to `.env`, a destructive command. The bar: a false block hurts less than letting this through.
+- **Warn** (non-blocking — exit 0 with a message, PostToolUse stderr, or `additionalContext`) — the action proceeds; Claude is told something it should weigh. For advice, smells, "you probably also want to…". **Most hooks that feel like they should block actually want to warn.**
+- **Log** (write to a file, emit nothing into the loop) — observability only, no agent-facing output. Metrics, audit trails, anything the agent doesn't act on this turn.
+
+**False-positive fatigue is what makes over-strictness self-defeating.** A blocking hook that fires on cases the user considers fine trains them to disable it — and a disabled hook enforces nothing. An over-blocking hook is worse than no hook: it costs the guarantee _and_ the user's trust in the whole hooks layer. Before choosing block, ask: what is the false-positive rate, and what does a false block cost? If false positives are likely and the downside of letting one through is small, warn instead. **Strictness is earned by precision, not by how important the rule feels.**
 
 ## Step 2 — Pick the event
 
@@ -146,6 +158,8 @@ This is the single most-misunderstood area of hook authoring. The default assump
 **Rule of thumb:** if you want to block, exit `2`. Anything else (including `1`) does not block. This catches a lot of authors who write `if (bad) { exit 1 }` and wonder why the bad thing keeps happening.
 
 **Success silent, failures verbose.** Hooks should be invisible when they pass and loud when they fail. A `command` PostToolUse hook that prints "lint clean" on every edit is noise that pollutes the next turn's context for every reader downstream. Print nothing on success; print the actionable error on failure. The exit-code semantics encode this: exit 0 with empty stdout costs nothing, exit 2 with stderr is the loud failure path Claude reads and reacts to. If the hook is doing observability, log to a file rather than stdout; only the agent-actionable part belongs in the harness loop.
+
+**The block message teaches; it doesn't just deny.** Stderr on exit 2 is fed to Claude — it's the one chance to redirect behavior, so explain the *why* and offer the alternative rather than refusing flatly. "Blocked: writes to `.env` bypass the secret-scanning the team relies on — add the key to `.env.example` and document it in CLAUDE.md instead" generalizes and Claude complies cleanly; "rejected" teaches nothing, so the model retries a variant or argues. This is the hook-side of explain-the-why — the same principle `skill-forge` and `claude-md-forge` apply to reasons over bare directives. A hook that reasons gets compliance *and* understanding; a hook that only denies gets worked around.
 
 For events that can use JSON output for richer control (`PreToolUse` `permissionDecision`, `UserPromptSubmit` `decision`, `Stop` `decision`), see [references/handlers.md](references/handlers.md).
 
@@ -298,12 +312,14 @@ The full anti-pattern catalog is in [references/anti-patterns.md](references/ant
 - **Hook output that pollutes context.** PostToolUse stdout is fed back to Claude. Verbose lint output on every edit floods the conversation. Suppress noise; surface only failures.
 - **Hook with side effects in PreToolUse.** PreToolUse should *check*, not *do*. If your hook mutates state, you've reinvented Claude's tools poorly. Use PostToolUse for side effects, or just let Claude run the side effect as a real tool call.
 - **MCP-tool handler when command would do.** Adds connection dependency and complexity for no benefit. Use `command` unless the check genuinely lives in an external system.
+- **Over-blocking (cry-wolf).** A blocking hook that fires on cases the user thinks are fine trains them to disable it — and a disabled hook enforces nothing. Match strictness to the false-positive rate, not the rule's importance (see Strictness).
 
 ## Closing checklist
 
 Before saving:
 
 - [ ] Confirmed this should be a hook, not a skill / settings deny rule / CLAUDE.md fact.
+- [ ] Strictness matched to risk: block only where a false block beats a false pass; otherwise warn or log. No cry-wolf.
 - [ ] Picked the right event (timing, blocking semantics).
 - [ ] Matcher actually covers the tool/event names you mean (test with the regex if uncertain).
 - [ ] Handler type fits the work (most should be `command`).

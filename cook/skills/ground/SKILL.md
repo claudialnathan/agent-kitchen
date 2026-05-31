@@ -8,7 +8,7 @@ disable-model-invocation: true
 harness-targets: [claude]
 ---
 
-<!-- Earned against: Opus 4.7 (claude-opus-4-7), 2026-05-22. Architectural — re-evaluate when grounding-in-sources stops needing explicit scaffolding. -->
+<!-- Earned against: Opus 4.7 (claude-opus-4-7), 2026-05-22. Architectural — re-evaluate when grounding-in-sources stops needing explicit scaffolding. Re-tested 2026-05-29 (Opus 4.8): KEPT. A skill-withheld agent reproduced the architecture (one reader per source, verbatim quotes, conflict synthesis) — but only under heavy prompting; the scaffold still buys reliability, the quote contract, and the forge handoff. The bar above is not yet met. -->
 
 ## The attention this skill redirects
 

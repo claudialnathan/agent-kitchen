@@ -1,260 +1,249 @@
 ---
 name: skill-forge
-description: Triages a skill creation request to first confirm if a skill is the right place to put behaviour, then if a skill fits, classifying it's 'type', then writing and shaping the SKILL.md around current harness affordances. Use when the user wants to create, design, or refactor a skill, asks "should this be a skill?", says they want to capture a workflow they keep retyping, or is building anything in `.claude/skills/`. Also use when reviewing an existing skill that under-triggers, over-triggers, or feels generic.
+description: |
+  Triages a skill request — confirms a skill is the right surface, checks whether a good one already exists to reuse or fork, classifies the kind, then writes the SKILL.md so its subject is genuinely good and its anatomy fits the harness. Use when the user wants to create, design, distill, or refactor a skill, asks "should this be a skill?" or "is there already one?", wants to capture a workflow they keep retyping, or is reviewing a skill that under-triggers, over-triggers, or feels generic.
 when_to_use: |
-  Triggers: "make a skill for X", "turn this into a skill", "I keep typing the same thing", "this should be reusable", "design a /command for Y", "review my skill", "why isn't my skill triggering", "convert my CLAUDE.md section into a skill", "build a skill that does Z".
-  Adjacent intents that should also pull this skill in: deciding between a skill and a hook, deciding between a skill and a subagent, packaging a personal workflow, building a plugin (since plugins bundle skills).
+  Triggers: "make a skill for X", "turn this into a skill", "distill this article/paper/doc into a skill", "I keep typing the same thing", "this should be reusable", "is there already a skill for this?", "reuse or fork an existing skill?", "design a /command for Y", "review my skill", "why isn't my skill triggering", "convert my CLAUDE.md section into a skill".
+  Adjacent intents: deciding between a skill and a hook / subagent / rule, packaging a personal workflow, building a plugin (plugins bundle skills), operationalizing source material you've collated.
 harness-targets: [claude]
 ---
 
 # skill-forge
 
-Designs skills that **redirect attention**, not skills that **encode the right answer**. Both look the same on the surface — SKILL.md, frontmatter, body, optional references. They are not the same artifact.
+<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Re-architected 2026-05-30/31 (Opus 4.8, Claude Code v2.1.156) around two pillars — subject-craft co-equal to harness-anatomy — after user feedback that the forge over-taught anatomy. Pillar 1 carries both an expert-grade depth gate (the what — name the delta over the model's competent default, source/verify, acquire if missing) and the craft canon (the how, sourced to Anthropic's skill best-practices and skill-creator). A 2026-05-31 A/B depth-eval (blind judge panel, 3 technical domains, in evals/) showed the guidance lifts craft (+0.89) and anatomy (+0.44) more than depth (+0.33), and caught two regressions since fixed: a soft "verify" that shipped a deprecated API from recall (now an explicit fetch-and-cite step), and over-imitation of this forge's own [claude] frontmatter onto a portable skill. A 2026-05-31 source-verification of the eval's model-weak (procurement) skill confirmed the depth gate yields correct expert facts (CPR value-for-money clauses, current rule date) but leaks citation-shaped fabrication — an invented quote attributed to a named authority — which earned depth.md point 3 ("cite honestly"). 2026-05-31 dogfood of the local /debrief skill surfaced two refinements since added: a keep-signal counterpart to the sunset audit (record positive evidence against the pin, not only deletion triggers), and a proportional/cost-gated verification tier in "Test and iterate" (read-back → fresh probe → confirm-before-firing the ~1M-token A/B eval). Worked-example failures predate this revision; re-test on the next major model release. -->
 
-A skill listing five deploy steps shortens typing; Claude is still attending to mechanics. A skill saying _the question here is whether to ship; the mechanics are X but they aren't the work_ changes what is foreground. The first is **additive** (knowledge or shortcuts). The second is **transformative** (a redirection of attention). Both are valid; transformative skills earn their recurring-context cost more readily, because what they put in context is _reframing_, not just facts.
+A good skill is two things at once, and most skills fail the first one.
 
-If you cannot say in one sentence what attention this skill redirects — _from_ what, _to_ what — you do not have the design yet. Triage and shape both follow from that sentence; without it, you are templating. The 2026 default failure of skill creation is encoding the answer where the failure called for redirecting the attention. The forge exists to push back on that.
+1. **Its subject is good** — in two senses. It is **expert-grade** (it encodes what a domain expert knows and the model's competent default doesn't), and it is **written with craft** (so that knowledge does real work in context, redirecting what the agent attends to). A skill that distills hard-won expertise earns its keep; one that restates what the model already does is dead weight, however well-formed.
+2. **Its anatomy is right.** It triggers when it should, loads only what's needed, and survives compaction. A perfectly-distilled skill with a vague description never loads, and an invisible skill helps no one — the most common real-world failure mode is mechanical, not editorial.
 
-It does two things in order:
+Both pillars matter; **neither substitutes for the other**. This forge is organized to put the subject first — because the question "is this skill actually good?" is the one most easily skipped — and then to get the anatomy right in service of it.
 
-1. **Triage** — locate the right abstraction level for the redirection. Skills are one of six harness surfaces; sometimes the redirection belongs elsewhere. A refined harness trends toward _fewer_ artifacts, each doing what only it does.
-2. **Shape** — write the SKILL.md to the kind, using the harness features that actually fit.
+The heart of Pillar 1 is one distinction. A skill listing five deploy steps shortens typing; the agent is still attending to mechanics. A skill saying _the question here is whether to ship; the mechanics are X but they aren't the work_ changes what is foreground. The first is **additive** (facts or shortcuts); the second is **transformative** (a redirection of attention). Both are valid, but if you cannot say in one sentence what attention this skill redirects — _from_ what, _to_ what — you do not have the design yet.
 
-Two constraints hold throughout. A skill description has a **1,536-character budget every turn**; an invoked skill body lives in recurring context with a **5,000-token compaction budget**. Most shape-level choices follow from these.
+The work goes in order: **earn it** (Step 0) → **don't reinvent it** (reuse) → **confirm a skill is the right surface** (triage) → **Pillar 1: make the subject good** → **Pillar 2: make the anatomy right** → test, check, ship.
 
-## Step 0 — Name the failure, name the attention
+Two constraints recur. The combined `description` + `when_to_use` for one skill is capped at **1,536 characters** in the listing; the aggregate listing budget across all skills scales at ~1% of the context window, dropping the least-used descriptions first. An invoked skill body lives in recurring context with a **5,000-token compaction budget**. Most anatomy choices follow from these.
 
-Two questions before triage.
+## Step 0 — Earn the skill
 
-**What failure did you observe?** A real moment where the agent did the wrong thing — or, for knowledge skills, a class of correction you've made three or more times in this codebase. Not "we might want X"; not "best practice says Y". If you cannot name a real failure, stop. Speculative skills are the most expensive kind, because they sit in recurring context paying rent until something forces removal. The cheapest answer is doing the work in the moment and waiting for the failure to recur.
+Before anything, name why this skill should exist. There are two legitimate origins. Both earn a skill; both get a model-pin and a sunset trigger.
 
-**What attention was the failure showing was missing?** When the failure happened, Claude was attending to something. What was it attending to that it should not have been? What should it have been attending to instead? The skill's job is to make the right attention easier — not to specify the right answer. If you can name the failure but cannot name the attention shift, you have an observation, not yet a design. Sit with it longer.
+**Origin A — an observed failure.** A real moment where the agent did the wrong thing, or a correction you've made three or more times in this codebase. Not "we might want X"; not "best practice says Y". This is the strongest basis, because the failure _is_ the eval and the attention it was missing _is_ the design.
 
-Write both down in one line each. They become the skill's _why_ — the failure is the empirical anchor; the attention shift is the design move. The triage that follows decides which surface fits the redirection.
+**Origin B — authoritative expertise worth operationalizing.** You've read or collated something with real authority — a spec, a researched methodology, hard-won domain knowledge — and want it in the agent's reach before the failure happens. This is legitimate; it's how most knowledge skills are born, and Pillar 1 below supports it — the depth gate for making sure the expertise is real and current, the distillation craft for structuring it. The bar that keeps it honest: the source must be **authoritative, not merely interesting**. Operationalizing a battle-tested methodology earns its keep; encoding a hot take you just read is speculative interest — the most expensive kind of skill, paying recurring rent until something forces its removal.
 
-If the failure is one the current model has stopped making, the skill is obsolete on arrival. Don't write it. Each non-trivial artifact records the model version it was earned against (see the repo's `Model-version pinning` convention) so the sunset audit has a trigger.
+**Name the attention.** Whichever origin: what should the agent be attending to that it isn't — or attending to that it shouldn't? The skill's job is to make the right attention easier, not to script the right answer. If you can name the basis but not the attention shift, you have material, not yet a design. Sit with it longer.
 
-If the user wants to proceed without an observed failure — article-derived skills, "I read this, should it be a skill?", proactively encoding something interesting — the partial discipline is: name a *proxy failure* (the training-data default the skill would redirect against); tag the skill as speculative in the provenance comment; define the audit trigger explicitly (on the next major model release, re-test the proxy default in a fresh session and delete if absorbed). Treat the article as the evidence basis, not the failure itself. The skill earns its keep until the proxy failure stops appearing.
+Record the model version this skill is earned against (the repo's `Model-version pinning` convention) and define the sunset trigger now: on the next major model release, re-test — does the failure still reproduce, or has the model absorbed the expertise? If absorbed, delete. Origin-B skills that turned out to encode mere interest are the first to go.
 
-## Triage: which surface should hold the redirection?
+## Before you build — does a good one already exist?
 
-The redirection needs a home. The harness has six surfaces, each redirecting attention at a different abstraction level:
+The cheapest skill is the one you don't write. Before drafting, look outward.
 
-- **Hook** removes a class of mistake from Claude's reach entirely — the attention never has to be there.
-- **MCP server** gives Claude a sense it didn't have — the attention has somewhere to land.
-- **Subagent** moves attention off the main thread when output would flood it.
-- **CLAUDE.md / AGENTS.md** sets the always-on attention floor — facts Claude should hold every session.
-- **Path-scoped rule** sets context-specific attention when matching files are open.
-- **Skill** gives leverage on a kind of recurring work — redirects attention each time that kind of work is happening.
+**Reuse-first.** Search the ecosystem: if the `find-skills` skill is available, use it; otherwise check `skills.sh`, run `npx skills find <query>`, or search manually. Then **read the strongest candidate and judge it yourself** — install count and stars are a prior, not a verdict (a large fraction of published skills silently under-trigger). Assess two axes:
 
-Skills are flexible but not free: every visible skill eats description budget every turn, and every invocation pins content for the rest of the session. A refined harness trends toward _fewer_ artifacts, each doing what only it does. If another surface fits the redirection better, use it instead.
+- **Quality** — is the description specific, the body in standing-instruction voice, the craft real? Or is it a generic restatement that loads and does nothing?
+- **Coverage** — does it cover your actual case, or only a slice of it?
 
-Run the triage ladder. The first match wins.
+Three outcomes:
 
-1. **Is the action a hard guarantee, not a request?** ("never edit `.env`", "lint after every Edit", "block secrets from being read"). → That's a **hook**, not a skill. Hooks fire deterministically; skills are interpreted by the model.
+- **Use as-is** — it's good and covers the case. Install it, point the user at it, stop. You've avoided a recurring-context artifact entirely.
+- **Fork and tune** — the bones are right but it's generic, mis-scoped, or stale for this user/codebase. Copy it, sharpen the description to the real triggers, cut what doesn't apply, add what's missing. This is usually the highest-value outcome, and the one ecosystem search tools won't propose for you.
+- **Build new** — nothing fits, or the candidates are low-quality and not worth forking.
 
-2. **Does Claude need access to a system the harness can't see?** (a database, an issue tracker, a private API). → That's an **MCP server**, not a skill. Skills can teach Claude _how to use_ an MCP server well; they can't replace the connection.
+`find-skills` is not bundled with this forge, so by the reliable-availability rule below the gate degrades to manual search where it's absent. The quality/coverage rubric and the fork mechanics are in [references/reuse.md](references/reuse.md).
 
-3. **Is the work a side task that would flood the main context with output?** (running tests, scraping logs, exploring an unfamiliar module). → That's a **subagent**, not a skill — or a skill with `context: fork` that runs _as_ a subagent.
+**If you're building: how does it sit alongside what exists?** Even when you build new, an adjacent skill may already cover part of the territory. Getting the relationship wrong creates silent duplication (two skills competing for description budget) or silent dependence (cross-references to skills not present in the sessions this one loads in).
 
-4. **Is the rule a fact Claude should hold every session?** ("we use pnpm not npm", "tests live in `tests/`", "the API base path is `/v2`"). → That's a **CLAUDE.md** entry. Reserve CLAUDE.md for short, broadly-applicable facts; keep it under ~200 lines. For non-trivial CLAUDE.md design (initial bootstrap, structural audit, surface-aware tune), hand off to `claude-md-forge` — it triages across all six surfaces and writes rules reason-first.
+_Reliable-availability heuristic_ — whether you can defer to another skill depends on whether it's actually in the session:
 
-5. **Does the rule only apply when working in certain files?** ("API endpoints under `src/api/` follow these conventions"). → That's a **path-scoped rule** in `.claude/rules/something.md` with `paths:` frontmatter. Only loads when Claude touches matching files.
+- **Bundled in the same plugin** as your new skill, or a **stock Claude Code skill** → reliable; cross-references load.
+- **Personal scope** (`~/.claude/skills/`), **local-script symlinks**, or an **optional plugin in another marketplace** → present only sometimes. Cross-references silently degrade where it's absent.
 
-6. **None of the above, and it's a procedure or body of knowledge that's reusable across sessions.** → Now it's a skill.
+_Three relationships_ — pick one, or a deliberate mix:
 
-If you've gotten here, continue to the next section. If not, **carry through to the redirected surface — don't just announce that it should be one**. Specifically:
+| Relationship | When it fits | Failure mode if wrong |
+| :--- | :--- | :--- |
+| **Sharpen** — narrow your scope; cite the rest by name | The adjacent skill is reliably present; the boundary is clean | Cross-refs degrade where the adjacent skill is absent |
+| **Absorb** — copy the high-leverage ideas in so you're self-sufficient | It isn't reliably present; budget allows the duplication | Body bloat; future drift between source and your copy |
+| **Dispatch** — be the entrypoint that routes to several others (the Dispatcher kind) | 3+ reliably-present skills where the routing _is_ the recurring work | Routes to skills that vanish; a list of dead pointers |
 
-> **Surface the redirect before executing it.** When triage moves the work to a different surface than the user originally asked for, name the redirect in one line and confirm before invoking the companion forge — e.g., "This looks like a path-scoped rule, not a skill, because [the reason from the triage ladder]. Hand off to `/rule-forge`?". Wait for the go-ahead. If the user pushes back with new context, re-triage with that info rather than overriding their call. The shape is *announce → confirm → carry through* — never *announce and leave*, and never *silently switch*.
+Mixing is fine — most skills sharpen on some axes, absorb on others. The call is reversible: re-audit when a personal skill becomes a bundled plugin, an upstream skill is rewritten, or a dependency is removed. Longer form in [references/triage.md](references/triage.md).
 
-> **Caveat on companion forges.** The hook / rule / CLAUDE.md handoffs below reference `hook-forge`, `rule-forge`, and `claude-md-forge` — sibling skills bundled with `skill-forge` in the `claudia@harness` plugin. If the user has skill-forge alone, suggest installing the rest (`/plugin install claudia@harness`, or pointing at the source if installing manually) and proceed with the inline fallback in the meantime. Don't block on the install — the fallback paths below are complete on their own.
+## Triage — is a skill even the right surface?
 
-- **Hook** → if `hook-forge` is installed, invoke it (`/hook-forge`) and design the hook there. Otherwise, walk the user through the hook configuration inline: which event, which matcher, which handler type, what the script returns. The triage isn't done until the actual `.claude/settings.json` (or skill/agent frontmatter `hooks:` block) is drafted.
-- **MCP** → propose the `claude mcp add` command for a known server, or design the inline `.mcp.json` entry. If domain-specific guidance is needed (schema, query patterns), that's a _companion_ skill the user can build after the connection exists.
-- **CLAUDE.md** → if `claude-md-forge` is installed, hand off there for any non-trivial design (initial bootstrap, structural audit, surface-aware tune). Otherwise, propose the actual lines to add inline; suggest a path-scoped rule file at `.claude/rules/<name>.md` if the content is more than a few lines and only applies to some files; consult Anthropic's CLAUDE.md docs for AGENTS.md / structural questions you can't resolve from context.
-- **Path-scoped rule** → if `rule-forge` is installed, invoke it (`/rule-forge`) for the path-glob and body shape. Otherwise, draft the `.claude/rules/<name>.md` directly with `paths:` frontmatter and the rule body.
-- **Subagent** → propose the `.claude/agents/<name>.md` with frontmatter (tools, model, permissionMode) and the system prompt body.
-- **Nothing** → say so and stop. The cheapest answer is often "do this in the moment, don't encode it."
+The harness has six surfaces, each redirecting attention at a different level. A refined harness trends toward _fewer_ artifacts, each doing what only it does. Run the ladder; the first match wins.
 
-Read [references/triage.md](references/triage.md) for the longer form, including how to combine surfaces (e.g., MCP + skill, hook + skill).
+1. **Hard guarantee, not a request?** ("never edit `.env`", "lint after every Edit", "block secrets"). → **Hook**. Hooks fire deterministically; skills are interpreted and can be talked out of.
+2. **Needs a system the harness can't see?** (a database, an issue tracker, a private API). → **MCP server**. A skill can teach _how_ to use it well; it can't replace the connection.
+3. **A side task that would flood the main context?** (running tests, scraping logs, exploring an unfamiliar module). → **Subagent** — or a skill with `context: fork` that runs _as_ one.
+4. **A fact Claude should hold every session?** ("we use pnpm", "API base path is `/v2`"). → **CLAUDE.md**. For non-trivial CLAUDE.md design, hand off to `claude-md-forge`.
+5. **A rule that only applies in certain files?** → **Path-scoped rule** in `.claude/rules/<name>.md` with `paths:`. For its design, hand off to `rule-forge`.
+6. **None of the above, reusable across sessions?** → Now it's a skill. Continue to Pillar 1.
 
-## Relate: how does this sit alongside skills that already exist?
+> **Surface the redirect before executing it.** When triage moves the work elsewhere than the user asked, name the redirect in one line and confirm before invoking the companion forge — e.g. "This looks like a path-scoped rule, not a skill, because [reason]. Hand off to `/rule-forge`?". Wait for the go-ahead; re-triage if the user pushes back with new context. The shape is _announce → confirm → carry through_ — never announce-and-leave, never silently switch.
 
-Triage chose the surface. Before classifying which kind of skill this is, look outward: is there already an adjacent skill — in any scope (project, personal, bundled-plugin, optional-plugin) — that covers part of the territory this new skill would touch? If yes, the relationship between them is a real design decision, and getting it wrong creates either silent duplication (two skills competing for description budget) or silent dependence (cross-references to skills that aren't always present in the sessions this one loads in).
+> **Companion forges** (`hook-forge`, `rule-forge`, `claude-md-forge`) are bundled with skill-forge in the `cook` plugin. If the user has skill-forge alone, suggest installing the rest and use the inline fallback in the meantime — don't block on the install. Per-surface fallbacks and how to combine surfaces (MCP + skill, hook + skill) are in [references/triage.md](references/triage.md).
 
-**Reliable-availability heuristic.** Whether you can defer to another skill depends on whether it's actually in the session.
+---
 
-- **Bundled in the same plugin marketplace** as your new skill → reliable. Cross-references will load.
-- **Stock Claude Code skills** (`/code-review`, `/debug`, `/init`, etc.) → reliable.
-- **Personal scope** (`~/.claude/skills/`) → only on the author's machine. Not in CI, not on a teammate's machine, not in another agent runtime.
-- **Cross-tool symlinks set up via local script** (e.g., this workshop's `bin/sync-cross-tool`) → this machine only.
-- **Optional plugin in another marketplace** → never assume; users install à la carte.
+## Pillar 1 — make the subject good
 
-If the adjacent skill is in the bottom three buckets, cross-references silently degrade in sessions where it's absent. The skill that depended on it ends up gesturing at documentation that doesn't load.
+This is the half the forge used to skip; anatomy (Pillar 2) is in service of it. "Good" has two parts, in order: **depth** (is the substance expert-grade — the _what_?) and **craft** (is it written to do work — the _how_?). Craft cannot manufacture depth — a flawless render of competent-level substance is still a competent skill.
 
-**Three relationships.** Once you know what's adjacent and how reliably it loads, pick one — or a deliberate mix.
+### Classify the kind
 
-| Relationship                                                                                          | When it fits                                                                                 | Failure mode if wrong                                              |
-| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- | :----------------------------------------------------------------- |
-| **Sharpen** — narrow the new skill's scope; cite the rest by name                                     | Adjacent skill is reliably present; the boundary between the two is clean                    | Cross-refs degrade in sessions where the adjacent skill is absent  |
-| **Absorb** — copy the high-leverage ideas into this skill so it's self-sufficient                     | Adjacent skill isn't reliably present; budget allows the duplication                         | Description + body bloat; future drift between the source and your copy |
-| **Dispatch** — make this skill the entrypoint that routes to several others (the Dispatcher kind, below) | 3+ adjacent skills, all reliably present, where the routing logic is itself the recurring work | Routes to skills that vanish; the dispatcher becomes a list of dead pointers |
+Skills are not one shape. The eight kinds have different goals and SKILL.md structures. Pick one before drafting.
 
-- **Sharpen** is the cheapest option when it works. You own a narrow, well-defined slice; the rest is somebody else's skill, cited by name. The whole answer relies on those citations actually loading, which is why "reliably present" is the gate. The "Caveat on companion forges" callout in the Triage section is itself a Sharpen — and the reason each handoff has an inline fallback is exactly this gate failing.
-- **Absorb** is the right move when the adjacent skill is the source material you want but can't depend on. Copy what's load-bearing; restate, don't paraphrase thinly; keep provenance outside the skill (commit message, worklog, design doc) so a future author can find the originals. The cost is description-and-body budget and the risk that the absorbed material drifts from the source — you've now signed up to keep what you copied current.
-- **Dispatch** is the Dispatcher kind from the Classify table below, applied at the relationship layer rather than across jobs inside one domain. The skill's value *is* the routing logic. Pre-req: the destinations are guaranteed.
+| Kind | Purpose | Default invocation | `context` | Body shape |
+| :--- | :--- | :--- | :--- | :--- |
+| **Workflow** | Run a multi-step procedure (`/release`, `/commit`) | `disable-model-invocation: true` | inline | imperative numbered steps |
+| **Knowledge** | Apply conventions/standards when relevant | model-invocable | inline | declarative facts/rules |
+| **Guarded action** | Side-effecting action with strict tool scope | `disable-model-invocation` + `allowed-tools` | inline | one-shot recipe |
+| **Forked research** | Investigate without polluting the main thread | model-invocable, `context: fork`, `agent: Explore` | forked | task prompt for a subagent |
+| **Research orchestrator** | Parallel forks over a corpus, then bounded synthesis (`/ground`) | `disable-model-invocation: true` | inline; spawns forks | dispatch contract + bounded synthesis |
+| **Path-scoped knowledge** | Conventions that only matter for some files | model-invocable + `paths:` | inline | declarative, narrow scope |
+| **Toolkit** | Bundle scripts/examples Claude calls into | model-invocable; `scripts/`+`examples/` carry the value | inline | thin orientation pointing at artifacts |
+| **Dispatcher** | Triage + shape across 2+ related jobs (`skill-forge`, `hook-forge`) | model-invocable; often `paths:`-scoped | inline | quick-dispatch table + shared triage + per-job sections |
 
-Mixing is fine — most real skills sharpen on some axes, absorb on others, and ignore the rest. The named relationships exist to make the call visible, not to enforce purity.
+The kind constrains the form; it does not decide whether the skill is worth its cost — that's the additive-vs-transformative test below. A worked example of each kind, with the frontmatter that matters and the noise to drop, is in [references/skill-kinds.md](references/skill-kinds.md).
 
-**The call is reversible.** If your skill ecosystem shifts — a personal-scope skill becomes a bundled plugin, an upstream skill gets rewritten, a plugin you depended on gets removed — re-audit. Absorbed content can be deleted in favor of a cross-reference once the source becomes reliable; cross-references can be flattened into absorption once a source disappears. The auditing trigger is the same one as in Step 0: the failure that earned the original call has shifted or stopped.
+### Make it expert-grade — the depth gate
 
-## Classify: which kind of skill?
+A frontier model's default output sits around _competent_ across most domains, so encoding competent-level content is dead weight — the model is already there. A skill earns top-tier status only by carrying the **expertise delta**: the proficient-to-expert knowledge that isn't in the default — the non-obvious moves, the trade-offs an expert weighs, the domain traps, the verified current specifics. Five-point discipline; depth in [references/depth.md](references/depth.md):
 
-Skills are not one shape. The eight kinds below have different goals and different SKILL.md structures. Pick one before drafting.
+1. **Name the delta** — _what does a real expert know here that the model's default gets shallow or wrong?_ Can't name it → it's the floor → don't build, or go acquire the depth first.
+2. **Source and verify — as an action, not an intention.** For any version-specific or fast-moving fact (an API signature, a flag, a current default), _fetch the current canonical doc and cite it_ (WebFetch, or context7 for libraries); do not write it from memory — recall ships deprecated specifics in confident tone. For domain claims generally, ground them in an authoritative source, not generic priors. This is `claude-md-forge`'s "verify first," strengthened: "verify" as a value you hold doesn't fire — make it a step you take.
+3. **Acquire it if it's not in the room** — read the canonical sources, `/ground` or `/deep-research` a corpus, pull in a human expert or a domain subagent; or narrow the skill to the slice you _can_ author expertly. Don't dress competence up as expertise.
+4. **Encode judgment and failure-modes, not just rules** — the taste (when to break the rule, the trade-off, the trap) is the least-substitutable delta; rules alone are what the docs already say.
+5. **The expert's-eye test** — would the domain's harshest expert learn anything, or recognize the floor? (This is also exactly what an expertise eval would score — the authoring rubric and the grading rubric are one checklist.)
 
-| Kind                      | Purpose                                                                                                                                                | Default invocation                                                  | Default `context` | Body shape                                                   |
-| :------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------ | :---------------- | :----------------------------------------------------------- |
-| **Workflow**              | Run a multi-step procedure (`/release`, `/commit`, `/deploy`)                                                                                          | `disable-model-invocation: true` (you trigger)                      | inline            | imperative numbered steps                                    |
-| **Knowledge**             | Apply conventions/standards/patterns when relevant                                                                                                     | model-invocable (Claude picks it up)                                | inline            | declarative facts/rules                                      |
-| **Guarded action**        | Side-effect-having action with strict tool scope (`/post-to-slack`)                                                                                    | `disable-model-invocation: true` + `allowed-tools`                  | inline            | one-shot recipe                                              |
-| **Forked research**       | Investigate something without polluting the main thread                                                                                                | model-invocable, `context: fork`, `agent: Explore`                  | forked            | task prompt for a subagent                                   |
-| **Research orchestrator** | Parallel forks over a user-supplied corpus (URLs/files/text), then bounded synthesis into an artifact (`/ground`)                                      | `disable-model-invocation: true` (real cost per run)                | inline; spawns per-source forks | dispatch contract + bounded synthesis + handoff   |
-| **Path-scoped knowledge** | Conventions that only matter for some files                                                                                                            | model-invocable + `paths:` glob                                     | inline            | declarative, narrow scope                                    |
-| **Toolkit**               | Bundle scripts and examples Claude calls into for repeatable infrastructure (browser automation, file processing, report generation)                   | model-invocable; bundled `scripts/` and `examples/` carry the value | inline            | thin orientation pointing at the artifacts                   |
-| **Dispatcher**            | Triage and shape across 2+ related jobs under one skill, sharing the triage logic (e.g., `skill-forge`, `hook-forge`, `rule-forge`, `claude-md-forge`) | model-invocable; often `paths:`-scoped to the artifact type         | inline            | quick-dispatch table at top, shared triage, per-job sections |
+Depth is the _what_; craft below is the _how_. Get the substance before you polish it.
 
-Different kinds need different things. A workflow skill needs imperative steps and pre-approved tools. A knowledge skill needs concrete conventions and almost no procedural text. A forked-research skill needs a clear task statement and an agent type — not your usual list of bullets.
+### Distill from source material
 
-Apply the additive-vs-transformative test from the opening to the kind you picked. A workflow skill that just lists five deploy steps is **additive** — Claude is still attending to mechanics. A workflow skill that pushes mechanics into the background and elevates the substantive question (_should we ship?_, _is this diff coherent?_) is **transformative**. The kind constrains the form; the attention test decides whether the skill is worth its recurring cost. If the answer is "nothing, it just shortens work," the bar is higher: the skill needs to save enough work to justify the recurring tokens, because it is not earning its keep through reframing.
+When the skill starts from something you've read or collated (Origin B) — a spec, a paper, a methodology, an internal doc — the job is **distillation, not transcription**. Structure it like an onboarding guide for a new teammate: SKILL.md is the table of contents (the load-bearing core), `references/<topic>.md` are the chapters (opened on demand), `assets/` is the appendix.
 
-Read [references/skill-kinds.md](references/skill-kinds.md) for a worked example of each kind, including which frontmatter fields matter and which are noise.
+- **Cut what the model already knows.** The conciseness move below is the cut rule. Keep only what is specific to this source and this codebase; the source's general background is the model's job, not the skill's.
+- **Split references by domain**, so a task pulls only the chapter it needs (a finance question shouldn't load the sales schema).
+- **Keep references one level deep.** A reference that points to another reference gets partially read (the model `head`s the file), so depth-behind-depth loses information silently.
+- **Give any reference over ~100 lines a table of contents** at the top, so a partial read still sees the whole scope.
 
-## State the reason — every section earns its keep
+The full ingest → extract → structure pass, with a worked example, is in [references/distillation.md](references/distillation.md). This is the legitimate form of the article-derived skill from Step 0: you are operationalizing expertise, not encoding a passing interest.
 
-Classify asked which _kind_ of skill this is. Inside any kind, every section, frontmatter field, and reference doc gets a one-line _why_. If you cannot state it, you do not have the call yet. This is the same discipline `design-engineer` enforces for UI taste calls; here it is a forge-level principle, because skill design is itself a design problem.
+### Write with craft
 
-Before committing a section or field, name the move it makes:
+The kind sets the form; craft decides whether the content does real work once it's in context. Seven moves — depth and worked good-vs-weak pairs in [references/content-craft.md](references/content-craft.md):
 
-- `paths:` glob → _because the skill should only load when relevant files are open; otherwise it eats description budget out of scope_.
-- Bundled `scripts/foo.py` → _because three users would write three different generators; the script is deterministic and free (executed, not loaded into context)_.
-- An "Anti-patterns" section → _because the failure mode teaches more cheaply by negative example than by enumerated procedure_.
-- A `references/` file → _because this content is on-demand depth, not always-on instruction_.
-- A `disable-model-invocation: true` line → _because the side effect shouldn't fire because Claude thinks the code "looks ready"_.
+- **Match freedom to fragility.** High-freedom prose for judgment-laden, context-dependent work (code review); low-freedom exact scripts for fragile, consistency-critical work (a destructive migration). Over-specifying a high-freedom task makes the skill brittle; under-specifying a low-freedom one invites the error. This is Anthropic's central skill-craft framework, and it's orthogonal to additive-vs-transformative (fragility vs attention).
+- **Explain the why, not just the rule.** All-caps MUST/ALWAYS/NEVER is a yellow flag: the model has theory of mind and generalizes from a reason where it can't from a bare directive. Reserve hard directives for the genuinely fragile, low-freedom case. (This is the reader-facing twin of "state the reason" below.)
+- **Show, don't tell.** One worked input→output pair conveys style and altitude more cheaply than a paragraph describing them. Use _one_ — examples cost several times a rule in tokens and the model overfits to their specifics.
+- **Assume Claude is already smart.** The context window is a public good. Cut any line the model would do without it. The test: "does this paragraph justify its tokens, or am I explaining what a PDF is?"
+- **One default with an escape hatch.** Don't offer five libraries or approaches; name the one you want and the condition to deviate. Choice paralysis is a token cost with no payoff.
+- **One term per concept.** Pick "endpoint" or "route" and hold it. Synonyms make the model hunt for a distinction that isn't there.
+- **No time-sensitive content.** "Before August, use the old API" rots. Put superseded guidance in a collapsed "Old patterns" section, or cut it.
 
-Pat phrases ("for clarity", "to be thorough", "best practice") are tells that you cited a reason instead of considering one. Stop. Look at examples. Try again.
+### State the reason — every section earns its keep
 
-The single highest-leverage application is **naming the move at the skill level**: what attention does this skill free, and toward what does it redirect? Make it visible — in the `description`, in the opening paragraph, or as a closing summary that crystallizes the shift. Do not bury it as one bullet in a 20-item checklist. This is the test from Step 0, surfaced where readers will see it.
+Inside any kind, every section, frontmatter field, and reference doc gets a one-line _why_. If you cannot state it, you do not have the call yet. Pat phrases ("for clarity", "to be thorough", "best practice") are tells that you cited a reason instead of having one — stop, look at examples, try again. The highest-leverage application is **naming the move at the skill level**: what attention does this skill free, and toward what does it redirect? Make it visible — in the `description`, the opening paragraph, or a closing summary. This discipline applies inside every meta-forge in this plugin and in any artifact they produce.
 
-This discipline applies inside every meta-forge in this plugin (`skill-forge`, `hook-forge`, `rule-forge`, `claude-md-forge`) and in any artifact they produce.
+### Additive vs transformative — the test that decides worth
 
-## Description first
+Apply this to the kind you picked. A workflow that lists five deploy steps is **additive** — the agent still attends to mechanics. A workflow that pushes mechanics into the background and elevates the substantive question (_should we ship?_, _is this diff coherent?_) is **transformative**. Three quick tests:
 
-The description is the _only_ thing the model sees when deciding whether to invoke. Skills with vague descriptions silently under-trigger — Claude consults skills only when it needs help, and a generic description loses against a specific one.
+1. **What becomes thinkable?** After the skill loads, what is easier to think about that wasn't? "Nothing, it just runs faster" → additive.
+2. **The turn-8 test.** Read the body on turn 8, after the initial work is done. Does it still steer thinking, or is it a checklist whose contents already happened? Transformative bodies keep working; additive ones decay.
+3. **Skill-as-frame.** Asked what the skill _does for the work_, is your one sentence about mechanics ("it commits things") or attention ("it lets the user think about whether the diff is coherent instead of remembering to lint")?
 
-Four rules:
+Both columns can ship. Transformative skills earn their recurring cost more readily, because what they keep in context is _a way of seeing_, not facts already executed. If the honest answer is "it just shortens work," that's fine — but then the bar is higher: it must save enough work to justify the recurring tokens, and it should be cheap (`disable-model-invocation: true`, narrow `allowed-tools`) so it isn't also eating description budget. Deeper contrasts in [references/skill-kinds.md](references/skill-kinds.md#within-any-kind-additive-vs-transformative).
 
-1. **Lead with the use case, not the noun.** "Designs a skill that fits the harness…" beats "A skill creator."
-2. **Include the trigger phrases users actually say.** Lift wording from the conversation that prompted you to make the skill. Casual phrasings, abbreviations, related-but-not-identical asks.
-3. **Cap the combined `description` + `when_to_use` at 1,536 characters.** Anything past that is silently truncated in the skill listing. The first ~200 chars do most of the matching work.
-4. **For cross-tool skills, treat 1,024 chars as the operative ceiling on `description` alone.** The 1,536-char combined budget is Claude-Code-specific. The open agentskills.io spec caps `description` at **1,024 chars** and ignores `when_to_use` entirely — Cursor and Codex see the description and nothing else. If `harness-targets:` is unset (the cross-tool default), the description has to carry the trigger load on its own; lifting trigger phrases out into `when_to_use` only helps in Claude Code. Either keep enough trigger surface in the description, or scope the skill `[claude]` and rely on `when_to_use`.
+---
 
-Anti-patterns and fixes are in [references/triggering.md](references/triggering.md). When in doubt, write three candidate descriptions and ask "which of these would I match against my actual prompt?". For trigger-rate optimization at scale (train/validation splits, multi-run thresholds), see [references/iteration.md](references/iteration.md).
+## Pillar 2 — make the anatomy right
 
-## Frontmatter that earns its keep
+A good subject that never loads, fires wrong, or breaks the loader does nothing. These choices are in service of Pillar 1.
 
-Don't carpet-bomb frontmatter. Each field exists for a reason; setting it without that reason adds noise and obscures intent.
+### Description first
 
-- `name` — usually omit; the directory name is fine.
-- `description` — always.
-- `when_to_use` — only if you have trigger phrases that don't fit naturally in `description`.
-- `disable-model-invocation: true` — set for **workflow** and **guarded action** kinds. Side effects shouldn't fire because Claude thinks the code "looks ready."
-- `user-invocable: false` — set for **knowledge** that isn't a meaningful command (`legacy-system-context`, `our-payments-domain`).
-- `allowed-tools` — set for **guarded action** to pre-approve the narrow tool set you actually need (`Bash(gh pr comment *)`, not `Bash`).
-- `context: fork` + `agent` — set for **forked research**. Pick `Explore` for read-only codebase work, `Plan` for plan-mode-style analysis, `general-purpose` for implementation.
-- `paths:` — set for **path-scoped knowledge** so the skill only auto-loads when relevant files are open.
-- `model` / `effort` — only if the skill genuinely needs more or less than the session default. Don't over-spec.
-- `arguments:` (named args) — only if you have 2+ positional arguments and named substitution makes the body readable. For one arg, `$ARGUMENTS` is cleaner.
-- `hooks:` — for skills that need a deterministic guardrail (`PreToolUse` validation) while active.
+The description is the _only_ thing the model sees when deciding whether to invoke. Vague descriptions silently under-trigger — Claude consults a skill only when it expects help, and a generic description loses to a specific one (and to no skill at all). Four rules:
 
-**Unrecognized fields are silently ignored.** The loader reads only the fields above. Any other top-level key, or nesting recognized fields under unknown parents (e.g., `metadata: trigger: ...` instead of top-level `when_to_use:`), produces dead bytes that look like configuration but do nothing. The skill still loads. There is no warning. If a setting seems to have no effect, verify the field name is on the list above before debugging anything else. Real failure mode: a skill shipped with `metadata.trigger:` and a top-level `description:`; the trigger phrases never reached the discovery surface, but everything looked correct in the file.
+1. **Lead with the use case, not the noun.** "Cuts a patch release…" beats "A release skill."
+2. **Include the trigger phrases users actually say** — lift wording from the conversation that prompted the skill; casual phrasings, abbreviations, near-misses. Add a _negative_ trigger when the skill over-fires ("…do NOT use for simple data exploration — use `/x` instead").
+3. **The first ~200 chars do most of the matching.** Combined `description` + `when_to_use` is capped at 1,536 chars per skill; past that is truncated in the listing.
+4. **Cross-tool skills lean harder on `description` alone.** The open agentskills.io spec caps `description` at 1,024 chars and ignores `when_to_use` — Cursor and Codex see only the description. If `harness-targets:` is unset (the cross-tool default), keep enough trigger surface in the description itself.
 
-The full reference, including substitutions (`$ARGUMENTS`, `$N`, `$name`, `${CLAUDE_SKILL_DIR}`, `${CLAUDE_SESSION_ID}`, `${CLAUDE_EFFORT}`), lives in [references/frontmatter.md](references/frontmatter.md).
+Cheap diagnostic: ask a fresh session "when would you use the `<skill>` skill?" — it quotes the description back, and the gap tells you what to add. Anti-patterns, the over/under-trigger fixes, and the train/validation split for tuning at scale are in [references/triggering.md](references/triggering.md) and [references/iteration.md](references/iteration.md).
 
-## Write the body for the lifecycle, not for one turn
+### Frontmatter that earns its keep
 
-Once a skill is invoked, **its content stays in the conversation as a single message until the session ends or compaction drops it**. Claude does not re-read the file. This is the single most-misunderstood fact about skills.
+Each field exists for a reason; set it without one and it's noise. `description` always. `when_to_use` only for trigger phrases that don't fit `description`. `disable-model-invocation: true` for **workflow** and **guarded action**. `allowed-tools` (scoped to the actual commands) for **guarded action**. `context: fork` + `agent` for **forked research**. `paths:` for **path-scoped knowledge**. `model`/`effort` only when the skill genuinely needs off-default. Usually omit `name` (the directory name works). **Don't inherit this forge's own frontmatter:** `harness-targets: [claude]` gates the meta-forges to Claude Code — a portable stack skill (most skills) shouldn't carry it, and copying it from the skill you're reading silently Claude-locks something meant to run everywhere. Set fields from the skill's needs, not by imitation.
 
-Implications:
+**Unrecognized fields are silently ignored.** Nesting recognized fields under unknown parents (e.g. `metadata: trigger:` instead of top-level `when_to_use:`) produces dead bytes that load with no warning. If a setting seems to have no effect, verify the field name first. Full reference and substitutions (`$ARGUMENTS`, `${CLAUDE_SKILL_DIR}`, etc.) in [references/frontmatter.md](references/frontmatter.md).
 
-- Write **standing instructions** ("when running tests, prefer single-file runs"), not one-time steps ("first check if Node is installed"). The latter waste tokens after the first response.
-- If the body is mostly procedure ("do step 1, then step 2, then step 3"), you're writing additive content. If the body says "here's what to attend to throughout this work, and the mechanics are X" — you're writing transformative content. The transformative kind holds up better as recurring context because the reader-Claude-on-turn-8 is still being told _what to keep in foreground_, not stepped through a recipe whose first half already ran.
-- **Every line is a recurring cost.** Apply the CLAUDE.md test: if removing this line wouldn't change behavior, delete it. Skills over ~500 lines start hurting more than they help.
-- **Reference docs go in sibling files**, not inline. `reference.md`, `examples/`, `scripts/` all exist for this. The skill directory path is auto-prepended when Claude reads SKILL.md, so name bundled docs by filename — Claude resolves them on demand: "for the full schema list, see `reference.md`."
-- **Compaction carries skills forward with a budget**: the most recent invocation of each skill is re-attached, keeping the first 5,000 tokens. The shared budget across re-attached skills is 25,000 tokens. If a skill is huge or you've invoked many others after it, it can be dropped entirely. Re-invoke it after compaction if you need the full content back.
-- **If a skill seems to "stop working" after the first turn, it usually didn't.** The content is still in context; the model just chose another path. Strengthen the description and the imperative tone, or use a hook for things that must happen.
+### Write the body for the lifecycle
 
-More on the lifecycle (loading order, compaction, drift signals) in [references/lifecycle.md](references/lifecycle.md).
+Once invoked, **the body stays in the conversation as one message until the session ends or compaction drops it**. Claude does not re-read the file.
 
-## Harness features that actually fit this skill
+- Write **standing instructions** ("when running tests, prefer single-file runs"), not one-time steps ("first check if Node is installed") — the latter waste tokens after the first turn. This is also why the transformative voice survives compaction: turn-8-Claude is still told _what to keep foreground_, not stepped through a spent recipe.
+- **Every line is recurring cost.** If removing a line wouldn't change behavior, delete it. Skills over ~500 lines start hurting more than they help; reference docs go in sibling files.
+- **Compaction re-attaches** the most recent invocation of each skill, keeping its first 5,000 tokens, under a shared 25,000-token cap. A huge skill, or one invoked long ago, can be dropped — re-invoke it if you need it back.
+- **Teammate context** _(verify against `code.claude.com/docs/en/agent-teams`)_: a spawned agent-team teammate loads project CLAUDE.md, MCP, and skills, but **not** the lead's conversation history. A skill that assumes conversational scaffolding won't have it in a teammate — another reason to write self-contained standing instructions.
 
-> **Portability note.** Every feature in this list is a Claude Code extension, not part of the open agentskills.io spec. `paths:`, `when_to_use:`, `context: fork`, frontmatter `hooks:`, the dynamic-injection sequences, and `${CLAUDE_SKILL_DIR}` are silently ignored by Cursor, Codex, and other open-spec consumers. If the skill is tagged `[claude]` (or only ever loaded by Claude Code), reach for these freely. If the skill is published cross-tool (this repo's default), reaching for them is fine — they just don't fire elsewhere — _and_ the `description` has to do the triggering work alone in those tools (see "Description first" rule 4).
+Load order, drift signals, and re-invocation in [references/lifecycle.md](references/lifecycle.md).
 
-The 2026 features I see most often missed when they would help:
+### Harness features that fit, and the script test
 
-- **Dynamic context injection** — an inline form (an exclamation mark immediately followed by a backtick-wrapped shell command) and a fenced form (a code-fence opener of three backticks immediately followed by an exclamation mark). Runs _before_ Claude sees the skill body, replacing the placeholder with command output. Use it to inline live state (git diff, gh pr view, current branch, env). The model receives data, not instructions to fetch data — it doesn't have to spend a tool call. Only fits when the data is small, deterministic, and useful for almost every invocation. **Literal syntax not rendered here** — see the meta-skill authoring section below for why.
-- **`context: fork` + `agent: Explore`** for any skill whose job is to _investigate_ and _summarize_. The investigation tokens never enter your main thread.
-- **`paths:` glob** for knowledge that's narrowly scoped to part of a repo. Loads only when those files are open.
-- **`allowed-tools`** for workflow skills that touch the same 3–5 commands every run. Skip the per-use approval prompt without granting blanket access. (This one _is_ in the open spec — experimental, but recognized; safe to set on cross-tool skills.)
-- **`compatibility`** (open-spec field) — declare runtime requirements so Cursor/Codex/etc. can surface them. `compatibility: Next.js 16+ App Router with Cache Components, Vitest, Playwright, Supabase` says more in the listing than any prose preamble. Free in Claude Code (which ignores it). Underused.
-- **`${CLAUDE_SKILL_DIR}`** for invoking bundled scripts via Bash (`python3 ${CLAUDE_SKILL_DIR}/scripts/foo.py`) — bash commands run in the user's CWD, not the skill dir, so without the placeholder the path won't resolve. Markdown reference files don't need it; only bash-invoked paths do. Resolves correctly whether the skill lives at user, project, or plugin scope.
-- **Frontmatter `hooks:`** for skills that need a hard rule while active (e.g., a `db-reader` skill that must never see `INSERT`/`UPDATE`).
+Reach for these only where they fit (all are Claude Code extensions, ignored by open-spec consumers — see the portability note in [references/patterns.md](references/patterns.md)):
 
-Read [references/patterns.md](references/patterns.md) for the patterns each one fits and the patterns each one ruins, plus the named instruction shapes from the agentskills.io spec (Gotchas, Templates, Validation loops, Plan-validate-execute).
+- **Dynamic context injection** to inline live state (git diff, branch, env) so the model gets data, not a tool call to fetch it — only when the data is small, deterministic, and useful for almost every invocation. (Literal syntax is not shown here; see the footgun section.)
+- **`context: fork` + `agent: Explore`** for any skill whose job is to investigate and summarize — the investigation tokens never enter the main thread.
+- **`paths:`** for knowledge scoped to part of a repo; **`allowed-tools`** for the 3–5 commands a workflow runs every time; **`compatibility:`** (open-spec) to declare runtime requirements in the listing.
+- **Bundle a script when you'd write the same code three times.** Scripts are _executed, not loaded_, so they're free and deterministic. Don't bundle judgment-laden work (review, refactor) — scripts ossify; skills bend.
 
-## Bundle scripts when you'd write the same code three times
+### Authoring footgun: skills can't show injection syntax literally
 
-If your skill walks Claude through generating an HTML report, the first three users will write three slightly different generators. Bundle the script once and tell the skill to call it: `python3 ${CLAUDE_SKILL_DIR}/scripts/report.py "$ARGUMENTS"`. This is the single highest-leverage thing you can do for a skill that does deterministic output. Scripts are _executed_, never _loaded into context_ — so they're free.
+The skill loader pre-processes every file in the skill tree at load time, scanning for two literal byte sequences and replacing them with command output — **ignoring markdown context** (inline code, fences, headers offer no protection):
 
-Don't bundle scripts when the work is genuinely judgment-laden (review, refactor, code generation). Scripts ossify; skills bend.
+- an exclamation mark immediately followed by a backtick;
+- three backticks immediately followed by an exclamation mark.
 
-## Test discipline
+If either appears anywhere, the loader runs what follows as a shell command; an off-allowlist or malformed command fails the whole skill to load. Any meta-skill that _describes_ injection (a tutorial, an anti-pattern catalog, this file) must therefore: describe the syntax in words; use a `[INJECT: <command>]` placeholder in example bodies (a reader copying into a non-meta skill substitutes the real syntax); and point at `https://code.claude.com/docs/en/skills` for a rendered example. After writing, grep the tree (patterns backslash-escaped so the grep file itself stays load-safe):
 
-The existing skill-creator skill (`~/.claude/skills/skill-creator/`) has a heavy eval loop with an HTML viewer, baselines, and benchmarks. **Use it when the skill has objectively verifiable outputs** — file transforms, deterministic generators, fixed-format reports. For those, the eval loop catches regressions you wouldn't otherwise see. The canonical structure (per the agentskills.io spec) is `evals/evals.json` inside the skill directory plus an `iteration-N/` workspace alongside it; the eval loop runs each test case `with_skill` and `without_skill` and reports a delta. Don't reach for it unless the outputs are graded by code.
+```bash
+grep -rn -e '!\`' -e '\`\`\`!' .claude/skills/<your-skill>/
+```
 
-**For most skills, that workflow is overkill.** Workflow skills, knowledge skills, and forked-research skills usually need:
+Zero matches means it will load. This applies to _any_ file in a skill directory, not just SKILL.md.
 
-1. Two or three real prompts that match the description (not synthetic ones).
-2. Run them in fresh sessions; observe whether Claude invokes the skill.
-3. **Read the transcript, not just the final output.** Two failure modes look identical from the outside: a skill that did not get invoked, and a skill that got invoked but did not actually shift Claude's reasoning. Look for whether Claude is citing the skill's framing or proceeding as if it weren't there. The second case is the silent-failure anti-pattern; the description matched but the body did not reframe.
-4. Iterate the description and the body. Discard, don't pile up.
+---
 
-If after two iterations the model still ignores the skill, the issue is almost always either (a) the description doesn't match the user's natural phrasing, or (b) the task is too simple for Claude to bother consulting a skill. Skills get consulted when Claude needs help — "read this PDF" won't trigger a PDF skill no matter how good the description, because Claude can do it directly.
+## Test and iterate
 
-Detail in [references/iteration.md](references/iteration.md), including the train/validation split methodology for description-tuning at scale.
+Earn the test the way you earned the skill — against the failure. The Anthropic-recommended loop is **eval-first**: run the task in a fresh session **without** the skill and document exactly what it gets wrong; that gap is the spec. Then write the minimal instruction that closes it, and re-test.
 
-## Check against anti-patterns before shipping
+For most skills (workflow, knowledge, forked research), that's vibe-iteration: two or three _real_ prompts (the wording you'd actually type, not synthetic ones), run fresh, and **read the transcript, not just the output**. Two failures look identical from outside — the skill didn't trigger, and the skill triggered but didn't reframe the reasoning. The second is the silent-failure anti-pattern; the description matched but the body didn't do Pillar 1's work. For skills with objectively gradable outputs (file transforms, deterministic generators), the heavier eval loop in `~/.claude/skills/skill-creator/` is worth it; for prose and plans it's overkill. Detail, plus the train/validation split for description-tuning, in [references/iteration.md](references/iteration.md).
 
-Read [references/anti-patterns.md](references/anti-patterns.md) before committing the skill. The most common ones in May 2026:
+**Scale the check to the stakes, and gate it on cost.** Most changes need only a read-back (does the edited body now catch the original failure?) or a single fresh-session probe. Reserve a full blind A/B panel — like this forge's own `evals/depth-eval.js` — for a high-stakes rewrite where depth or craft is the open question: it runs ~0.3–1.1M tokens per domain, so confirm with the user before firing and pin one domain rather than fanning out. The failure mode is at both ends — skipping verification silently, and reflexively reaching for the expensive tier when a read-back would settle it.
 
-- **The encoded-answer skill** — a body of imperative steps that just lists what to do. Saves typing; does not change what is foreground. Test: would the body still be doing work on turn 8, or is it facts Claude already executed? If the latter, the skill is additive and probably belongs as a one-off response, not a recurring artifact.
-- **The article-derived skill** — read something interesting and want to encode it as a skill before observing the agent get it wrong. The article is content; it isn't evidence. Either wait for the failure to recur in a real session and earn the skill against that, or proceed knowingly as speculative (see Step 0) with explicit provenance and an audit trigger on the next model bump.
-- **The silent-failure skill** — invoked, in context, but not steering Claude's behavior. Symptom: the original failure recurs anyway. Diagnostic: read the transcript, not just the final output. If Claude is not citing or applying the skill's framing, the description matched but the body did not reframe.
-- **The hook-shaped skill** — a skill that says "ALWAYS lint after edit" or "NEVER commit secrets". The model is being asked to enforce, which it can't reliably do. Convert to a `PostToolUse` hook.
-- **The CLAUDE.md-shaped skill** — five lines of conventions that should have stayed in CLAUDE.md.
-- **The MCP-shaped skill** — instructions to "query the database for X" without the database being connected. Connect the MCP server first; skill teaches _how to query well_.
-- **The greedy description** — "Use this skill for any code-related task." Description budget gets eaten by this skill, others get truncated.
-- **The body that re-introduces itself every turn** — "If the user asks you to deploy, do X." Just write "Deploy: X." It's already in context.
-- **The workflow without `disable-model-invocation`** — Claude decides to deploy because the code "looks ready."
-- **The under-pre-approved guarded action** — `allowed-tools: Bash` instead of the four specific commands; defeats the point.
-- **Inline reference docs** — 1,200 lines of API tables in SKILL.md instead of `reference.md`.
+## Check against anti-patterns
 
-## Working examples
+Read [references/anti-patterns.md](references/anti-patterns.md) before committing. The common ones:
 
-Two short ones to ground the patterns. Each one corresponds to a kind from the classification table above.
+- **Encoded-answer** — imperative steps that just list what to do; saves typing, changes nothing foreground. (The positive version of this fix is the additive-vs-transformative test in Pillar 1.)
+- **Article-derived-as-speculation** — encoding something you read before it's earned. Origin B in Step 0 legitimizes _authoritative_ sources; this anti-pattern is the _interesting-but-unproven_ case.
+- **Silent-failure** — invoked, in context, not steering. Read the transcript.
+- **Hook/CLAUDE.md/MCP-shaped** — "ALWAYS lint after edit" (hook), five lines of conventions (CLAUDE.md), "query the database" with no connection (MCP).
+- **Greedy description** — "for any code-related task"; eats budget, truncates others.
+- **Directive-that-fights-the-framework** — principle-shaped bullets ("X before Y") that override a host framework's defaults. The fix (condition-shaped bullets + a respect-the-framework preamble) now lives primarily in `rule-forge`, where path-scoped conventions overlap framework territory most.
 
-### Workflow kind — `/commit-staged`
+## Worked examples
 
-_Earned against:_ three sessions in March 2026 where Claude committed the diff without running lint, leaving formatter churn for the next reviewer to clean up. The skill exists because the same correction kept landing in code review.
+Three: two showing _anatomy_ (why the frontmatter is shaped the way it is), one showing _body craft_ (why the prose does real work).
+
+### Workflow kind — `/commit-staged` (anatomy)
+
+_Earned against:_ three March 2026 sessions where Claude committed without running lint, leaving formatter churn for review.
 
 ```yaml
 ---
@@ -269,118 +258,95 @@ allowed-tools: Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git comm
 
 ## Steps
 1. Run `npm run lint:fix` and re-stage anything it changed.
-2. Stage all unstaged changes with `git add -A`.
-3. Generate a one-line commit message in conventional-commit format from the diff above.
-4. Commit. Show the user the resulting `git log -1 --oneline`.
+2. Stage all changes with `git add -A`.
+3. Generate a one-line conventional-commit message from the diff above.
+4. Commit. Show the resulting `git log -1 --oneline`.
 
-If the diff is empty, say so and stop. If lint fixes touch files outside the original diff, surface that to the user before committing.
+If the diff is empty, say so and stop. If lint touches files outside the original diff, surface that before committing.
 ```
 
-Why this shape: workflow ⇒ `disable-model-invocation`. Side effects ⇒ tightly-scoped `allowed-tools`. Live state via dynamic injection so Claude sees it without a tool call. Standing instructions ("if the diff is empty…") at the bottom. Note: each `[INJECT: ...]` placeholder above is where the real skill would use the literal inline-injection syntax; the placeholder is used here because this very file is itself a skill, and writing the literal would trip the loader (see the authoring footgun section).
+Why this shape: workflow ⇒ `disable-model-invocation`; side effects ⇒ tightly-scoped `allowed-tools`; live state via injection so Claude sees it without a tool call; standing instructions at the bottom. Each `[INJECT: ...]` marks where a real skill uses the literal inline-injection syntax (placeholder used because this file is itself a skill — see the footgun section).
 
-### Forked research kind — `/audit-deps`
+### Forked research kind — `/audit-deps` (anatomy)
 
-_Earned against:_ a session where unscoped `npm audit` output flooded the main thread with ~3,000 tokens of transitive-dependency noise before any analysis could happen. Forking the work into an Explore subagent kept the verbose audit out of the parent context.
+_Earned against:_ unscoped `npm audit` flooding the main thread with ~3,000 tokens of transitive noise before any analysis.
 
 ```yaml
 ---
-description: Audits the project's direct dependencies for known security advisories and abandoned-project signals. Use when the user asks about dependency security, supply chain risk, npm/pnpm audit, or wants to know which packages need attention. Returns only a summary, never the full audit log.
+description: Audits direct dependencies for known advisories and abandonment signals. Use for dependency-security, supply-chain-risk, or npm/pnpm-audit questions. Returns only a summary, never the full audit log.
 context: fork
 agent: Explore
 allowed-tools: Bash(npm audit *) Bash(pnpm audit *) Bash(git log *) Bash(cat package.json)
 ---
 
-Audit direct dependencies in `package.json` and produce a short report with:
-- Advisories at high or critical severity, grouped by package, with a one-line action recommendation.
-- Packages whose latest release on npm is older than 18 months.
-- Packages with fewer than 3 maintainers or a single-maintainer pattern, where the package has high download counts (supply-chain concern).
-
-Use the lockfile to resolve actual installed versions. Read package.json to identify direct vs transitive dependencies; only direct dependencies are in scope. Cite specific versions and links to advisories where relevant.
-
-Stop when you have enough for a 1-page summary; do not exhaustively walk transitive trees.
+Audit the direct dependencies in `package.json`. Report: high/critical advisories grouped by package with a one-line fix; packages whose latest release is >18 months old; single-maintainer packages with high download counts. Use the lockfile for installed versions; only direct dependencies are in scope. Stop at a one-page summary — do not walk transitive trees.
 ```
 
-Why this shape: investigation ⇒ `context: fork`. Read-only ⇒ `agent: Explore`. Result is a summary, so the verbose audit output never enters the main thread.
+Why this shape: investigation ⇒ `context: fork`; read-only ⇒ `agent: Explore`; the verbose audit never enters the main thread.
+
+### Knowledge kind — `/review-our-code` (body craft)
+
+The frontmatter is unremarkable; the lesson is the **body**. Same skill, two bodies — the first is additive and over-directive, the second transformative and reasoned:
+
+```md
+WEAK (additive, all-caps, generic):
+When reviewing code, you MUST:
+1. ALWAYS check for bugs.
+2. ALWAYS check style and naming.
+3. NEVER approve without checking tests.
+```
+
+```md
+STRONG (transformative, reasoned, codebase-specific):
+Default Claude review catches the obvious. This skill redirects attention to what *we* keep getting wrong — lead with these, demote the generic pass:
+
+1. **Silent error-swallowing.** Bare `catch (e) {}` in async paths. We have a logger; an empty catch is always a flag. *Why:* three prod incidents traced to swallowed errors last quarter.
+2. **Non-idempotent retries.** `withRetry` on GET is fine; on POST/PATCH it needs an idempotency key. Flag any POST/PATCH wrapped in retry without one.
+3. **Mocked-DB tests.** Tests that mock the DB layer pass while migrations break. Push toward `tests/fixtures/`.
+
+After those, a normal pass (correctness, naming, missing tests). If the four-pattern check alone would take more than a few minutes, suggest `/code-review` and stop.
+```
+
+Why the strong version works: it **matches freedom to fragility** (judgment-laden review → prose, not rigid steps), **explains the why** (the model generalizes from the incident, not a MUST), **shows the specific pattern** rather than naming a category, and is **transformative** — it changes what the reviewer foregrounds instead of restating what Claude already does. The weak version triggers, runs, and changes nothing.
 
 ## Naming and placement
 
-Project skills go in `.claude/skills/<name>/SKILL.md`. The directory name becomes the slash command. Use lowercase letters, numbers, and hyphens; max 64 chars. The skill name is the user's mental handle for the skill — make it short and obvious (`/commit-staged`, not `/staged-changes-commit-with-lint`).
-
-Name the *scope*, not the search keyword. If a skill covers reads, writes, and auth flows, naming it `optimistic-mutations` (the industry keyword for the write-only case) misrepresents the body. Pick the term that matches what the skill actually does; put the search keywords in the description, where they pull triggers without constraining scope.
-
-Custom slash commands were merged into skills in early 2026. A file at `.claude/commands/foo.md` and a skill at `.claude/skills/foo/SKILL.md` both create `/foo`; the skill wins if both exist. New work belongs in `skills/` — commands files keep working but aren't the recommended path.
-
-Precedence: enterprise > personal (`~/.claude/skills/`) > project (`.claude/skills/`) > plugins (namespaced as `<plugin>:<skill>`). If you create a project skill with the same name as a personal skill, the personal one wins. To avoid this, either rename, override visibility via `skillOverrides` in `.claude/settings.local.json` (set the personal one to `"off"`), or scope through a plugin.
-
-## Authoring footgun: skills can't show injection syntax literally
-
-This is a real failure mode I shipped before catching it. The skill loader pre-processes every skill file at load time, scanning for the dynamic-injection trigger sequences and replacing them with the actual command output. The scan **does not respect markdown context** — it ignores inline code spans, ignores nested code fences, ignores headers. If the literal byte sequence appears anywhere in the file, the loader will try to run whatever follows it as a shell command. If that command isn't on the allowlist, or contains placeholder syntax like `<command>`, the entire skill fails to load with a `Shell command permission check failed` or `parse error` message.
-
-The two trigger sequences (described in words because writing them literally would break this very file):
-
-- An exclamation mark immediately followed by a backtick.
-- Three backticks immediately followed by an exclamation mark.
-
-If you're writing a skill that needs to _describe_ the injection feature — a meta-skill, a tutorial, an anti-pattern catalog, even just a frontmatter cheat sheet — you cannot show the literal syntax anywhere in the file. The skill loader will eat it.
-
-What to do instead:
-
-1. **Describe the syntax in words, not symbols.** Write "an exclamation mark immediately followed by a backtick-wrapped shell command" rather than rendering the bang-and-backtick adjacent in your source. The bytes matter, even inside what look like protective code spans.
-2. **Use a placeholder pattern in worked-example skill bodies** so a reader can see the structural shape without the literal trigger. The convention used in this skill is `[INJECT: <command>]`. A reader copying an example into their own (non-meta) skill replaces each `[INJECT: ...]` with the actual literal injection syntax.
-3. **Point to canonical docs for a rendered example.** `https://code.claude.com/docs/en/skills` under "Inject dynamic context" shows the live syntax safely.
-
-After writing or editing a skill that touches this area, grep the skill tree before saving. The patterns must use backslash escapes so the grep command itself doesn't reintroduce the trigger:
-
-```bash
-grep -rn -e '!\`' -e '\`\`\`!' .claude/skills/<your-skill>/
-```
-
-Inside the single quotes, each `\` separates the bang from the backtick (and the backticks from each other) in the source bytes, so this grep file itself stays load-safe. The shell and grep both treat `\` before a non-special character as the literal next character, so the actual regex matches are equivalent to a bare bang-then-backtick pattern.
-
-Zero matches means the skill will load. Any match is a bug — convert to prose or a placeholder before shipping.
-
-This applies to _any file inside a skill directory_, not just `SKILL.md`. The loader processes the whole tree.
+Project skills live in `.claude/skills/<name>/SKILL.md`; the directory name becomes the slash command (lowercase, hyphens, ≤64 chars). Name the _scope_, not the search keyword — a skill covering reads, writes, and auth shouldn't be named `optimistic-mutations` (the write-only keyword); put search keywords in the description, where they pull triggers without misrepresenting scope. Prefer a gerund or action name (`processing-pdfs`, `commit-staged`) over a vague noun. Precedence: enterprise > personal (`~/.claude/skills/`) > project > plugins. A project skill named the same as a personal one loses silently; rename, set the personal one `"off"` in `skillOverrides`, or scope through a plugin.
 
 ## Closing checklist
 
-Before saving, walk this list:
-
-- [ ] **Step 0 done:** failure named in one line; attention shift named in one line. Without both, the design is not ready.
-- [ ] Triaged: confirmed this should be a skill, not a hook/MCP/CLAUDE.md/subagent/path-rule.
-- [ ] **Related** to existing skills: identified adjacent skills (any scope) and named the relationship — sharpen / absorb / dispatch / mix. Any skill cross-referenced is reliably present in this skill's deployment surface; otherwise it's been absorbed inline instead of cited.
-- [ ] Classified: one of the eight kinds; frontmatter matches the kind.
-- [ ] **Move visible in the artifact:** the attention shift from Step 0 is stated in the `description`, opening paragraph, or a closing summary — not left implicit. If the answer is "nothing, it just shortens work," I have decided shortening is worth the recurring context cost.
-- [ ] `name:` set explicitly (don't rely on the directory-name default — the file is more readable and the skill's identity less filesystem-coupled when `name:` is in the frontmatter).
-- [ ] `description` is the _what_; trigger phrases live in `when_to_use` as a separate field. Splitting keeps the description scannable and lets the trigger list grow without bloating the lead sentence.
-- [ ] If this skill is about a specific framework, library, or test stack, `paths:` is set so the description doesn't load when out-of-scope. Knowledge skills tied to a slice of the codebase are the most common case.
-- [ ] Description is specific, includes natural trigger phrases, fits in the 1,536-char budget (combined `description` + `when_to_use`).
-- [ ] Body is in standing-instruction voice, not one-time procedure voice.
-- [ ] Reference docs over ~150 lines moved to sibling files.
-- [ ] Side effects ⇒ `disable-model-invocation: true` and `allowed-tools` scoped to actual commands.
-- [ ] Investigation work ⇒ `context: fork` with the right agent.
-- [ ] Anti-patterns checked: no encoded-answer, silent-failure, hook-shaped, CLAUDE.md-shaped, or MCP-shaped instructions.
-- [ ] Grepped the skill tree for the two trigger sequences (bang-then-backtick and three-backticks-then-bang); zero matches. (See the authoring-footgun section.)
-- [ ] Pre-ship proofread: parsed the YAML through a parser (or `yq`/`yamllint`) to catch unescaped quotes; read the body straight through looking for typos, broken backticks, and sentences that get cut off mid-thought. Models drop sentences sometimes and the loss isn't obvious without reading. Especially watch numbered lists where the next bullet's number can mask a truncated previous bullet.
-- [ ] Every frontmatter field is on the recognized list. No `metadata:` or other unknown parent keys; trigger phrases live at top-level `when_to_use:`, not nested. Unrecognized fields load silently and do nothing.
-- [ ] Scope check: the body actually delivers what the description promises. If the description says the skill covers a stack (Next.js + Vercel + shadcn + Supabase) and the body is only Next.js, either narrow the description or expand the body. Overpromising in the description is worse than admitting a narrower scope.
-- [ ] Sanity-tested in a fresh session against two natural-language prompts. Read the transcript — invoked-and-steered, not just invoked.
+- [ ] **Step 0:** origin named (observed failure _or_ authoritative source — not mere interest); attention shift named; model-pin + sunset trigger recorded.
+- [ ] **Reuse checked:** searched the ecosystem; assessed the best candidate's quality and coverage; chose use-as-is / fork / build-new deliberately.
+- [ ] **Triaged:** confirmed this is a skill, not a hook/MCP/CLAUDE.md/subagent/rule. Any cross-referenced skill is reliably present, or its ideas were absorbed.
+- [ ] **Subject (Pillar 1):** kind classified; **expert-grade depth** — the expertise delta over the model's competent default is named, sourced, and verified, not just the floor; if from a source, distilled (not transcribed); craft applied (freedom matched to fragility, why explained, one default, consistent terms); the attention shift is _visible_ in the artifact, not implicit.
+- [ ] **Anatomy (Pillar 2):** description specific + real trigger phrases, under budget; body in standing-instruction voice; side effects ⇒ `disable-model-invocation` + scoped `allowed-tools`; investigation ⇒ `context: fork`; every frontmatter field on the recognized list (no `metadata:` nesting).
+- [ ] Reference docs over ~150 lines in sibling files, one level deep.
+- [ ] Grepped the tree for the two trigger byte-sequences; zero matches.
+- [ ] YAML parses; body read straight through for dropped sentences and broken backticks.
+- [ ] Sanity-tested in a fresh session on two natural prompts — invoked **and** steered, per the silent-failure test.
 
 ## When this skill stops earning its keep
 
-The harness does not learn; the system does. Each Claude session is fresh — what persists across sessions is what the human writes into CLAUDE.md, skills, rules, memory. A skill is a snapshot of how the human-plus-codebase-plus-Claude system currently understands a kind of work. Snapshots go stale on two axes: the model moves, and the human's understanding moves. The deletion side of the Ratchet has a trigger on each:
+The harness does not learn; the human does, by editing CLAUDE.md, skills, rules, and memory. A skill is a snapshot of how the human-plus-codebase-plus-model system currently understands a kind of work, and snapshots go stale on two axes:
 
-1. **On each major model release** (or quarterly, whichever comes first), re-run the failure that earned this skill. Does the agent still make the mistake without the skill loaded? If no, delete it — the model has absorbed what the harness was teaching, and the skill is now occupying description budget for a problem that does not exist. If yes but the failure has shifted, rewrite against the _new_ failure rather than layering on top of the old one.
-2. **When the human's framing shifts.** Sometimes the attention shift you encoded was almost-right, and what actually needed redirecting was something adjacent — the skill has been competing with the real fix. Or the work itself has changed and the skill is solving a problem that no longer exists. Notice it; rewrite or delete.
+1. **The model moves.** On each major release (or quarterly), re-run the failure that earned the skill. If the model now gets it right unaided, delete — the skill is occupying budget for a non-problem. If the failure shifted, rewrite against the new one rather than layering on the old.
+2. **The human's framing moves.** The attention shift you encoded was almost-right and the real fix was adjacent; or the work changed and the skill solves a problem that no longer exists. Notice it; rewrite or delete.
 
-Skills accumulate silently because each one only costs description budget when the model considers invoking it — but the cost is real, and a tree of obsolete skills crowds the discovery surface for the ones still doing work. The total trajectory of a refined harness is fewer artifacts, not more.
+The audit has a positive half. The re-test is also where an artifact **earns a stay**: when a session sees the skill doing real work — the guarded failure reproduced unaided in a skill-withheld trial, or a result came out right _because_ the skill was loaded — record that as a dated KEEP against the model-pin, not only in your head. Positive evidence is the counterweight the deletion audit needs; without it, every audit can only ever argue for removal. A win attributed to an artifact is data about that artifact — capture it where the next audit will see it. _(Why: the trajectory below biases toward cutting; a delete-only record makes that bias unfalsifiable.)_
+
+The total trajectory of a refined harness is _fewer_ artifacts, not more.
 
 ## See also
 
-- [references/triage.md](references/triage.md) — extension surface decision tree, with how to combine surfaces.
-- [references/skill-kinds.md](references/skill-kinds.md) — full template for each of the six kinds.
-- [references/frontmatter.md](references/frontmatter.md) — every frontmatter field, every substitution, when each one helps.
-- [references/triggering.md](references/triggering.md) — how Claude consults skills, why descriptions fail, how to write ones that match.
-- [references/lifecycle.md](references/lifecycle.md) — load order, compaction budgets, drift signals, re-invocation.
-- [references/patterns.md](references/patterns.md) — dynamic injection, context: fork, paths, allowed-tools, frontmatter hooks, script bundling.
+- [references/reuse.md](references/reuse.md) — search the ecosystem, assess quality/coverage, the use/fork/build decision.
+- [references/triage.md](references/triage.md) — the six surfaces in depth, with how to combine them.
+- [references/skill-kinds.md](references/skill-kinds.md) — full template for each of the eight kinds; additive-vs-transformative in depth.
+- [references/depth.md](references/depth.md) — making the subject expert-grade: name the delta over the model's default, source-and-verify, acquire if missing, the expert's-eye test.
+- [references/distillation.md](references/distillation.md) — turning collated source material into a skill without bloating it.
+- [references/content-craft.md](references/content-craft.md) — degrees of freedom, explain-the-why, show-don't-tell, conciseness, with worked pairs.
+- [references/triggering.md](references/triggering.md) — why descriptions fail and how to write ones that match.
+- [references/frontmatter.md](references/frontmatter.md) — every field, every substitution, when each helps.
+- [references/lifecycle.md](references/lifecycle.md) — load order, compaction budgets, drift signals.
+- [references/patterns.md](references/patterns.md) — dynamic injection, fork, paths, allowed-tools, script bundling.
 - [references/anti-patterns.md](references/anti-patterns.md) — concrete bad skills with the surface they should have used.
-- [references/iteration.md](references/iteration.md) — when to vibe-iterate, when to run the eval loop from `~/.claude/skills/skill-creator/`.
+- [references/iteration.md](references/iteration.md) — eval-first, vibe-iteration, the description-tuning optimizer.

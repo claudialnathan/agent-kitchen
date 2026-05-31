@@ -1,6 +1,12 @@
 # Iteration: vibe-test or eval-loop?
 
-Two different ways to iterate on a skill. They suit different kinds of skills, and using the wrong one wastes time.
+Two different ways to iterate on a skill. They suit different kinds of skills, and using the wrong one wastes time. Both start the same way: eval-first.
+
+## Eval-first: earn the test against the failure
+
+Before writing or tuning the skill, establish the baseline the way Anthropic recommends: **run the task in a fresh session _without_ the skill, and document exactly what the model gets wrong.** That gap is the spec — it tells you the minimal instruction the skill needs, and nothing more. Skills written without this step tend to document an _imagined_ problem (and bloat against it) rather than the real one.
+
+This is Step 0 from SKILL.md (name the failure) carried into testing: the failure is the eval. Write the smallest body that closes the observed gap, then re-test against the same task. If the gap is already closed _without_ the skill, the model has absorbed the lesson and the skill shouldn't exist yet — which is also the sunset trigger, run early.
 
 ## Vibe-iterate
 

@@ -26,6 +26,8 @@ harness-targets: [claude]
 
 # rule-forge
 
+<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Craft pass 2026-05-30 (Opus 4.8, Claude Code v2.1.156): added "write judgment, not directive — respect the framework" (relocated from skill-forge anti-pattern #17, since path-scoped rules overlap framework territory most) and named explain-the-why. Worked-example failures predate this; re-test on the next major model release. -->
+
 A rule redirects attention when Claude opens files matching a `paths:` glob. Inside the slice, the rule loads and the agent's attention shifts from "how do I structure this?" to "what already-decided convention applies?" Outside the slice, the rule sleeps; it costs no description budget and no body context.
 
 Path-scoped rules are the cheapest extension surface in the harness when the redirection is genuinely scoped. The whole design surface is "what paths, what body, vs CLAUDE.md and vs path-scoped skill."
@@ -127,6 +129,14 @@ paths:
 - Concrete examples over abstract rules.
 - Short. A rule's whole reason for existing is "small enough not to belong in CLAUDE.md." If you're at 100+ lines, ask whether this should be a path-scoped skill (with bundled reference files) instead.
 - Apply the CLAUDE.md test to every line: would removing it change Claude's behavior? If not, cut.
+- Give the rule its reason where the reason isn't obvious. "Use cursor pagination" says *what*, not *when* or *why*; "Use cursor pagination — offset pagination drifts when rows are inserted mid-scroll, which this list does constantly" lets the agent generalize to cases the bullet never named. A reason travels further than a bare directive, and all-caps MUST/ALWAYS is a yellow flag — the same explain-the-why principle `claude-md-forge` and `skill-forge` lean on.
+
+**Write judgment, not directive — and respect the framework.** A rule loads while Claude is mid-task inside the slice, so its bullets get applied case-by-case. Two voice moves keep them from misfiring — and they matter more for rules than for any other surface, because path-scoped conventions sit closest to framework territory:
+
+- **Condition-shaped, not principle-shaped.** A principle bullet ("Fluid before fixed", "container query before viewport breakpoint") reads as universal enforcement and gets cited even where its conditions don't hold. Restate as judgment that names *when* the pattern earns its keep: "When type or section padding genuinely should scale across viewports, configure the ramp at `@theme`; component-internal padding usually doesn't need it." The bullet now tells the reader when to reach for the pattern, not merely that it exists.
+- **Respect the host framework's defaults.** A principle-shaped bullet quietly overrides the framework: "fluid before fixed" applied to a Tailwind v4 codebase with no configured fluid ramp produces inline `text-[clamp(...)]` arbitrary utilities — a direct token-system bypass. When a rule overlaps an opinionated framework (Tailwind, shadcn, Next.js, Rails), add a one-line preamble: "Apply these within the host framework's conventions — configure overrides at its token layer (Tailwind's `@theme`, or the equivalent), not as inline arbitrary utilities. When a rule below would require fighting a framework default, configure the framework or skip the rule." Without it, the reader has no signal that the rule lives downstream of the framework's choices.
+
+(This is anti-pattern #17 in `skill-forge`'s catalog, relocated here and made constructive: skills hit it too, but rules hit it most.)
 
 **Capability-agnostic phrasing.** Write rules that don't depend on tooling that may not exist. "Match the codebase's enforced style" survives a missing eslint config; "Always run eslint" silently fails when eslint isn't installed. Phrase rules around behaviors and outcomes, not specific commands or tools — let the agent discover the local capability and adapt. Tools change faster than conventions; rules pinned to specific tools rot first.
 
@@ -271,6 +281,7 @@ The shape worth noticing: lives in **personal scope** (loads across every projec
 - [ ] `paths:` glob is narrow enough to scope correctly and broad enough to cover the actual files.
 - [ ] Tested the glob against the file structure (or at least listed matches).
 - [ ] Body is declarative, concrete, under ~100 lines.
+- [ ] Bullets are condition-shaped (judgment per case), not principle-shaped directives; reasons given where non-obvious; a respect-the-framework preamble is present if the rule overlaps framework territory.
 - [ ] Capability-agnostic phrasing: rules describe behaviors and outcomes, not specific tools that may not be present.
 - [ ] No duplication with CLAUDE.md or another rule. No depiction of current state already visible in the code.
 - [ ] No procedural steps (those want a skill); no enforcement (that wants a hook).

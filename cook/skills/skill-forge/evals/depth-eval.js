@@ -11,10 +11,30 @@ export const meta = {
 //   Workflow({ scriptPath: "cook/skills/skill-forge/evals/depth-eval.js" })            // default technical domains
 //   Workflow({ scriptPath: ".../depth-eval.js", args: { domains: [ {key, prompt}, ... ] } })
 //
-// For model-WEAK domains (e.g. a specialised business field), the LLM judge's DEPTH verdict
-// is unreliable — the judge is also weak in-domain. Treat craft/anatomy as the trustworthy
-// machine signal, and use the returned baselineSkill / skillForgeSkill texts as the artifact a
-// HUMAN domain expert judges for depth. Returns { aggregate, perTask } with both generated skills.
+// VALIDITY CAVEATS — read these before trusting the aggregate scores.
+// (Earned against Opus 4.8, 2026-05-31, Claude Code v2.1.156. Re-test on the next major model release.)
+//
+// 1. CONTAMINATION — this is NOT a clean skill-forge-vs-nothing test. The baseline arm's prompt never
+//    names skill-forge, but Workflow subagents auto-discover project skills, and skill-forge's own
+//    description matches the literal phrase "design a Claude agent skill" in baselinePrompt below — so it
+//    loads into the baseline agent's context unbidden. Confirmed empirically: baseline transcripts reason
+//    "through the skill-forge lens" (Step 0 / Triage / transformative / cross-tool). So every run measures
+//    EXPLICIT depth.md + content-craft.md reading vs AMBIENT skill-forge — the MARGINAL value of reading the
+//    references, not the absolute value of the skill. Lifts are real but smaller than the headline implies.
+//    A meta-skill loads into its own control; the only clean fix (run where skill-forge is undiscoverable)
+//    is heavy and currently parked.
+//
+// 2. JUDGE-COMPETENCE CEILING — for model-WEAK domains (a specialised business field), the LLM judge's
+//    DEPTH verdict is unreliable: the judge is as weak in-domain as the generators. Treat craft/anatomy as
+//    the trustworthy machine signal, and use the returned baselineSkill / skillForgeSkill texts as the
+//    artifact a HUMAN domain expert judges for depth. The human is the ground truth for depth, not the panel.
+//
+// 3. ANATOMY REGRESSION (watch-item, n=2) — the guided arm LOST anatomy in two model-weak runs (-0.22, -0.67).
+//    Hypothesis: reading depth/craft references pulls length and attention toward substance and inflates the
+//    description or relaxes frontmatter discipline. Not actioned at n=2; re-check the description budget and
+//    stray frontmatter if it recurs at n>2.
+//
+// Returns { aggregate, perTask } with both generated skills (baselineSkill / skillForgeSkill) per domain.
 
 const DEFAULT_DOMAINS = [
   { key: 'react-rerenders', prompt: 'diagnosing and fixing slow or excessive React re-renders in a production app' },

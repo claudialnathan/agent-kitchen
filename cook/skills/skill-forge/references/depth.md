@@ -13,21 +13,23 @@ A frontier model's default output sits around **competent** across an enormous r
 
 If you can't name a delta, the skill is restating the floor. Don't build it — or go acquire the depth first.
 
-## The five-point discipline
+## The six-point discipline
 
 **1. Name the expertise delta — the gate.** Before writing, answer in one line: *what does a real expert in this domain know that the model's default gets shallow or wrong?* That sentence is the skill's reason to exist, and usually its sharpest description hook. No nameable delta → it's the floor → stop.
 
 **2. Source and verify — as an action, not an intention.** Domain facts decay, and models misremember fast-moving specifics *confidently*. For any version-specific fact (an API signature, a flag, a current default), **actually fetch the current canonical doc while authoring and cite it** (WebFetch, or context7 for libraries) — do not write it from memory. "Verify" as a value you hold doesn't fire; verification is a step you take, and skipping it ships deprecated specifics in authoritative tone. For domain claims generally, ground them in an authoritative source rather than generic priors. This is `claude-md-forge`'s "verify the facts first," strengthened — and earned: an A/B depth-eval of this very forge caught a generated skill shipping a deprecated `revalidateTag` form straight from recall, beating the baseline on craft but losing on the one axis the domain was about. A confident-but-wrong expert skill is worse than none; the error is laundered through authoritative tone.
 
-**3. Acquire it if it isn't in the room.** If neither you nor the model holds the depth, the forge's job is to *route to getting it*, not to dress competence up as expertise:
+**3. Cite honestly — fetching the fact and faking the attribution are different failures.** The same depth-eval surfaced the inverse of point 2. A generated skill that grounded its hardest facts correctly (the value-for-money clauses, the current rule date) *also* dressed unsourced claims in citation clothing: an invented *"[Authority]'s guidance is blunt: [quoted sentence]"* that appears in no source, and a documented-sounding "the panel scores a rating scale and moderates to a mark" mechanism the guidance never states (it actually says scores may not be disclosed at all). So when you attribute a claim to a named authority — *"the docs say,"* *"per X,"* or anything in quotation marks — the attributed wording must be verbatim-traceable to that source. Mark a paraphrase as a paraphrase, and common practice as practice (*"panels commonly score against a rubric,"* not *"the rules require a rubric"*). A fabricated citation is worse than an uncited claim: it borrows authority it never earned and survives review precisely because it reads as sourced. Verifying a generated skill's claims against the sources — not just trusting that it fetched them — is itself part of the eval.
+
+**4. Acquire it if it isn't in the room.** If neither you nor the model holds the depth, the forge's job is to *route to getting it*, not to dress competence up as expertise:
 - fetch and read the canonical / authoritative sources, then structure them (`distillation.md`);
 - run parallel reading with `/ground`, or a `/deep-research` pass, over a corpus;
 - pull a human domain expert into the loop, or a specialized subagent / skill that already holds the domain;
 - if the depth genuinely can't be obtained, **narrow the skill to the slice you can author expertly** and say what it does not cover. A narrow expert skill beats a broad competent one.
 
-**4. Encode judgment and failure-modes, not just rules.** The least-substitutable, highest-value expert content is the taste: when to break the rule, the trade-off being navigated, the trap that looks fine and isn't. Rules are the floor — they're what the docs already say. Judgment is the delta.
+**5. Encode judgment and failure-modes, not just rules.** The least-substitutable, highest-value expert content is the taste: when to break the rule, the trade-off being navigated, the trap that looks fine and isn't. Rules are the floor — they're what the docs already say. Judgment is the delta.
 
-**5. The expert's-eye test.** Read the finished subject as the domain's harshest expert: would they learn nothing (you encoded the floor) or recognize hard-won knowledge (you encoded the delta)? This is also exactly what an expertise eval scores — the rubric for *grading* "expert-grade" and the discipline for *authoring* it are one checklist.
+**6. The expert's-eye test.** Read the finished subject as the domain's harshest expert: would they learn nothing (you encoded the floor) or recognize hard-won knowledge (you encoded the delta)? This is also exactly what an expertise eval scores — the rubric for *grading* "expert-grade" and the discipline for *authoring* it are one checklist.
 
 ## Worked contrast — "optimize a slow Postgres query"
 

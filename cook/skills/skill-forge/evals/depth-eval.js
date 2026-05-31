@@ -21,7 +21,10 @@ const DEFAULT_DOMAINS = [
   { key: 'next-caching', prompt: 'Next.js App Router data fetching and caching — the cache layers, when each applies, and the mistakes that silently break them' },
   { key: 'pg-migrations', prompt: 'safe, zero-downtime Postgres schema migrations in production' },
 ]
-const DOMAINS = (args && Array.isArray(args.domains) && args.domains.length) ? args.domains : DEFAULT_DOMAINS
+// args may arrive as an object or (if the caller stringified it) as a JSON string — handle both.
+let _args = args
+if (typeof _args === 'string') { try { _args = JSON.parse(_args) } catch (_e) { _args = undefined } }
+const DOMAINS = (_args && Array.isArray(_args.domains) && _args.domains.length) ? _args.domains : DEFAULT_DOMAINS
 
 const OUTPUT_SPEC = 'IMPORTANT: this is an evaluation — do NOT create, write, or save any file or directory on disk (no SKILL.md file, no skills/ folder); reading and fetching docs is fine, but return your answer as TEXT in your reply only. Output the COMPLETE SKILL.md you would ship for this skill: YAML frontmatter (name, description, optional when_to_use) plus the full markdown body, then a 2-sentence "Design rationale". Nothing else.'
 
@@ -68,7 +71,7 @@ const judgePrompt = (t, candA, candB, lens) =>
 const cap = (s) => (s || '').slice(0, 14000)
 
 phase('Generate')
-log(`A/B depth-eval over ${DOMAINS.length} domain(s); blind 3-lens panel each.`)
+log(`A/B depth-eval over ${DOMAINS.length} domain(s) [${DOMAINS.map(d => d.key).join(', ')}]; blind 3-lens panel each.`)
 
 const results = await pipeline(
   DOMAINS,

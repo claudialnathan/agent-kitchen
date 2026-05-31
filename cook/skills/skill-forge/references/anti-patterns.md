@@ -362,6 +362,8 @@ If a PR is large enough that the four-pattern check alone would take more than a
 
 The general principle: when a skill catches you writing things Claude would have done unprompted, ask whether the skill is supposed to be there at all, or whether it's supposed to be doing something more specific that the generic version drowns out.
 
+The positive form of this fix — the additive-vs-transformative test, and the craft moves that produce a transformative body — now lives on the main surface in SKILL.md (Pillar 1) and in [content-craft.md](content-craft.md). This entry is the negative example; that's the constructive method.
+
 ## 14. The skill that becomes outdated and stays
 
 ```yaml
@@ -490,6 +492,8 @@ Second, **a stack-respect preamble** that names the relationship between the ski
 Without that preamble, the reader-Claude has no signal that the skill's discipline lives downstream of the framework's choices.
 
 **Generalization:** Any skill that encodes discipline alongside an opinionated framework needs both moves. Condition-shaped bullets so the discipline reads as judgment per case; an explicit "respect the framework" preamble so framework-native patterns are the first reach. Principle-shaped bullets work fine for skills that *aren't* stack-aware (a workflow skill, a guarded action) — the failure mode is specific to knowledge skills and path-scoped knowledge skills that overlap with framework territory.
+
+**Where this craft now lives:** because path-scoped *rules* overlap framework territory more than most skills do, the constructive version of this lesson — condition-shaped bullets and the respect-the-framework preamble — is taught primarily in `rule-forge`. This entry stays here for the skill case (knowledge and path-scoped-knowledge skills hit it too), but `rule-forge` is the fuller treatment.
 
 ## 18. The synthesis-output skill that pads, paraphrases, or flattens
 

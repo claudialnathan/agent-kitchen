@@ -8,9 +8,12 @@ The kinds are:
 2. **Knowledge** — adds reference material Claude applies when relevant.
 3. **Guarded action** — single-action skill with strict tool scope (subset of Workflow, but worth calling out).
 4. **Forked research** — investigation that returns a summary, runs in a subagent.
-5. **Path-scoped knowledge** — knowledge but only when working in certain files.
-6. **Toolkit** — thin body that points at bundled scripts and examples Claude calls into.
-7. **Dispatcher** — 2+ related jobs unified by triage, with a quick-dispatch table at the top of the body.
+5. **Research orchestrator** — parallel forks over a user-supplied corpus, then bounded synthesis into an artifact.
+6. **Path-scoped knowledge** — knowledge but only when working in certain files.
+7. **Toolkit** — thin body that points at bundled scripts and examples Claude calls into.
+8. **Dispatcher** — 2+ related jobs unified by triage, with a quick-dispatch table at the top of the body.
+
+Within each kind, the craft of writing the body well — matching freedom to fragility, explaining the why, showing not telling — is in [content-craft.md](content-craft.md).
 
 ## 1. Workflow
 

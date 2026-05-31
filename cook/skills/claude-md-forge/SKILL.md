@@ -24,6 +24,8 @@ harness-targets: [claude]
 
 # claude-md-forge
 
+<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Reviewed in the 2026-05-30 cross-forge craft audit (Opus 4.8, Claude Code v2.1.156) and found the strongest of the four on content-craft — left essentially as-is (the model the others were brought toward); only the explain-the-why family link added. Worked-example failures predate this; re-test on the next major model release. -->
+
 CLAUDE.md is loaded in full every turn. The discipline that justifies the cost: hold only what the agent cannot or should not infer from the code, and write nothing that depicts current state.
 
 The code says what the code is. The lockfile names the package manager, the lint config holds the style rules, the directory tree shows the layout. A CLAUDE.md that restates any of it costs context every turn and goes stale on the next commit.
@@ -177,7 +179,7 @@ CLAUDE.md is read by an agent on arrival. Two consequences for how it should be 
 
 **Intent voice, not rulebook voice.** "We treat new artifacts as feedback for the forges" reads differently from "ALWAYS propose forge improvements." The first frames a disposition; the second performs enforcement the file cannot deliver. Imperative verbs are fine when they describe a behavior the model is welcome to interpret. Capital-letter ALWAYS / NEVER almost always means the content wants to be a hook.
 
-**Reason inline where the reason matters.** Some retained entries do need a *why*: the rule conflicts with the model's defaults, depends on a constraint outside the file, or has an edge case where it applies differently. Anthropic's May 2026 *Teaching Claude Why* finding showed rules-with-reasons outperform unreasoned rules by ~7× on misalignment. Use the Why when it adds something the rule alone cannot say. Skip it when the rule is its own reason.
+**Reason inline where the reason matters.** Some retained entries do need a *why*: the rule conflicts with the model's defaults, depends on a constraint outside the file, or has an edge case where it applies differently. Anthropic's May 2026 *Teaching Claude Why* finding showed rules-with-reasons outperform unreasoned rules by ~7× on misalignment. Use the Why when it adds something the rule alone cannot say. Skip it when the rule is its own reason. This is the shared principle across the forge family — `skill-forge` and `rule-forge` teach the same explain-the-why move for skills and rules; it bites hardest in CLAUDE.md, where every line is always-on.
 
 Use Why:
 ```

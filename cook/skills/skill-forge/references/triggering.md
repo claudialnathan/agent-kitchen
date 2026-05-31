@@ -84,10 +84,11 @@ The `/skills` menu lets you cycle through states with `Space`: `on` → `name-on
 
 ## Testing your description
 
-Two tests, each takes 30 seconds:
+Three tests, each takes 30 seconds:
 
 1. **The "if I were the user" test.** Read your description aloud. Imagine your most natural phrasing of the request the skill should match. Does the description contain words from that phrasing? If not, the description is wrong, even if it's accurate.
 2. **The "competing skill" test.** Imagine three other skills that vaguely match the same area. Would your description still win? If not, narrow it. Specific descriptions beat generic ones; generic descriptions lose to no-skill (Claude just handles the prompt directly).
+3. **The "ask Claude" test.** In a fresh session, ask: "When would you use the `<skill-name>` skill?" Claude quotes its understanding of the description back. The gap between what it says and what you meant is exactly what the description is missing — add those words. (Anthropic's own debugging tip; the cheapest way to see your description through the model's eyes.)
 
 If you're using the eval-loop optimizer in `~/.claude/skills/skill-creator/` (`scripts/run_loop.py`), the same principles apply: it generates trigger queries and iterates the description against them. Good queries are realistic and concrete; abstract ones produce abstract descriptions.
 

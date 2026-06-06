@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 29 May 2026 | Version: v2.1.156
+Last updated: 6 June 2026 | Version: v2.1.165
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
@@ -41,7 +41,7 @@ Practical consequences:
 - Knowledge skills with broad applicability should be path-scoped (`paths:` glob) so they don't load when out of scope.
 - Reference docs > 150 lines belong in sibling files, not inline.
 
-## What's distinctive about May 2026 (vs. last quarter)
+## What's distinctive about June 2026 (vs. last quarter)
 
 Features that changed how skills get built, in rough order of impact:
 
@@ -49,6 +49,8 @@ Features that changed how skills get built, in rough order of impact:
 
 - Ask Claude to create a workflow and it orchestrates work across tens to hundreds of agents in the background — for tasks too large for one context (large migrations, audits, broad sweeps).
 - `/workflows` shows your runs.
+- Type `ultracode` in a prompt to fire one off — renamed from the bare word `workflow`, which no longer triggers a run (asking in your own words still does). The keyword highlights violet in the input; a `/config` setting disables it.
+- `/effort ultracode` makes workflows the default — Claude authors and runs one for every substantive task, not just on the keyword. Offered only where the model supports `xhigh`.
 - The heaviest fan-out option, alongside agent teams and `/batch`; the model decomposes and pipelines the work itself.
 
 ### Custom commands merged into skills
@@ -61,6 +63,7 @@ Features that changed how skills get built, in rough order of impact:
 
 - Permission-mode `auto`: a classifier reviews tool calls, blocks risky ones, lets routine work proceed without prompts.
 - Available as `--permission-mode auto` or via `/permissions`.
+- On Bedrock, Vertex, and Foundry (Opus 4.7 and 4.8), it's opt-in via `CLAUDE_CODE_ENABLE_AUTO_MODE=1`.
 - New hook: `PermissionDenied` fires on classifier denials; `retry: true` lets the model try a different approach.
 - No longer gated: the `--enable-auto-mode` flag was removed, and the first-use opt-in consent prompt is gone too (v2.1.152).
 - `settings.autoMode.hard_deny` defines classifier rules that block unconditionally regardless of user intent or allow exceptions — useful as a policy-grade backstop.
@@ -122,6 +125,7 @@ The hook surface has accumulated several useful fields:
 - **`mcp_tool` handler type** — hook handler can call an already-connected MCP server tool directly, no subprocess. Useful for validation that needs external state.
 - **`args: string[]` exec form** — spawns the command directly without a shell, so path placeholders never need quoting.
 - **`continueOnBlock` for PostToolUse** — feeds the hook's rejection reason back to Claude and continues the turn instead of aborting.
+- **`additionalContext` from `Stop` / `SubagentStop`** — these hooks can return `hookSpecificOutput.additionalContext` to hand Claude feedback and keep the turn going, instead of registering as a hook error.
 - **`terminalSequence` in hook output** — emit desktop notifications, window titles, and bells without a controlling terminal.
 - **`MessageDisplay` hook event** — transform or hide assistant message text as it's displayed (v2.1.152).
 - **Effort context** — hooks receive `effort.level` in their JSON input and `$CLAUDE_EFFORT` in their environment; Bash commands also get `$CLAUDE_EFFORT`.
@@ -166,6 +170,9 @@ The hook surface has accumulated several useful fields:
 - **`/reload-skills`** — re-scans skill directories without a restart; `SessionStart` hooks can return `reloadSkills: true` to surface skills they install mid-session.
 - **Plugin `defaultEnabled: false`** — a plugin can ship disabled by default (set in `plugin.json` or the marketplace entry); enable with `/plugin` or `claude plugin enable`. Dependencies of enabled plugins still auto-enable.
 - **`claude agents` shell sessions** — `! <command>` (or `claude --bg --exec '<command>'`) runs a shell command as an attachable, detachable background session.
+- **Plugins auto-load from `.claude/skills/`** — drop a plugin there and it loads with no marketplace; `claude plugin init <name>` scaffolds one, and `/plugin list` (`--enabled` / `--disabled`) shows what's installed.
+- **`acceptEdits` guards code-execution writes** — it now prompts before writing files that can run code on open: shell startup files (`.zshenv`, `.zlogin`), `~/.config/git/`, and build configs (`.npmrc`, `.yarnrc*`, `bunfig.toml`, `.bazelrc`, `.pre-commit-config.yaml`, `.devcontainer/`).
+- **`requiredMinimumVersion` / `requiredMaximumVersion`** managed settings — Claude Code refuses to start outside the allowed version range and points to an approved build.
 
 ## Constraints worth designing around
 
@@ -216,7 +223,7 @@ Claude Code is one tool in a category that's converged on a recognizable shape: 
 | **Aider**              | CLI                               | Open source; git-native commit-per-edit; BYOM                     |
 | **Cline**              | VS Code extension                 | Open source; BYOM                                                 |
 | **Continue**           | IDE extension (VS Code/JetBrains) | Open source; BYOM; configurable assistant                         |
-| **Windsurf**           | Dedicated IDE                     | Owned by Cognition; ships SWE-1.5 agent model                     |
+| **Devin Desktop**      | Dedicated IDE (was Windsurf)      | Cognition's IDE, rebranded from Windsurf; ships SWE-1.5 agent model |
 | **GitHub Copilot**     | IDE extension + Copilot Workspace | Microsoft/GitHub; broad enterprise distribution                   |
 | **Devin**              | Cloud platform                    | Autonomous background engineer; long-running tasks                |
 | **Gemini CLI / Jules** | CLI / cloud                       | Google's first-party agents                                       |

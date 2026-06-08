@@ -94,6 +94,10 @@ Use the rule when the content is purely passive ("here are the conventions, appl
 
 Rules and hooks are completely different surfaces despite both being "things that fire automatically." Rules add *context*; hooks run *checks* with the ability to block. If you want Claude to know X when working on Y files, that's a rule. If you want to *prevent* edits to Y files unless condition Z, that's a hook.
 
+### Rule vs verification workflow
+
+A rule that keeps getting missed even though it loads — and whose check needs *judgment* a deterministic hook can't express — has a third escalation beyond "make the rule louder." Anthropic's documented answer for "a particular set of rules that you find Claude misses or struggles with, even when put into the `CLAUDE.mds`" is a dynamic workflow that lists the rules and spawns **one verifier agent per rule**, each judging the work against its single rule in a fresh context. This beats a longer rule (adherence drops as rules pile up) and beats a hook (which checks deterministically, can't judge). Reserve it for the rule that genuinely won't stick; it's a `workflow-forge` artifact, not a rule edit.
+
 ### Rule vs nothing
 
 The cheapest answer. If the convention is something Claude already infers from the code, don't write a rule. The three-corrections bar from Step 0 is the same gate seen from a different angle: a rule that has not been earned by repeated correction usually should not exist.

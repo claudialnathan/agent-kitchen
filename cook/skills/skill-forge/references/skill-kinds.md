@@ -266,9 +266,11 @@ disable-model-invocation: true
 
 **Why the mandatory "rough edge" section:** load-bearing test for whether the sources added anything beyond Claude's training priors. If empty, the brief says so and the downstream step is skipped — manufacturing an artifact for a non-failure is the failure mode the kind is supposed to prevent.
 
-**Example:** `/ground` — see `cook/skills/ground/SKILL.md` for the full SKILL.md and `cook/skills/ground/references/failure-modes.md` for the primary-source-cited failure-mode catalog the design defends against.
+**Example:** `/ingest` — see `cook/skills/ingest/SKILL.md` for the full SKILL.md and `cook/skills/ingest/references/failure-modes.md` for the primary-source-cited failure-mode catalog the design defends against.
 
 **When this kind doesn't apply:** a single source (read it inline; parallel architecture has no leverage), a topic well-covered in training data, or a task that needs a quick answer rather than a designed artifact downstream.
+
+**Relationship to dynamic workflows:** this kind is fan-out-and-synthesize expressed as a _prose_ dispatch the model runs by hand. The same shape can be expressed as a deterministic JavaScript **workflow** (the Workflow runtime — `agent()`, `parallel()`, `pipeline()`), which buys real concurrency, per-item adversarial verification, and resumability that a prose dispatch can't guarantee. Cross that line when the corpus is large, the per-item check matters, or the run must be reproducible. `workflow-forge` covers the design; a skill can _package_ the resulting script as a template.
 
 ## 6. Path-scoped knowledge
 

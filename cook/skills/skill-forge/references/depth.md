@@ -23,7 +23,7 @@ If you can't name a delta, the skill is restating the floor. Don't build it — 
 
 **4. Acquire it if it isn't in the room.** If neither you nor the model holds the depth, the forge's job is to *route to getting it*, not to dress competence up as expertise:
 - fetch and read the canonical / authoritative sources, then structure them (`distillation.md`);
-- run parallel reading with `/ground`, or a `/deep-research` pass, over a corpus;
+- run parallel reading with `/ingest`, or a `/deep-research` pass, over a corpus;
 - pull a human domain expert into the loop, or a specialized subagent / skill that already holds the domain;
 - if the depth genuinely can't be obtained, **narrow the skill to the slice you can author expertly** and say what it does not cover. A narrow expert skill beats a broad competent one.
 

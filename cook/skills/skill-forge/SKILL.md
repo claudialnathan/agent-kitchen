@@ -102,12 +102,14 @@ Skills are not one shape. The eight kinds have different goals and SKILL.md stru
 | **Knowledge** | Apply conventions/standards when relevant | model-invocable | inline | declarative facts/rules |
 | **Guarded action** | Side-effecting action with strict tool scope | `disable-model-invocation` + `allowed-tools` | inline | one-shot recipe |
 | **Forked research** | Investigate without polluting the main thread | model-invocable, `context: fork`, `agent: Explore` | forked | task prompt for a subagent |
-| **Research orchestrator** | Parallel forks over a corpus, then bounded synthesis (`/ground`) | `disable-model-invocation: true` | inline; spawns forks | dispatch contract + bounded synthesis |
+| **Research orchestrator** | Parallel forks over a corpus, then bounded synthesis (`/ingest`) | `disable-model-invocation: true` | inline; spawns forks | dispatch contract + bounded synthesis |
 | **Path-scoped knowledge** | Conventions that only matter for some files | model-invocable + `paths:` | inline | declarative, narrow scope |
 | **Toolkit** | Bundle scripts/examples Claude calls into | model-invocable; `scripts/`+`examples/` carry the value | inline | thin orientation pointing at artifacts |
 | **Dispatcher** | Triage + shape across 2+ related jobs (`skill-forge`, `hook-forge`) | model-invocable; often `paths:`-scoped | inline | quick-dispatch table + shared triage + per-job sections |
 
 The kind constrains the form; it does not decide whether the skill is worth its cost — that's the additive-vs-transformative test below. A worked example of each kind, with the frontmatter that matters and the noise to drop, is in [references/skill-kinds.md](references/skill-kinds.md).
+
+> **Not a skill kind: the dynamic workflow.** When the orchestration is large or fragile enough to want _deterministic_ control flow — fan out over many items, classify-then-route, verify each result with a separate agent — that's a **dynamic workflow** (a JavaScript orchestration script run by the Workflow runtime), not a skill. The **Research orchestrator** kind above (`/ingest`) is the hand-rolled, prose-dispatched version of the same fan-out-and-synthesize shape; reach for a JS workflow when you need the determinism, scale, or per-item verification a prose dispatch can't guarantee. A skill can _package_ a workflow as a template. For when to cross that line and how to design the script, hand off to `workflow-forge`.
 
 ### Make it expert-grade — the depth gate
 
@@ -115,8 +117,8 @@ A frontier model's default output sits around _competent_ across most domains, s
 
 1. **Name the delta** — _what does a real expert know here that the model's default gets shallow or wrong?_ Can't name it → it's the floor → don't build, or go acquire the depth first.
 2. **Source and verify — as an action, not an intention.** For any version-specific or fast-moving fact (an API signature, a flag, a current default), _fetch the current canonical doc and cite it_ (WebFetch, or context7 for libraries); do not write it from memory — recall ships deprecated specifics in confident tone. For domain claims generally, ground them in an authoritative source, not generic priors. This is `claude-md-forge`'s "verify first," strengthened: "verify" as a value you hold doesn't fire — make it a step you take.
-3. **Acquire it if it's not in the room** — read the canonical sources, `/ground` or `/deep-research` a corpus, pull in a human expert or a domain subagent; or narrow the skill to the slice you _can_ author expertly. Don't dress competence up as expertise.
-4. **Encode judgment and failure-modes, not just rules** — the taste (when to break the rule, the trade-off, the trap) is the least-substitutable delta; rules alone are what the docs already say.
+3. **Acquire it if it's not in the room** — read the canonical sources, `/ingest` or `/deep-research` a corpus, pull in a human expert or a domain subagent; or narrow the skill to the slice you _can_ author expertly. Don't dress competence up as expertise.
+4. **Encode judgment and failure-modes, not just rules** — the taste (when to break the rule, the trade-off, the trap) is the least-substitutable delta; rules alone are what the docs already say. Anthropic names this the highest-signal content in a skill: give the failure-modes a _named home_ — a **Gotchas** / pitfalls section built from the points the model actually trips on — not scattered asides the reader skims past.
 5. **The expert's-eye test** — would the domain's harshest expert learn anything, or recognize the floor? (This is also exactly what an expertise eval would score — the authoring rubric and the grading rubric are one checklist.)
 
 Depth is the _what_; craft below is the _how_. Get the substance before you polish it.
@@ -200,6 +202,7 @@ Reach for these only where they fit (all are Claude Code extensions, ignored by 
 - **`context: fork` + `agent: Explore`** for any skill whose job is to investigate and summarize — the investigation tokens never enter the main thread.
 - **`paths:`** for knowledge scoped to part of a repo; **`allowed-tools`** for the 3–5 commands a workflow runs every time; **`compatibility:`** (open-spec) to declare runtime requirements in the listing.
 - **Bundle a script when you'd write the same code three times.** Scripts are _executed, not loaded_, so they're free and deterministic. Don't bundle judgment-laden work (review, refactor) — scripts ossify; skills bend.
+- **Bundle a session-scoped hook** (`hooks:` in frontmatter) when the skill needs a _deterministic guarantee_ live only while it runs — a `db-reader` that must never issue `INSERT`, a migration skill that blocks writes outside `migrations/`. The hook fires only while the skill is active and is torn down after, so it dissolves the "hook _or_ skill" either/or: a skill can carry its own enforcement. Boundary: a skill-scoped hook gates tool _inputs_ (PreToolUse on the matched tool), not a subagent's _output prose_ — `SubagentStop` carries no result text and `PostToolUse` truncates large results, so don't reach for one to police what a fork _returned_. Design it with `hook-forge`.
 
 ### Authoring footgun: skills can't show injection syntax literally
 
@@ -224,7 +227,7 @@ Earn the test the way you earned the skill — against the failure. The Anthropi
 
 For most skills (workflow, knowledge, forked research), that's vibe-iteration: two or three _real_ prompts (the wording you'd actually type, not synthetic ones), run fresh, and **read the transcript, not just the output**. Two failures look identical from outside — the skill didn't trigger, and the skill triggered but didn't reframe the reasoning. The second is the silent-failure anti-pattern; the description matched but the body didn't do Pillar 1's work. For skills with objectively gradable outputs (file transforms, deterministic generators), the heavier eval loop in `~/.claude/skills/skill-creator/` is worth it; for prose and plans it's overkill. Detail, plus the train/validation split for description-tuning, in [references/iteration.md](references/iteration.md).
 
-**Scale the check to the stakes, and gate it on cost.** Most changes need only a read-back (does the edited body now catch the original failure?) or a single fresh-session probe. Reserve a full blind A/B panel — like this forge's own `evals/depth-eval.js` — for a high-stakes rewrite where depth or craft is the open question: it runs ~0.3–1.1M tokens per domain, so confirm with the user before firing and pin one domain rather than fanning out. The failure mode is at both ends — skipping verification silently, and reflexively reaching for the expensive tier when a read-back would settle it.
+**Scale the check to the stakes, and gate it on cost.** Most changes need only a read-back (does the edited body now catch the original failure?) or a single fresh-session probe. Reserve a full blind A/B panel — like this forge's own `evals/depth-eval.js` — for a high-stakes rewrite where depth or craft is the open question: it runs ~0.3–1.1M tokens per domain, so confirm with the user before firing and pin one domain rather than fanning out. (A _blind_ panel is the structural answer to **self-preferential bias** — a model scores its own output higher when it judges unblinded; the same reason `workflow-forge` puts verification in separate adversarial agents rather than self-review.) The failure mode is at both ends — skipping verification silently, and reflexively reaching for the expensive tier when a read-back would settle it.
 
 ## Check against anti-patterns
 

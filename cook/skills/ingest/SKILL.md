@@ -1,5 +1,5 @@
 ---
-name: ground
+name: ingest
 description: |
   Reads URLs / articles / docs in parallel forked subagents (one per source), produces a brief of quoted excerpts with citations, then hands off to the right meta-forge (skill-forge, rule-forge, hook-forge, claude-md-forge). The brief is the artifact — not a kitchen sink, not a paraphrase — and the source material never enters the main thread directly. Quoted excerpts do.
 when_to_use: |
@@ -44,7 +44,7 @@ When the per-source agents return, hold their excerpts in the main thread and as
 
 Bound the brief: **agreement + contention together stay under ~2,000 tokens.** If you're approaching that, cut weaker quotes; don't expand the brief.
 
-Write the brief to `.claude/ground/<topic-slug>.md` so the user can read, edit, and reference it independently of the session. If `.claude/ground/` doesn't exist, create it.
+Write the brief to `.claude/ingest/<topic-slug>.md` so the user can read, edit, and reference it independently of the session. If `.claude/ingest/` doesn't exist, create it.
 
 ### Phase 3 — Confirm, then hand off to the right forge
 
@@ -73,14 +73,14 @@ When dispatching Phase 1 agents, use this template. Substitute `{{topic}}` and `
 > - **Excerpts**: bulleted list. Each bullet: a verbatim quote (≤ 100 words) followed by the section or heading it appeared under, in parentheses. No paraphrase. No interpretation.
 >
 > **Constraints:**
-> - Quote-only. No summaries. No prose synthesis.
-> - If the source is irrelevant to the topic, return 0 excerpts and the line "out of scope". Don't pad.
+> - Quote-only. No summaries, no prose synthesis, no preamble or closing commentary — return only the formatted output above.
+> - If the source is irrelevant to the topic, return the Source / Retrieved / Status lines and the single line `out of scope` — no excerpts and no explanation of why. Don't pad, and don't write a scope note.
 > - If the source contradicts itself internally, capture both sides as separate excerpts and flag the conflict.
 > - Cap output under 800 tokens.
 
 ## Failure modes this skill defends against
 
-The shape of `/ground` is a direct response to documented context-engineering failure modes from the AI research literature. See [references/failure-modes.md](references/failure-modes.md) for the catalog with primary-source citations.
+The shape of `/ingest` is a direct response to documented context-engineering failure modes from the AI research literature. See [references/failure-modes.md](references/failure-modes.md) for the catalog with primary-source citations.
 
 The defense map at a glance:
 
@@ -92,7 +92,7 @@ The defense map at a glance:
 - **Context distraction** → source material never enters the main thread; only ≤ 2,000 tokens of synthesis do.
 - **Surface skim disguised as completeness** → the mandatory rough-edge section forces an explicit answer to "what did these sources add that priors didn't?" If you can't fill it, they didn't.
 
-If you find yourself wanting to skip any of these defenses for a particular run, that's a signal the topic doesn't need `/ground` — Claude's priors are probably enough.
+If you find yourself wanting to skip any of these defenses for a particular run, that's a signal the topic doesn't need `/ingest` — Claude's priors are probably enough.
 
 ## Anti-patterns
 
@@ -100,12 +100,12 @@ If you find yourself wanting to skip any of these defenses for a particular run,
 - **The single-agent firehose.** Dispatching one agent to "read all the URLs and synthesize" undoes the parallel-fork architecture. Each source gets its own agent. No exceptions.
 - **The paraphrase smuggle.** A subagent that returns "the source argues that X" instead of a verbatim quote has done paraphrase, and Phase 2 will treat it as authoritative. Reject paraphrase output and re-dispatch with the contract repeated.
 - **The handoff that assumes skill.** Phase 3 isn't always a skill. Run the triage. If the brief points at a hook or a rule, route there.
-- **The pile of stale URLs.** Sources that 404 or redirect are facts of the brief, not failures of `/ground`. Record them. Don't substitute alternatives without surfacing the swap to the user.
+- **The pile of stale URLs.** Sources that 404 or redirect are facts of the brief, not failures of `/ingest`. Record them. Don't substitute alternatives without surfacing the swap to the user.
 - **The empty rough edge.** If the rough-edge section reads as bullet-pointed restatement of the agreement section, the sources didn't actually add anything beyond priors. Say so and skip the forge step.
 
-## When to skip `/ground` entirely
+## When to skip `/ingest` entirely
 
-Reach for `/ground` when at least one of:
+Reach for `/ingest` when at least one of:
 
 - The topic is newer than training cutoff (recent release, new spec, fresh paper).
 - The topic is contested and sources disagree, and you want both sides cited.
@@ -116,10 +116,11 @@ Skip when:
 
 - The topic is well-covered in training data and the user is asking from priors anyway.
 - There's only one source — read it inline; the parallel-fork architecture has no leverage.
-- The user wants a quick answer, not a designed artifact. `/ground` is part of the forge pipeline; it costs time and tokens.
+- The user wants a quick answer, not a designed artifact. `/ingest` is part of the forge pipeline; it costs time and tokens.
 
 ## See also
 
 - [references/failure-modes.md](references/failure-modes.md) — context-engineering failure modes catalog with primary-source citations.
 - `/skill-forge` — the most common Phase 3 handoff target.
 - `/rule-forge`, `/hook-forge`, `/claude-md-forge` — alternate Phase 3 handoff targets when the rough edge points elsewhere.
+- `workflow-forge` — the same fan-out-and-synthesize expressed as a deterministic JS workflow (real concurrency, schema-enforced quote-only output, resumable), for when the corpus is large or the run must reproduce. See its `examples/ingest-fanout.workflow.mjs`.

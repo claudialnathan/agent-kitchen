@@ -52,6 +52,8 @@ Features that changed how skills get built, in rough order of impact:
 - Type `ultracode` in a prompt to fire one off — renamed from the bare word `workflow`, which no longer triggers a run (asking in your own words still does). The keyword highlights violet in the input; a `/config` setting disables it.
 - `/effort ultracode` makes workflows the default — Claude authors and runs one for every substantive task, not just on the keyword. Offered only where the model supports `xhigh`.
 - The heaviest fan-out option, alongside agent teams and `/batch`; the model decomposes and pipelines the work itself.
+- **It's an authorable artifact, not just a prompt.** A workflow is a JavaScript orchestration script (`agent()` / `parallel()` / `pipeline()` / `phase()`); the runtime runs it in the background while agents work in fresh contexts. Sandbox: no filesystem, no `Date.now()`/`Math.random()` in the script; ~16 concurrent agents, 1,000 per run. Save a run as a reusable `/command` in `.claude/workflows/<name>.js` (input via the global `args`).
+- **Why the surface exists:** it replaces the model's plan-and-execute-in-one-drifting-context default with deterministic control flow — countering *agentic laziness* (declaring a 50-item task done at 35), *self-preferential bias* (preferring its own results when it self-grades — hence adversarial verification in a separate agent), and *goal drift* after compaction.
 
 ### Custom commands merged into skills
 

@@ -204,6 +204,8 @@ Empirical findings from Osmani's May 2026 study, distilled:
 
 A 200-line CLAUDE.md with 18 rules, three examples per rule, and "be careful" openers does roughly nothing. A 90-line CLAUDE.md with 12 reasoned, capability-agnostic rules does real work. A 40-line CLAUDE.md with five often does more, because what is there is read.
 
+**When a single rule won't stick.** If one specific rule keeps getting missed *despite* being in CLAUDE.md and within the ceilings above, repeating it or adding emphasis rarely helps — and if the check needs judgment, a hook can't enforce it deterministically. Anthropic's documented escalation for "rules Claude misses even when put into the `CLAUDE.mds`" is a dynamic workflow that spawns **one verifier agent per rule**, each judging the work against its single rule. That's a `workflow-forge` artifact, not a CLAUDE.md edit — note it and hand off.
+
 ## Anti-patterns
 
 The full catalog with the surface each should have used is in [references/anti-patterns.md](references/anti-patterns.md). The five most common:

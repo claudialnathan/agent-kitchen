@@ -181,7 +181,9 @@ Two locations, with different scoping:
 - Always-on for you across projects → `~/.claude/settings.json`.
 - Active only when a specific skill or subagent is running → frontmatter on that skill/agent.
 
-A hook in skill frontmatter is *automatically scoped to that skill's lifetime*; the script doesn't need gates that check whether to run.
+A hook in skill frontmatter is *automatically scoped to that skill's lifetime*; the script doesn't need gates that check whether to run. This is how a skill carries its *own* enforcement — the read-only `db-reader` example below — so the "should this be a hook or a skill?" question sometimes answers *both*: a skill whose contract is guaranteed by a hook it bundles.
+
+**Boundary — hooks gate inputs, not returned prose.** A skill-scoped hook is still a hook: it inspects a tool *call*, blocking on `tool_input` at `PreToolUse` or reacting at `PostToolUse`. It *cannot* police a subagent's returned text — `SubagentStop` carries `agent_type` and `stop_reason` but no result content, and `PostToolUse` truncates large `tool_result`s to a preview + file path. So if the rule you want is "the fork must return quotes, not paraphrase," a hook won't see the output to judge it; enforce that in the dispatch contract and reject at synthesis time instead. Hooks are deterministic input-gates, not output critics.
 
 ## Step 7 — Verify against the harness, then test
 

@@ -3,6 +3,7 @@ guides/
 NOTES.md
 CLAUDE.local.md
 .claude/skills/
+.claude/ingest/
 scratch/
 .settings.local.json
 .eval-runs/

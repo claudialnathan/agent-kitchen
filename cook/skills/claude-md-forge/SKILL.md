@@ -24,7 +24,7 @@ harness-targets: [claude]
 
 # claude-md-forge
 
-<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Reviewed in the 2026-05-30 cross-forge craft audit (Opus 4.8, Claude Code v2.1.156) and found the strongest of the four on content-craft — left essentially as-is (the model the others were brought toward); only the explain-the-why family link added. Worked-example failures predate this; re-test on the next major model release. 2026-06-08 (Opus 4.8, v2.1.165): added the functional CLAUDE.md↔FYI boundary (a behavioral precondition the agent acts on during normal work belongs in CLAUDE.md even when it's publish-flow; only the playbook detail stays in FYI), earned from promoting this repo's plugin-version-bump rule out of FYI. -->
+<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Reviewed in the 2026-05-30 cross-forge craft audit (Opus 4.8, Claude Code v2.1.156) and found the strongest of the four on content-craft — left essentially as-is (the model the others were brought toward); only the explain-the-why family link added. Worked-example failures predate this; re-test on the next major model release. 2026-06-08 (Opus 4.8, v2.1.165): added the functional CLAUDE.md↔FYI boundary (a behavioral precondition the agent acts on during normal work belongs in CLAUDE.md even when it's publish-flow; only the playbook detail stays in FYI), earned from promoting this repo's plugin-version-bump rule out of FYI. Also 2026-06-08: sharpened the MCP anti-pattern — a connected tool documents its own use (server-level MCP instructions + per-tool descriptions surfaced at call time), so don't restate tool usage in CLAUDE.md; earned from codegraph, which delivers its usage guide over MCP rather than writing to CLAUDE.md/AGENTS.md. -->
 
 CLAUDE.md is loaded in full every turn. The discipline that justifies the cost: hold only what the agent cannot or should not infer from the code, and write nothing that depicts current state.
 
@@ -97,7 +97,7 @@ Deeper notes on the boundary cases, with examples of content that looks like one
 | Personal preferences (your formatting tastes) | `~/.claude/CLAUDE.md` or auto-memory. |
 | Personal project notes (sandbox URLs, scratch) | `CLAUDE.local.md` (gitignored). |
 | Claude's own learnings about you | Auto-memory at `~/.claude/projects/<project>/memory/`. |
-| External system schemas (DB, Notion) | MCP server. |
+| External system schemas (DB, Notion); how to use a connected tool | MCP server — it ships its own schema and usage. |
 
 The auto-memory boundary catches people. Auto-memory is per-user, machine-local, captured by Claude. CLAUDE.md is committed, team-shared, authored by humans. They are not interchangeable. When an auto-memory entry stabilizes into a fact useful to anyone working in the repo, promote it. That is a tune-job moment.
 
@@ -214,7 +214,7 @@ The full catalog with the surface each should have used is in [references/anti-p
 
 1. **Current-state depiction.** Layouts, dependencies, framework versions, build commands. All visible in the code. CLAUDE.md restating them goes stale on the next commit and pays recurring tokens to mislead.
 2. **Hook-shaped rules.** "ALWAYS lint before commit." "NEVER commit secrets." The model is asked to enforce; it cannot reliably. Convert to `PostToolUse` for advisory, `PreToolUse` for blocking.
-3. **MCP-shaped instructions.** "Query the database for X." The database is not connected. Connect the MCP server first; the skill or rule can teach how to query well after.
+3. **MCP-shaped instructions.** "Query the database for X." The database is not connected. Connect the MCP server first; the skill or rule can teach how to query well after. And once connected, **a tool documents its own use** — MCP servers ship server-level instructions and per-tool descriptions that the harness surfaces at call time. Don't restate a connected tool's usage in CLAUDE.md: the copy goes stale against the server and pays tokens every turn for what the tool already says itself.
 4. **Path-narrow content.** "API endpoints under `src/api/` use this error format." Burns context for everyone editing UI. Move to `.claude/rules/api.md` with `paths:`.
 5. **Missing-Why rules.** "Use cursor pagination." When? Why? The model cannot apply the rule outside the case it knows. Add the reason in line, or move to a path-scoped rule with the edge cases.
 

@@ -8,7 +8,7 @@ disable-model-invocation: true
 harness-targets: [claude]
 ---
 
-<!-- Earned against: Opus 4.7 (claude-opus-4-7), 2026-05-22. Architectural — re-evaluate when grounding-in-sources stops needing explicit scaffolding. Re-tested 2026-05-29 (Opus 4.8): KEPT. A skill-withheld agent reproduced the architecture (one reader per source, verbatim quotes, conflict synthesis) — but only under heavy prompting; the scaffold still buys reliability, the quote contract, and the forge handoff. The bar above is not yet met. -->
+<!-- Earned against: Opus 4.7 (claude-opus-4-7), 2026-05-22. Architectural — re-evaluate when grounding-in-sources stops needing explicit scaffolding. Re-tested 2026-05-29 (Opus 4.8): KEPT. A skill-withheld agent reproduced the architecture (one reader per source, verbatim quotes, conflict synthesis) — but only under heavy prompting; the scaffold still buys reliability, the quote contract, and the forge handoff. The bar above is not yet met. 2026-06-08 (Opus 4.8, v2.1.165): added two refinements earned from a self-run on two pasted articles + a URL — (1) a pasted-source-already-in-context branch (extract inline; fork only what must be fetched), and (2) a check-for-existing-brief step before writing, after the run nearly duplicated a same-day brief on adjacent material. -->
 
 ## The attention this skill redirects
 
@@ -25,6 +25,7 @@ Without this redirection, the next forge step runs against priors and silently p
 For each source the user supplies (URLs, file paths, pasted text), spawn one general-purpose `Agent` with the contract in the **Per-source agent prompt template** section below. Discipline:
 
 - **Single source per agent.** No agent reads more than one URL/document. If the user provides 6 sources, dispatch 6 agents in parallel via a single message with multiple Agent tool calls.
+- **Source already pasted in full? Extract inline, don't re-fork.** If the user pasted a source's complete text into the conversation, the fork's isolation benefit is already spent — the material is in the main thread, and re-dispatching it to a subagent only re-transmits the same tokens for no isolation gain. Extract its excerpts inline under the same quote-only contract (verbatim, ≤ 100 words, tagged, relevance-bounded). Still fork every source you'd have to *go fetch* — URLs, file paths, anything not already in-context. The fork buys isolation for material you don't yet hold, not ceremony for material you do.
 - **Output is quoted excerpts, not paraphrase.** Each agent returns: source URL + retrieval date + 3–8 verbatim quoted passages directly relevant to the target topic, each ≤ 100 words, each tagged with the section/heading it came from. No summary in prose. Quotes only.
 - **Bound the agent to the topic.** The dispatch prompt names the target topic, and the agent extracts only what is relevant to it. Tangents are excluded.
 - **Stale-source handling.** If a URL 404s, redirects to a different topic, or paywalls the content, the agent reports the failure mode rather than fabricating content. The brief records the failure under **Sources unavailable**.
@@ -44,7 +45,7 @@ When the per-source agents return, hold their excerpts in the main thread and as
 
 Bound the brief: **agreement + contention together stay under ~2,000 tokens.** If you're approaching that, cut weaker quotes; don't expand the brief.
 
-Write the brief to `.claude/ingest/<topic-slug>.md` so the user can read, edit, and reference it independently of the session. If `.claude/ingest/` doesn't exist, create it.
+Write the brief to `.claude/ingest/<topic-slug>.md` so the user can read, edit, and reference it independently of the session. If `.claude/ingest/` doesn't exist, create it. **First glance at what's already in `.claude/ingest/`:** if a prior brief covers overlapping sources or topic, update or cross-link it rather than silently writing a near-duplicate — two briefs on the same material fragment the handoff and bury which one the forge should read.
 
 ### Phase 3 — Confirm, then hand off to the right forge
 

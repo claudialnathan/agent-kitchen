@@ -24,7 +24,7 @@ harness-targets: [claude]
 
 # claude-md-forge
 
-<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Reviewed in the 2026-05-30 cross-forge craft audit (Opus 4.8, Claude Code v2.1.156) and found the strongest of the four on content-craft — left essentially as-is (the model the others were brought toward); only the explain-the-why family link added. Worked-example failures predate this; re-test on the next major model release. -->
+<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Reviewed in the 2026-05-30 cross-forge craft audit (Opus 4.8, Claude Code v2.1.156) and found the strongest of the four on content-craft — left essentially as-is (the model the others were brought toward); only the explain-the-why family link added. Worked-example failures predate this; re-test on the next major model release. 2026-06-08 (Opus 4.8, v2.1.165): added the functional CLAUDE.md↔FYI boundary (a behavioral precondition the agent acts on during normal work belongs in CLAUDE.md even when it's publish-flow; only the playbook detail stays in FYI), earned from promoting this repo's plugin-version-bump rule out of FYI. -->
 
 CLAUDE.md is loaded in full every turn. The discipline that justifies the cost: hold only what the agent cannot or should not infer from the code, and write nothing that depicts current state.
 
@@ -100,6 +100,8 @@ Deeper notes on the boundary cases, with examples of content that looks like one
 | External system schemas (DB, Notion) | MCP server. |
 
 The auto-memory boundary catches people. Auto-memory is per-user, machine-local, captured by Claude. CLAUDE.md is committed, team-shared, authored by humans. They are not interchangeable. When an auto-memory entry stabilizes into a fact useful to anyone working in the repo, promote it. That is a tune-job moment.
+
+The **CLAUDE.md ↔ CLAUDE.local.md (FYI) boundary is functional, not topical.** Install / update / troubleshooting playbooks live in `CLAUDE.local.md` (gitignored, machine-local) — but the test isn't the *topic*, it's *when the agent needs it*. A setup or publish detail consulted only while installing or debugging stays in FYI. A **behavioral precondition the agent must satisfy during the repo's normal work** belongs in CLAUDE.md even when it's "publish-flow" or "mechanism" — because the agent never opens FYI mid-task and will repeat the failure. The tell: *would an agent doing this repo's ordinary work step on this if it weren't in context?* If yes, promote the **rule** (one line + Why + a pointer), and leave the **playbook** (commands, paths, diagnostics) in FYI. Example: "a skill change isn't done until you bump the plugin version, or it never propagates" is a precondition → CLAUDE.md; the `/plugin` command sequence to recover → FYI. This is the same shape as a durable harness trap that points to its deep-dive: the rule is always-on, the how-to lives where it's pointed.
 
 **Confirm before handing off.** If the user asked for *this* fact to land in CLAUDE.md and triage moves it elsewhere (rule, hook, skill, auto-memory), apply the *announce → confirm → carry through* gate from `skill-forge`. Name the redirect in one line and wait for the go-ahead before invoking the companion forge. (Bulk audits don't need a confirm per filtered line; surface the pattern in the audit summary instead.)
 

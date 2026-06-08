@@ -98,7 +98,24 @@ for d in cook/skills/*/ serve/skills/*/; do
 done
 [ "$dangle_fail" -eq 0 ] && echo "  OK"
 
-# 6. Model-version pins (advisory). CLAUDE.md "Model-version pinning": each non-trivial
+# 6. Plugin SHA-versioning guard (FAIL). This repo uses commit-SHA plugin versioning:
+#    no "version" field anywhere, so every pushed commit is a new version and marketplace
+#    installs auto-propagate. A "version" in plugin.json or a marketplace entry silently
+#    pins the install cache to that string and re-breaks propagation (see CLAUDE.md).
+echo
+echo "Plugin SHA-versioning (no version field):"
+ver_fail=0
+for f in cook/.claude-plugin/plugin.json serve/.claude-plugin/plugin.json .claude-plugin/marketplace.json; do
+  [ -f "$f" ] || continue
+  if grep -Eq '"version"[[:space:]]*:' "$f"; then
+    echo "  FAIL: $f has a \"version\" field — remove it (commit-SHA versioning; a bump re-breaks auto-propagation)"
+    ver_fail=1
+    fail=1
+  fi
+done
+[ "$ver_fail" -eq 0 ] && echo "  OK"
+
+# 7. Model-version pins (advisory). CLAUDE.md "Model-version pinning": each non-trivial
 #    artifact records the model version it was earned against, canonically as an HTML
 #    comment near the top of the body (`<!-- Earned against: <model>, <YYYY-MM-DD> -->`).
 #    The pin is what triggers a sunset audit when a new model lands. This gate reports

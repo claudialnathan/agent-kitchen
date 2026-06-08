@@ -41,9 +41,9 @@ This applies to any file inside a skill directory, not just `SKILL.md`. The full
 
 Run the preship check (`bin/preship-check`) before commits.
 
-## Publishing footgun: a skill change isn't done until the plugin version bumps
+## Publishing footgun: keep the plugins versionless (commit-SHA versioning)
 
-Adding, removing, or renaming a skill in `cook/` or `serve/` isn't finished until you bump the plugin `version` — in that plugin's `.claude-plugin/plugin.json` *and* its entry in `.claude-plugin/marketplace.json` — and push. **Why:** the `claudia` marketplace is a git-URL source, and Claude Code's per-install cache is keyed by `<plugin>@claudia/<version>`; if the version doesn't change, `/plugin marketplace update` refreshes the clone but never re-extracts the cache, so the change silently never reaches other repos. (A frozen `0.1.0` hid `quality-audit` for weeks.) The propagation playbook — exact commands and the cache-vs-clone diagnostic — is in `CLAUDE.local.md`. <!-- Earned against: Claude Code v2.1.165, 2026-06-08; re-verify if the plugin cache / marketplace model changes. -->
+The `cook` and `serve` plugins carry **no `version` field** — not in `.claude-plugin/plugin.json`, not in the `.claude-plugin/marketplace.json` entries. That puts Claude Code in commit-SHA versioning: every pushed commit is a new version, so a marketplace install picks up skill changes on the next `/plugin update` with no manual step. **Do not add a `version` field.** **Why:** the `claudia` marketplace is a git-URL source whose per-install cache is keyed by the resolved version; the moment a `version` string exists it pins that cache, `/plugin update` reports "already at the latest version," and pushed changes silently never reach other repos (a frozen `0.1.0` hid `quality-audit` for weeks). `bin/preship-check` fails if a `version` field reappears. Propagation after a change is just commit → push → `/plugin marketplace update claudia` → `/plugin update`; the recovery playbook and cache-vs-clone diagnostic are in `CLAUDE.local.md`. <!-- Earned against: Claude Code v2.1.165, 2026-06-08 (docs: plugins-reference — commit-SHA vs explicit-version); re-verify if the plugin cache/marketplace model changes. -->
 
 ## Naming collisions with personal scope
 

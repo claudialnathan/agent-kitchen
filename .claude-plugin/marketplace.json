@@ -9,7 +9,6 @@
       "name": "cook",
       "source": "./cook",
       "description": "Meta-forges that design Claude Code artifacts (skill-forge, hook-forge, rule-forge, claude-md-forge, workflow-forge) plus ingest. The reusable design layer.",
-      "version": "0.2.0",
       "license": "MIT",
       "keywords": ["claude-code", "skills", "meta-skills", "forge"]
     },
@@ -17,7 +16,6 @@
       "name": "serve",
       "source": "./serve",
       "description": "Applied skills: shadcn-tailwind, design-engineer, speed-daemon, quality-audit, saltintesta. Stack-specific discipline served on top of cook.",
-      "version": "0.2.0",
       "license": "MIT",
       "keywords": ["claude-code", "skills", "applied"]
     }

@@ -41,6 +41,10 @@ This applies to any file inside a skill directory, not just `SKILL.md`. The full
 
 Run the preship check (`bin/preship-check`) before commits.
 
+## Publishing footgun: a skill change isn't done until the plugin version bumps
+
+Adding, removing, or renaming a skill in `cook/` or `serve/` isn't finished until you bump the plugin `version` — in that plugin's `.claude-plugin/plugin.json` *and* its entry in `.claude-plugin/marketplace.json` — and push. **Why:** the `claudia` marketplace is a git-URL source, and Claude Code's per-install cache is keyed by `<plugin>@claudia/<version>`; if the version doesn't change, `/plugin marketplace update` refreshes the clone but never re-extracts the cache, so the change silently never reaches other repos. (A frozen `0.1.0` hid `quality-audit` for weeks.) The propagation playbook — exact commands and the cache-vs-clone diagnostic — is in `CLAUDE.local.md`. <!-- Earned against: Claude Code v2.1.165, 2026-06-08; re-verify if the plugin cache / marketplace model changes. -->
+
 ## Naming collisions with personal scope
 
 When a skill name in this repo collides with one at `~/.claude/skills/<name>/`, the personal one wins silently. Anthropic ships `skill-creator` in personal scope, which is why the project meta-skill is `skill-forge` (same for `hook-forge`, `rule-forge`). Pick names that won't collide.

@@ -1,187 +1,354 @@
-# Claude Code hacks — commands, flags, env vars & tricks
+# `hacks, FYIs & nice-to-knows`
 
-A skimmable list of the commands, little additions, and "hacks" Claude Code ships. Every entry below is **current** — verified 2026-06-06 against **v2.1.165**, cross-checking the live commands reference (`code.claude.com/docs/en/commands`) against the changelog and removing anything since renamed or dropped (see [Retired](#retired--renamed--dont-use) at the bottom).
-
-> Not exhaustive on purpose — the niche env vars and every launch flag live in `docs/en/settings`, `docs/en/cli-reference`, and `docs/en/hooks`. This is the useful/hacky subset. Ask me to refresh it when a changelog drops.
+`Claude Code v2.1.165` · `+ Claude Agent Platform` · verified `2026-06-09`
 
 ---
 
-## Slash commands
+Claude Code likes to call this:
+```
+obscure, powerful, and just-shipped corners of Claude Code and the Claude Agent Platform: the "did you know" layer. Famous basics (`/init`, "what's a skill") live in `[STATE.md](./STATE.md)`, the full-surface reference. This is the clever subset, in tables you can scan.
+```
 
-**Setup & config**
-- `/init` — generate a starter `CLAUDE.md` (set `CLAUDE_CODE_NEW_INIT=1` for an interactive flow through skills/hooks/memory).
-- `/memory` — edit `CLAUDE.md` files; toggle and view auto-memory.
-- `/config` (`/settings`) — settings UI: theme, model, output style.
-- `/permissions` (`/allowed-tools`) — manage allow/ask/deny rules and review auto-mode denials.
-- `/mcp` — manage MCP servers and OAuth.
-- `/agents` — manage subagents.
-- `/hooks` — view hook configs.
-- `/model` — switch model (and adjust effort with ←/→); `s` = this-session-only.
-- `/effort [low|medium|high|xhigh|max|ultracode|auto]` — set reasoning effort; no arg opens a slider.
-- `/fast [on|off]` — toggle fast mode.
-- `/sandbox` — toggle sandbox mode.
-- `/statusline`, `/keybindings`, `/theme`, `/terminal-setup`, `/tui [fullscreen]` — terminal/UI config.
-- `/status`, `/doctor` — health & connectivity (`/doctor` → press `f` to auto-fix).
+**Markers:** `mono` = paste-ready identifier · 🔥 = standout · 💡 = synthesised tip (inference from a cited fact) · 🆕 = recent (version inline) · ⚠️ = gotcha
 
-**During a task**
-- `/plan [description]` — enter plan mode (optionally with the task).
-- `/context [all]` — visualize where the context window is going.
-- `/compact [instructions]` — summarize the conversation to reclaim context.
-- `/clear` (`/reset`, `/new`) — fresh context, keep project memory.
-- `/btw <question>` — quick side question that doesn't bloat history.
-- `/diff` — interactive diff viewer (git diff + per-turn diffs).
-- `/rewind` (`/checkpoint`, `/undo`) — roll code/conversation back to a checkpoint.
-- `/add-dir <path>` — add a working directory mid-session.
+**Jump to:** [Standouts](#standouts) · [Memory & context](#memory) · [Prompt caching](#caching) · [Orchestration](#orchestration) · [Hooks](#hooks) · [Sessions, remote & links](#sessions) · [CLI / env / settings / keys](#reference) · [Skills, plugins & MCP](#skills) · [Platform / Agent SDK](#platform) · [Anthropic playbook](#playbook) · [Stale advice](#stale)
 
-**Parallel & background work**
-- `/tasks` (`/bashes`) — view everything running in the background.
-- `/background [prompt]` (`/bg`) — detach the session to keep running; monitor with `claude agents`.
-- `/batch <instruction>` — decompose a big change into 5–30 units, one background subagent + PR each (skill).
-- `/fork <directive>` — spawn a forked subagent that inherits the full conversation (needs `CLAUDE_CODE_FORK_SUBAGENT=1`).
-- `/branch [name]` — branch the conversation to try a different direction.
-- `/stop` — stop the current background session.
-- `/goal [condition]` — keep working across turns until a condition is met.
-- `/workflows` — watch/pause/resume/save dynamic-workflow runs.
-- `/loop [interval] [prompt]` (`/proactive`) — repeat a prompt; no prompt runs `.claude/loop.md` or an autonomous maintenance check (skill).
+---
 
-**Shipping & review**
-- `/code-review [low|medium|high|xhigh|max|ultra] [--fix] [--comment] [target]` — review the diff for bugs; `--fix` applies, `--comment` posts PR comments, `ultra` runs a cloud review (skill).
-- `/simplify [target]` — cleanup-only review (reuse/simplify/efficiency/altitude) that applies fixes; no bug-hunting (skill).
-- `/review [PR]`, `/security-review` — deeper read-only passes.
-- `/ultrareview [PR]` — deep multi-agent cloud review (prefer `/code-review ultra`; this is now an alias).
-- `/ultraplan <prompt>` — draft a plan in the cloud, review in browser, execute remotely or pull back.
-- `/verify`, `/run`, `/run-skill-generator` — build/launch/drive your app to confirm a change works (skills).
 
-**Sessions, web & remote**
-- `/resume [session]` (`/continue`) — resume by id/name; background sessions show marked `bg`.
-- `/rename [name]` — rename the session (auto-generates if blank).
-- `/export [file]`, `/copy [N]` — export/copy conversation or the Nth-latest response.
-- `/recap` — one-line summary of the current session.
-- `/teleport` (`/tp`), `/remote-control` (`/rc`), `/remote-env` — move between web and terminal; drive this session from another device.
-- `/desktop` (`/app`), `/mobile` (`/ios`, `/android`) — continue on desktop/mobile apps.
-- `/schedule [description]` (`/routines`) — create cloud routines on a cron/event trigger.
-- `/autofix-pr [prompt]` — cloud session that watches your PR and pushes fixes when CI fails.
-- `/web-setup`, `/install-github-app`, `/install-slack-app`, `/chrome` — integrations.
 
-**Meta, help & plugins**
-- `/help`, `/release-notes`, `/feedback` (`/bug`, `/share`).
-- `/skills` — list skills; press `t` to sort by token cost, `Space` to hide a skill.
-- `/reload-skills`, `/reload-plugins [--force]` — re-scan disk without restarting.
-- `/plugin [list|install|enable|disable]` — manage plugins.
-- `/insights`, `/powerup`, `/team-onboarding` — usage report / interactive lessons / teammate ramp-up guide.
-- `/usage` (`/cost`, `/stats`) — cost & limits, broken down by skill/subagent/plugin/MCP.
-- `/usage-credits` — keep working past a limit (was `/extra-usage`).
-- `/login`, `/logout`, `/upgrade`, `/privacy-settings`, `/passes`, `/exit` (`/quit`).
+### `STANDOUTS`
 
-**Fun / niche** *(no `/dreams` command exists — these are the playful ones)*
-- `/radio` — Claude FM lo-fi radio in your browser.
-- `/stickers` — order Claude Code stickers.
-- `/color [color]` — set prompt-bar color; no arg = random.
-- `/heapdump` — write a heap snapshot to `~/Desktop` for memory diagnosis.
-- `/deep-research <question>` — fan-out web research with a cited report (workflow).
-- `/claude-api [migrate]` — load Claude API reference / migrate model versions (skill).
-- `/fewer-permission-prompts` — build a permission allowlist from your transcripts (skill).
-- `/voice [hold|tap|off]` — voice dictation.
+5 top-tier(lesser-known or new) features
 
-## CLI commands & flags
 
-Full list at `docs/en/cli-reference`. The hacky/common ones:
+| Feature                             | Invoke                                  | What it gets you                                                                                                                                                                                                              |
+| ----------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🌙 **Dreams**                       | `POST /v1/dreams`                       | Offline job rebuilds a memory store from itself + ≤100 transcripts: dupes merged, contradictions resolved, insights surfaced. Curates rotting long-term memory; escape hatch for the 2,000-store cap. → [Platform](#platform) |
+| 📡 **Channels** `🆕 v2.1.80+`       | `claude --channels plugin:<name>@<mkt>` | Pushes outside events (CI fail, Telegram, `curl`) *into* your live session over stdio, files + context already loaded. → [Sessions](#sessions)                                                                                |
+| 🔗 **Deep links** `🆕 v2.1.91+`     | `claude-cli://open?repo=…&q=…`          | One click opens Claude in a new terminal, right repo, prompt pre-typed. `mailto:` for agent sessions. → [Sessions](#sessions)                                                                                                 |
+| 📱 **Remote Control** `🆕 v2.1.51+` | `claude remote-control` · `/rc`         | Drive your *local* session from your phone; full tooling, outbound HTTPS only. → [Sessions](#sessions)                                                                                                                        |
+| ♾️ **Long-running stack**           | memory + context-editing + compaction   | The three platform levers that let an agent outlive one context window. → [Platform](#platform)                                                                                                                               |
 
-- `claude -p "<prompt>"` — headless/print mode (scriptable); `--output-format text|json|stream-json`.
-- `claude -c` / `--continue`, `claude --resume` — pick up a prior session.
-- `claude agents` — unified list of all sessions (running/blocked/done); `--json`, `--cwd <path>`.
-- `claude --bg --exec '<cmd>'` — run a shell command as an attachable background session.
-- `claude --worktree` (`+ --tmux`) — start in a fresh git worktree.
-- `claude update` — update in place; `claude doctor` — diagnose install.
-- `claude plugin <init|install|enable|disable|prune|marketplace>` — manage plugins; `init <name>` scaffolds one in `.claude/skills`.
-- `claude project purge [path]` — delete all Claude Code state for a project (`--dry-run`, `--all`).
-- `claude ultrareview [target]` — non-interactive cloud review for CI (`--json`).
-- Launch flags: `--model`, `--effort`, `--permission-mode <auto|acceptEdits|plan|bypassPermissions>`, `--dangerously-skip-permissions`, `--add-dir`, `--mcp-config`, `--settings`, `--plugin-dir`, `--plugin-url <url>`, `--strict-mcp-config`, `--fallback-model`, `--agent <name>`, `--debug`.
 
-## Environment variables
+---
 
-**Provider & model**
-- `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_BASE_URL` — auth / custom gateway.
-- `CLAUDE_CODE_USE_BEDROCK=1`, `CLAUDE_CODE_USE_VERTEX=1`, `CLAUDE_CODE_USE_MANTLE=1` — third-party providers.
-- `ANTHROPIC_DEFAULT_OPUS_MODEL` / `ANTHROPIC_DEFAULT_SONNET_MODEL` / `ANTHROPIC_SMALL_FAST_MODEL` — pin model IDs.
-- `CLAUDE_CODE_SUBAGENT_MODEL` — model used for subagents.
 
-**Feature toggles**
-- `CLAUDE_CODE_ENABLE_AUTO_MODE=1` — opt into auto mode on Bedrock/Vertex/Foundry.
-- `CLAUDE_CODE_FORK_SUBAGENT=1` — enable `/fork`.
-- `CLAUDE_CODE_NEW_INIT=1` — interactive `/init`.
-- `CLAUDE_CODE_USE_POWERSHELL_TOOL=1` — PowerShell tool on Windows.
-- `ENABLE_TOOL_SEARCH` — opt into tool-search deferral (off by default on Vertex).
-- `ENABLE_PROMPT_CACHING_1H` — 1-hour prompt-cache TTL.
-- `USE_BUILTIN_RIPGREP=0` — opt out of the bundled ripgrep.
-- `CLAUDE_CODE_SIMPLE=1` — strip skills, session memory, custom agents, and CLAUDE.md token counting for a minimal context.
-- `CLAUDE_CODE_ENABLE_AWAY_SUMMARY=0` — opt out of the auto session recap.
 
-**Shell & process**
-- `BASH_DEFAULT_TIMEOUT_MS` — when a bash command exceeds it, it's auto-backgrounded (not killed).
-- `BASH_NO_LOGIN`, `CLAUDE_CODE_SHELL`, `CLAUDE_CODE_SHELL_PREFIX` — shell behavior.
-- `CLAUDE_CODE_TMPDIR` — relocate Claude's temp dir.
-- `MCP_TIMEOUT` / `MCP_TOOL_TIMEOUT` — MCP connection / tool timeouts.
+## 🧠 Memory & context
 
-**Quiet / disable**
-- `DISABLE_TELEMETRY=1`, `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1` — suppress telemetry/usage metrics.
-- `DISABLE_AUTOUPDATER=1`, `DISABLE_COMPACT=1`, `CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1`, `DISABLE_INTERLEAVED_THINKING=1`.
-- `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1`, `CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS=1`.
 
-**Security & telemetry**
-- `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1` — PID-namespace subprocess isolation on Linux; `CLAUDE_CODE_SCRIPT_CAPS` caps per-session script runs.
-- `OTEL_*` family — OpenTelemetry export (`OTEL_LOG_TOOL_DETAILS`, `OTEL_RESOURCE_ATTRIBUTES`, `OTEL_METRICS_EXPORTER`, etc.).
-- `SLASH_COMMAND_TOOL_CHAR_BUDGET` — raise the skill-listing description budget.
+| Mechanic                         | Identifier                                      | What it gets you                                                                                                                                                                                                                                      |
+| -------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔥 **Auto-memory** `🆕 v2.1.59+` | `~/.claude/projects/<project>/memory/MEMORY.md` | Claude's own cross-session notes (build cmds, debugging insights, your corrections). Loaded at start: first 200 lines / 25 KB of `MEMORY.md`, topic files on demand. Machine-local, keyed to git repo root, so all worktrees + subdirs share one dir. |
+| **CLAUDE.md import**             | `@path/to/file` (max depth 4)                   | Expands at launch. `@~/.claude/notes.md` shares personal instructions across worktrees a gitignored `CLAUDE.local.md` can't reach.                                                                                                                    |
+| **Zero-cost notes**              | `<!-- comment -->` in CLAUDE.md                 | Stripped before injection; maintainer notes at zero context cost, visible only in-file.                                                                                                                                                               |
+| **Monorepo noise filter**        | `claudeMdExcludes`                              | Glob/path list skips noisy ancestor CLAUDE.md files; put in `.claude/settings.local.json` to keep it machine-local.                                                                                                                                   |
+| **Context tools**                | `/context` · `Esc Esc` · "Summarize up to here" | `/context` = your real split (docs' pictures use fake numbers). `Esc Esc` on an empty prompt rewinds. "Summarize up to here" is a scalpel where `/compact` is a hammer.                                                                               |
 
-## settings.json keys worth knowing
 
-- `autoMode.hard_deny` — classifier rules that block unconditionally (policy backstop).
-- `worktree.baseRef` (`fresh` | `head`) — branch worktrees from `origin/<default>` or local HEAD.
-- `skillOverrides` — set a skill to `name-only` or `off` to save description budget.
-- `disableSkillShellExecution` — block shell-injection markers in untrusted skills.
-- `requiredMinimumVersion` / `requiredMaximumVersion` — managed: refuse to start outside a version range.
-- `viewMode` — default focus/standard view.
-- `permissions.defaultMode` — default permission mode for new sessions.
-- `alwaysLoad` (per MCP server) — skip tool-search deferral; keep all tools available.
+**What survives `/compact`:**
 
-## Hook goodies
 
-- Handler types: `command`, HTTP, and `mcp_tool` (call a connected MCP tool directly, no subprocess).
-- `args: string[]` exec form — runs the command without a shell, so path placeholders never need quoting.
-- `continueOnBlock` (PostToolUse) — feed the rejection back to Claude and continue instead of aborting.
-- `additionalContext` (Stop / SubagentStop) — hand Claude feedback and keep the turn going.
-- `terminalSequence` in output — desktop notifications, window titles, bells with no controlling terminal.
-- `MessageDisplay` event — transform or hide assistant text as it's shown.
-- `defer` permission decision (PreToolUse) — `-p` sessions pause and exit resumable.
-- `UserPromptSubmit` → `sessionTitle` — set the session title from a hook.
-- `PreCompact` can block compaction (exit 2 / `decision: block`).
-- `SessionStart` → `reloadSkills: true` — surface skills a hook installs mid-session.
-- Hooks receive `effort.level` (and `$CLAUDE_EFFORT`); MCP servers and hooks get `CLAUDE_PROJECT_DIR`.
+| Layer                                                           | Fate                                                                                                                                             |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| System prompt, CLAUDE.md, auto-memory, MCP defs, unscoped rules | Reloaded fresh (cache-hit if unchanged)                                                                                                          |
+| Invoked skill **bodies**                                        | Truncated: most-recent invocation of each only, 5 K tokens each / 25 K total, cut from the *end* (put key instructions at the top of `SKILL.md`) |
+| Skill **descriptions**, path-scoped rules, nested CLAUDE.md     | Dropped until a matching file is read again                                                                                                      |
 
-## Neat tricks
 
-- Prefix a line with `! ` to run a shell command as a background session (e.g. `! npm test`).
-- Type `ultracode` in a prompt to fire a one-off dynamic workflow; `/effort ultracode` makes workflows the default.
-- `/copy` then press `w` — write the response to a file instead of the clipboard (handy over SSH).
-- `Ctrl+T` inside `claude agents` — pin a session so it survives idle and updates.
-- Long bash commands auto-background at `BASH_DEFAULT_TIMEOUT_MS` instead of dying.
-- Skills can interpolate `${CLAUDE_EFFORT}`, `${CLAUDE_SKILL_DIR}`, and `${CLAUDE_SESSION_ID}`.
-- A plugin's `bin/` is added to PATH while the plugin is enabled — bare commands just work.
-- Plugins auto-load from `.claude/skills/` with no marketplace; `claude plugin init <name>` scaffolds one.
-- GFM checkboxes render in output: `- [ ]` and `- [x]` show as real checkboxes.
-- `disallowed-tools` frontmatter (skills/commands) removes named tools while the skill is active.
-- Vim editing lives under `/config` → Editor mode (the old `/vim` command is gone).
+💡 Auto-memory + a tight CLAUDE.md is a division of labour: say "tests need Redis / build is X / I prefer Y" once and auto-memory persists it per-repo, machine-locally. CLAUDE.md is for team-shared intent the code can't tell you; auto-memory is for your accumulated corrections.
+💡 `@AGENTS.md` import + `/init` reading `.cursorrules`/`.windsurfrules`/`.devin/rules/` = one canonical source feeds Claude, Cursor, Windsurf, Devin. (Windows: use the import, not a symlink.)
 
-## Retired / renamed — don't use
+src: code.claude.com/docs/en/memory · /context-window · /claude-directory
 
-- `workflow` trigger keyword → now **`ultracode`** (v2.1.160); the bare word no longer fires.
-- `CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE` → removed / no-op (v2.1.160); use `/model claude-opus-4-6[1m]` then `/fast on`.
-- `--enable-auto-mode` flag → gone; auto mode needs no opt-in consent.
-- `/pr-comments` → removed v2.1.91 (just ask Claude to view PR comments).
-- `/vim` → removed v2.1.92 (use `/config` → Editor mode).
-- `/extra-usage` → `/usage-credits` (old name still works).
-- `/simplify` was briefly merged into `/code-review`, now separate again (cleanup-only).
-- **Windsurf** → **Devin Desktop** in `/ide` and `/terminal-setup` (editor rebrand).
-- keybinding `modelPicker:setAsDefault` → `modelPicker:thisSessionOnly` (action `d` → `s`).
-- `/effort` slider labels "Speed/Intelligence" → "Faster/Smarter".
-- Native macOS/Linux builds: `Glob`/`Grep` tools replaced by embedded `bfs`/`ugrep` via the Bash tool.
+---
+
+
+
+## ⚡ Prompt caching
+
+The cache matches on the request **prefix**, exactly, so a change anywhere early recomputes everything after it. Claude Code orders content least-changing-first: `System prompt → Project context → Conversation`.
+
+
+| 🔴 Invalidates the cache (slow, costly next turn)        | 🟢 Keeps the cache                                           |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| Switch **model** (each has its own cache)                | Edit files in your repo                                      |
+| Change **effort** level                                  | Edit CLAUDE.md mid-session (also doesn't apply till restart) |
+| Turn on **fast mode** (first time)                       | Change **output style** (also doesn't apply till `/clear`)   |
+| Connect/disconnect MCP **if tools load into the prefix** | Change **permission mode**                                   |
+| Enable/disable a plugin that ships an **MCP server**     | Invoke **skills & commands** (appended as messages)          |
+| Deny an **entire tool** (`Bash`, not `Bash(rm *)`)       | `/recap` (appends, unlike `/compact`)                        |
+| `/compact` · upgrade Claude Code · resume after upgrade  | `/rewind` (truncates back to a cached prefix)                |
+
+
+💡 Pick model and effort at the top of a session; save `/compact` for natural task breaks. Every mid-task model/effort/fast-mode flip is a full uncached turn. Prefer `/rewind` (reuses a warm prefix) over `/compact` (builds a new one) to abandon a bad path.
+💡 On a Claude subscription the 1-hour cache TTL is automatic (no `ENABLE_PROMPT_CACHING_1H`; that's the API-key/Bedrock/Vertex lever). Watch `cache_read_input_tokens` vs `cache_creation_input_tokens`: high read-ratio means caching works; persistently high *creation* means something keeps changing your prefix.
+
+src: code.claude.com/docs/en/prompt-caching
+
+---
+
+
+
+## 🤖 Orchestration
+
+
+| Feature                                          | Invoke                                              | What it gets you                                                                                                                                                                                                                                                     |
+| ------------------------------------------------ | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔥 **Forked subagents** `🆕 default-on v2.1.161` | `/fork <directive>` · `CLAUDE_CODE_FORK_SUBAGENT=1` | Inherits the *entire* conversation (zero re-explaining) and shares the parent's prompt cache, so cheaper than a fresh subagent for same-context work. Open a running fork's transcript and steer it mid-flight.                                                      |
+| 🔥 `**/goal`** `🆕 v2.1.139+`                    | `/goal <condition>`                                 | A small fast model re-checks your condition every turn and keeps Claude working until it holds, no per-turn prompting. ⚠️ Judges *only the transcript*, so write conditions the output can prove: `"npm test exits 0 and git status clean, or stop after 20 turns"`. |
+| **Agent view**                                   | `claude agents` · `--json`                          | `←` on an empty prompt backgrounds + jumps here; `Ctrl+T` pins (survives idle, restarts onto new binaries); `s:blocked` filters "what needs me"; `--json` emits an inventory with a `waitingFor` field.                                                              |
+| **Respawn**                                      | `claude respawn --all`                              | Rolls every background session onto an updated Claude Code binary at once.                                                                                                                                                                                           |
+
+
+💡 For human sign-off *between* stages, skip one big workflow or an agent team: workflows forbid mid-run input (only permission prompts pause), and in-process teammates don't survive `/resume`. Chain separate steps, or use agent view's per-session peek/reply.
+⚠️ Three "agents" surfaces, easy to confuse: `claude agents` (background sessions) ≠ `/agents` (subagent Library) ≠ agent *teams* (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, ~7× tokens). Dynamic workflows (`ultracode`) are the heaviest fan-out; see `[STATE.md](./STATE.md)`. The workflow JS API isn't in the public docs, so don't assume function names.
+
+src: code.claude.com/docs/en/sub-agents · /goal · /agent-view · /workflows
+
+---
+
+
+
+## 🪝 Hooks
+
+The events and fields nobody reads down to.
+
+
+| Hook / field                           | What it buys you                                                                                                           |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `PermissionDenied` + `{retry: true}`   | Auto-mode denied a call: tell the model to try a different approach (a self-healing loop).                                 |
+| `MessageDisplay` → `displayContent`    | Rewrite what the **user sees** (redact secrets, localise) while Claude's context keeps the original.                       |
+| `CwdChanged` + `CLAUDE_ENV_FILE`       | The direnv/nix bridge: write `export …` lines and Claude runs them before every Bash call (env otherwise doesn't persist). |
+| `terminalSequence` `🆕 v2.1.141+`      | Native desktop notifications/titles/bells from a hook (OSC 9/99/777), no controlling terminal needed.                      |
+| `"type": "prompt"` / `"type": "agent"` | LLM hooks: judgment gating ("are all tasks done?") or a subagent that runs the tests before allowing a stop.               |
+| `"type": "mcp_tool"`                   | Route hook logic through an already-connected MCP tool (e.g. a security scanner), no subprocess.                           |
+| `"args": [...]` (exec form)            | Spawns the command without a shell: the fix for quoting hell and "command not found."                                      |
+| `InstructionsLoaded`                   | Logs which CLAUDE.md/rule loaded, when, and why: the debugger for "why didn't my path-scoped rule fire?"                   |
+
+
+⚠️ Only exit code `2` blocks. A hook that exits `1` does **not** block the action (stderr shows, turn continues). A `PreToolUse` `deny` beats `bypassPermissions`/`--dangerously-skip-permissions`: the way to enforce un-bypassable org policy.
+
+src: code.claude.com/docs/en/hooks · /hooks-guide
+
+---
+
+
+
+## 🛰️ Sessions, remote & links
+
+
+| Feature                             | Invoke                                                        | What it gets you                                                                                                                                                                                                                                           |
+| ----------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 📡 **Channels** `🆕 v2.1.80+`       | `claude --channels plugin:<name>@<mkt>`                       | Inverse of an MCP server: pushes events into your live session over stdio. Per-session opt-in (being in `.mcp.json` isn't enough). Two-way `reply` tool + permission relay (`claude/channel/permission`) to approve `Bash`/`Write`/`Edit` from your phone. |
+| 🔥 **iMessage self-chat**           | iMessage channel reads `~/Library/Messages/chat.db`           | Text yourself for a zero-config phone→Claude bridge (needs Full Disk Access, no bot token).                                                                                                                                                                |
+| 📱 **Remote Control** `🆕 v2.1.51+` | `claude remote-control` · `/rc` · `--spawn worktree`          | Local session, phone UI via QR; filesystem + MCP + `@`-autocomplete intact. `/rc` hands an in-progress convo over without restarting. `--spawn worktree` = parallel edits per connection. Outbound HTTPS only. Pro/Max/Team/Enterprise, preview.           |
+| 🔗 **Deep links** `🆕 v2.1.91+`     | `claude-cli://open?…` · `vscode://anthropic.claude-code/open` | Auto-registered on first run, no install. Opens a terminal (or an IDE tab) in the right repo, prompt pre-typed. Fire via `open` (macOS) / `xdg-open` (Linux) / `Start-Process` (PowerShell).                                                               |
+
+
+**Deep-link params:**
+
+
+| Param  | Behaviour                                                                                                                                      |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `q`    | URL-encoded prompt, max 5,000 chars (`%0A` = newline). ⚠️ Inert until you press Enter; a "Prompt from an external link" warning stays visible. |
+| `repo` | `owner/name` → the local clone you last ran `claude` in (shareable across a team cloning to different paths).                                  |
+| `cwd`  | Absolute dir; wins over `repo` if both are passed.                                                                                             |
+
+
+⚠️ Channels: gate senders on `message.from.id`, not `message.chat.id` — in a group chat, anyone in an allowlisted room could otherwise inject into your session.
+⚠️ Remote Control won't connect? You're probably on an inference-only token; it needs a full `claude auth login`, not `setup-token`.
+⚠️ GitHub strips `claude-cli://` links (renders the label only) — put the URL in a code block so people can copy it.
+💡 Channels + the permission relay beats `--dangerously-skip-permissions` for unattended runs: a long-running agent that still asks before risky calls, except the ask lands on your phone and the first verdict (terminal or remote) wins.
+💡 Deep link + Skill is the runbook pattern: store the long prompt as a `/skill` and let `q` just name it. Short URLs, and you dodge the 5,000-char limit.
+
+src: code.claude.com/docs/en/channels · /channels-reference · /remote-control · /deep-links
+
+---
+
+
+
+## 🎛️ CLI / env / settings / keys
+
+Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. This is the hacky subset.
+
+**CLI flags & subcommands**
+
+
+| Flag / command                             | Why it's here                                                                                               |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `--worktree <name>` / `-w`                 | Isolated git worktree in one command; pass `#1234` or a PR URL to branch a fresh checkout *from that PR*.   |
+| `--bg --exec 'pytest -x'`                  | Fire-and-forget a shell job as an attachable background row (no model invoked).                             |
+| `--bare` (sets `CLAUDE_CODE_SIMPLE`)       | Skip all auto-discovery (hooks/skills/plugins/MCP/memory/CLAUDE.md): faster, deterministic scripted starts. |
+| `--exclude-dynamic-system-prompt-sections` | Move per-machine bits (cwd, env, paths) out of the system prompt so the cache reuses across machines.       |
+| `--from-pr <n>` / `--fork-session`         | Resume the session that built a PR / branch a conversation without mutating the original.                   |
+| `--max-budget-usd 5.00`                    | Hard dollar ceiling for unattended `-p` runs.                                                               |
+| `--json-schema`                            | Schema-validated output in the `structured_output` field (`-p` mode).                                       |
+| `--agents '{"reviewer":{…,"prompt":"…"}}'` | Define a subagent inline as JSON, no file to author.                                                        |
+| `--strict-mcp-config`                      | Use *only* `--mcp-config` servers: hermetic, reproducible MCP set.                                          |
+| `--plugin-url <https-zip>`                 | Load a plugin from a hosted CI artifact for one session, no install.                                        |
+| `claude mcp serve`                         | 🔥 Run **Claude Code itself as an MCP server**, exposing its tools to other clients.                        |
+| `claude project purge [path]`              | Wipe one project's local footprint (transcripts, memory, tasks); `--dry-run`, `--all`.                      |
+| `claude setup-token`                       | Long-lived OAuth token for CI/scripts (Claude subscription).                                                |
+
+
+**Environment variables**
+
+
+| Var                                          | Effect                                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `CLAUDE_CODE_EFFORT_LEVEL`                   | The **only** way to make `max` effort persist across sessions (the setting rejects `max`). |
+| `BASH_DEFAULT_TIMEOUT_MS`                    | Long bash commands **auto-background** past this instead of being killed.                  |
+| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`            | Trigger auto-compaction earlier than the ~95% default (e.g. `50`).                         |
+| `CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY`       | Crank parallel read-only tools/subagents above the default `10`.                           |
+| `CLAUDE_CODE_ATTRIBUTION_HEADER=0`           | Drop the attribution block for a smaller, more cacheable system prompt.                    |
+| `CLAUDE_CODE_TASK_LIST_ID=my-project`        | Share one task list across sessions on the same project.                                   |
+| `CLAUDE_CODE_HIDE_CWD=1`                     | Hide the working dir in the startup logo (clean screenshares).                             |
+| `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1` | One switch: autoupdater + feedback + error-reporting + telemetry off.                      |
+| `MAX_THINKING_TOKENS=0`                      | Disable extended thinking regardless of effort (big cost lever on simple tasks).           |
+| `ENABLE_TOOL_SEARCH=auto:5`                  | Threshold-load only MCP tools fitting in 5% of context; defer the rest.                    |
+
+
+**settings.json keys**
+
+
+| Key                                                       | Effect                                                                                                                                        |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `skillOverrides`                                          | Set a skill to `"name-only"` (keep listed, drop description budget) or `"off"`, without editing its file; great for noisy third-party skills. |
+| `maxSkillDescriptionChars` / `skillListingBudgetFraction` | Tune the 1,536-char per-skill cap / the 1%-of-context listing budget `🆕 v2.1.105+`.                                                          |
+| `autoMode.hard_deny`                                      | Prose-rule blocklist that overrides auto-approval: a policy-grade backstop.                                                                   |
+| `worktree.baseRef`                                        | `"fresh"` (from `origin/HEAD`) vs `"head"` (carry unpushed work) for worktree creation.                                                       |
+| `includeGitInstructions: false`                           | Drop built-in git workflow text for a smaller system prompt, better cache.                                                                    |
+| `disableDeepLinkRegistration: "disable"`                  | Stop `claude-cli://` from registering (security lever).                                                                                       |
+| `requiredMinimumVersion` / `…Maximum…`                    | (Managed) refuse to start outside a version band: pin a fleet.                                                                                |
+
+
+**Interactive shortcuts & TUI**
+
+
+| Keys                   | Action                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| `Esc` `Esc`            | Empty prompt → rewind menu; with text → clear draft (saved to history, `↑` recalls). |
+| `Ctrl+X Ctrl+K`        | Kill **all** background subagents (twice within 3 s to confirm).                     |
+| `Ctrl+O`               | Toggle transcript; expands collapsed MCP calls ("Called slack 3 times").             |
+| `Ctrl+B`               | Background a running bash command/agent mid-run without killing it.                  |
+| `Ctrl+R` then `Ctrl+S` | Reverse history search; `Ctrl+S` cycles scope session → project → **all projects**.  |
+| `Ctrl+G`               | Open prompt or a plan in `$EDITOR` before proceeding.                                |
+| `Option+T` / `Alt+T`   | Toggle extended thinking per-prompt (`🆕` macOS no-config since v2.1.132).           |
+| `/tui fullscreen`      | Alt-screen renderer; fixes "scroll jumps to top while Claude works" in VS Code/tmux. |
+| `/focus` · `/btw`      | Quieter transcript view · ask a side question that **never enters history**.         |
+
+
+src: code.claude.com/docs/en/cli-reference · /env-vars · /settings · /interactive-mode · /fullscreen
+
+---
+
+
+
+## 🧩 Skills, plugins & MCP
+
+
+| Lever                        | Identifier                                                          | What it gets you                                                                                                                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Hidden skill**             | `disable-model-invocation: true`                                    | Skill stays *entirely* out of context (not even its description) until you `/name` it. Put on side-effecting workflows (commit, deploy) for zero standing cost.                                          |
+| **Tiny-context skill**       | `context: fork` + `agent: Explore`                                  | Runs a skill in an isolated subagent that skips CLAUDE.md and git status.                                                                                                                                |
+| 🔥 **Tool search**           | default on Sonnet 4+ / Opus 4+                                      | Defers all MCP tool schemas by default. The "too many MCP servers blow my context" caution is largely obsolete unless you force `alwaysLoad` or `ENABLE_TOOL_SEARCH=false`.                              |
+| **Inline MCP data**          | `@server:resource` (`@github:issue://123`) · `/mcp__server__prompt` | Pull live MCP data inline like an `@file`; surface server prompts as slash commands.                                                                                                                     |
+| **Plugin CLI + state**       | `bin/` at plugin root · `${CLAUDE_PLUGIN_DATA}`                     | `bin/` joins the Bash `PATH` while enabled (ship a CLI your skills call by name). `${CLAUDE_PLUGIN_DATA}` is the persistent state dir that survives updates (install venvs / `node_modules` there once). |
+| 🔥 **Commit-SHA versioning** | omit `version` from `plugin.json` + marketplace entry               | Git commit SHA becomes the version, so every push is an update. ⚠️ Setting a `version` pins the install cache; `/plugin update` reports "already at the latest version" until you bump it.               |
+
+
+💡 Prefer CLI tools (`gh` / `aws` / `gcloud`) over MCP servers when you can: a CLI adds zero per-tool listing context; an MCP server adds tool names (unless deferred). For occasional external calls, the shell is the context-cheapest path.
+
+src: code.claude.com/docs/en/skills · /plugins-reference · /mcp · /tools-reference
+
+---
+
+
+
+## 🌙 Platform / Agent SDK
+
+
+| Feature             | Identifier                 | What it gets you                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🌙 **Dreams**       | `POST /v1/dreams`          | Async: reads a memory store + ≤100 transcripts → writes a *new* curated store (input never touched; review & swap). Cleans rotting long-term memory; escape hatch for the 2,000-store cap (dream it down, switch, archive). Flow: `POST` (inputs + `model` + optional `instructions`) → poll `pending → running → completed | failed | canceled` (minutes to tens of minutes) → read `outputs[]` for the rebuilt `memory_store_id`. |
+| **Memory tool**     | `memory_20250818`          | Claude runs file ops (view/create/str_replace/insert/delete/rename) on a `/memories` dir *your* infra stores; JIT-retrieval, ZDR-eligible. An auto-injected line tells it to check memory first and checkpoint "because context may reset at any moment".                                                                                                                                                                           |
+| **Context editing** | `clear_tool_uses_20250919` | Clears stale tool results to placeholders. `clear_at_least` fires only when it frees ≥N tokens; `exclude_tools` shields critical results.                                                                                                                                                                                                                                                                                           |
+| **Compaction**      | `compact_20260112`         | Server-side auto-summarisation; the recommended long-run strategy over manual editing.                                                                                                                                                                                                                                                                                                                                              |
+
+
+**Dreams knobs & limits:**
+
+
+| Knob                   | Value                                                             |
+| ---------------------- | ----------------------------------------------------------------- |
+| Beta headers (stacked) | `managed-agents-2026-04-01` + `dreaming-2026-04-21`               |
+| Models (preview)       | `claude-opus-4-8`, `claude-opus-4-7`, `claude-sonnet-4-6`         |
+| Caps                   | 100 sessions/dream · `instructions` ≤ 4,096 chars                 |
+| Status                 | Research preview (request access); billed at standard token rates |
+
+
+💡 The three above only pay off *together*: compaction summarises in place, context editing drops the oldest tool results, the memory tool persists facts across the summary boundary so nothing load-bearing is lost. Every clear/edit is a prompt-cache decision (the guards `clear_at_least`, `defer_loading` mutate only when token savings beat a cache rebuild).
+💡 Dreams `instructions` is a synthesis *steer* ("focus on architecture decisions, preserve user prefs"), not a line editor — imperative "change X to Y" does nothing; use the Memory Stores API for targeted edits. While `running`, stream the dream's own `session_id` to watch what it reads and writes live.
+⚠️ Compaction footgun: with tools defined, the model may call a tool instead of writing the summary — add "respond with text only, do not call any tools" to `instructions`.
+
+src: platform.claude.com/docs/en/managed-agents/dreams · /memory · /agents-and-tools/tool-use/memory-tool · /build-with-claude/context-editing · /compaction
+
+---
+
+
+
+## 🧑‍🔬 Anthropic playbook
+
+Power-moves Anthropic's team documents, not folklore.
+
+
+| Practice                                                                                                                                                                                                                                                                                                            | Source                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `**ultrathink*`* is the recognised thinking-budget keyword today. The ladder (`think` < `think hard` < `think harder` < `ultrathink`, more budget each step) is from the original best-practices post; only `ultrathink` parses as a keyword now. Separate from `ultracode` (= `xhigh` effort + dynamic workflows). | best-practices post · model-config docs |
+| **Explore → plan → code → commit.** Read the relevant files *before* writing code; separating research and planning from coding "avoids solving the wrong problem."                                                                                                                                                 | best-practices                          |
+| **Press `#` to fold an instruction into CLAUDE.md**, and after correcting Claude, ask it to update CLAUDE.md so it won't repeat the mistake. They also run CLAUDE.md through the prompt improver and add `IMPORTANT`/`YOU MUST`.                                                                                    | Boris Cherny / team                     |
+| **One Claude writes, a second (fresh context) reviews** — unbiased toward code it just wrote. Run 3–5 sessions at once, one per task, most started in Plan mode (`Shift+Tab` twice).                                                                                                                                | Boris Cherny / team                     |
+| **Guardrails in hooks, not prompts.** "Never edit `.env`" in CLAUDE.md is a request; a `PreToolUse` hook is enforcement. Keep CLAUDE.md under ~200 lines; move reference to skills or `.claude/rules/`.                                                                                                             | best-practices / team                   |
+
+
+src: code.claude.com/docs/en/best-practices (orig. anthropic.com/engineering/claude-code-best-practices) · /features-overview
+
+---
+
+
+
+## 🏷️ Stale advice — renamed, removed, don't-use
+
+
+| You'll still see…                       | Reality                                                                                                                |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| the bare word `workflow` triggers a run | renamed `**ultracode`** (v2.1.160); the bare word no longer fires. Natural-language "run a workflow" works either way. |
+| `/output-style`                         | removed v2.1.91; use `/config` → Output style, or set `"outputStyle"` in settings.                                     |
+| `/vim`                                  | removed v2.1.92; `/config` → Editor mode.                                                                              |
+| `/pr-comments` · `/extra-usage`         | gone (just ask to view PR comments) · renamed `/usage-credits`.                                                        |
+| `think` / `think hard` as keywords      | only `**ultrathink**` is parsed now (the ladder lives in the original best-practices post).                            |
+| `TodoWrite`                             | replaced by `TaskCreate`/`TaskGet`/`TaskList` `🆕 v2.1.142+`; `CLAUDE_CODE_ENABLE_TASKS=0` reverts.                    |
+| **Windsurf** in `/ide`                  | rebranded **Devin Desktop**.                                                                                           |
+
+
+---
+
+## 🍒 Lesser-known commands
+
+
+| Command                        | Does                           |
+| ------------------------------ | ------------------------------ |
+| `/radio`                       | lo-fi station                  |
+| `/stickers` · `/color [color]` | stickers · recolour the UI     |
+| `/heapdump`                    | memory snapshot to `~/Desktop` |
+| `/powerup`                     | animated feature lessons       |
+| `/insights`                    | your own usage report          |
+
+
+Record a demo GIF straight from a prompt with the Chrome integration.
+
+---
+
+Every flag, field, and version here is copied from a doc and re-checked `2026-06-09` against `v2.1.165`. The changelog (`code.claude.com/docs/en/changelog`) is authoritative; on drift, fix it here and re-pin the date.

@@ -10,7 +10,7 @@ Every handler entry has these:
 | :--- | :--- | :--- |
 | `type` | Yes | `"command" \| "http" \| "mcp_tool" \| "prompt" \| "agent"` |
 | `if` | No | Permission rule for tool events: `"Bash(git *)"`, `"Edit(*.ts)"` |
-| `timeout` | No | Seconds before canceling. Defaults: 600 (command), 30 (prompt), 60 (agent) |
+| `timeout` | No | Seconds before canceling. Defaults: 600 (`command`/`http`/`mcp_tool`), 30 (`prompt`), 60 (`agent`) |
 | `statusMessage` | No | Custom spinner message |
 | `once` | No | Run once per session then remove (skill frontmatter only) |
 
@@ -27,6 +27,8 @@ The default. A shell script is invoked; receives JSON on stdin; returns exit cod
   "shell": "bash"
 }
 ```
+
+**`args` for no-shell exec:** add an `args` array and `command` is resolved as an executable and spawned directly with `args` as the argument vector — no shell, so path placeholders never need quoting. Prefer it when a path could contain spaces: `{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/check.sh", "args": ["--strict"] }`.
 
 **Use when:**
 - The check is deterministic (validate input, run linter, scan a path).

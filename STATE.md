@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 6 June 2026 | Version: v2.1.165
+Last updated: 9 June 2026 | Version: v2.1.169
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
@@ -38,6 +38,7 @@ Hard numbers:
 Practical consequences:
 
 - Visible skills that shouldn't auto-trigger should be `disable-model-invocation: true` (zero description cost, still user-invocable).
+- Bundled skills you don't use still cost description budget every turn; `disableBundledSkills` (setting or env var, v2.1.169) hides all of them from the model at once.
 - Knowledge skills with broad applicability should be path-scoped (`paths:` glob) so they don't load when out of scope.
 - Reference docs > 150 lines belong in sibling files, not inline.
 
@@ -149,6 +150,8 @@ The hook surface has accumulated several useful fields:
 - **`/scroll-speed`** — tune mouse wheel scroll speed with a live preview.
 - **`claude project purge [path]`** — delete all Claude Code state for a project (transcripts, tasks, file history, config entry); supports `--dry-run` and `--all`.
 - **`--plugin-url <url>`** — fetch a plugin `.zip` archive from a URL for the current session.
+- **`--safe-mode`** (v2.1.169) — start with customizations (skills, hooks, plugins, settings) disabled, for troubleshooting; the clean-room for telling whether a problem is your config or stock behavior.
+- **`/cd <path>`** (v2.1.169) — move the session to a new working directory without breaking the prompt cache.
 - **`worktree.baseRef` setting** (`fresh` | `head`) — choose whether worktree-creation tools (`--worktree`, `EnterWorktree`, agent isolation) branch from `origin/<default>` or local `HEAD`.
 - **`alwaysLoad` MCP server config option** — when `true`, all tools from that server skip tool-search deferral and stay always-available.
 - **MCP elicitation** — MCP servers can request structured input mid-task via an interactive dialog (form fields or browser URL); intercepted via the `Elicitation` and `ElicitationResult` hooks.
@@ -175,6 +178,7 @@ The hook surface has accumulated several useful fields:
 - **Plugins auto-load from `.claude/skills/`** — drop a plugin there and it loads with no marketplace; `claude plugin init <name>` scaffolds one, and `/plugin list` (`--enabled` / `--disabled`) shows what's installed.
 - **`acceptEdits` guards code-execution writes** — it now prompts before writing files that can run code on open: shell startup files (`.zshenv`, `.zlogin`), `~/.config/git/`, and build configs (`.npmrc`, `.yarnrc*`, `bunfig.toml`, `.bazelrc`, `.pre-commit-config.yaml`, `.devcontainer/`).
 - **`requiredMinimumVersion` / `requiredMaximumVersion`** managed settings — Claude Code refuses to start outside the allowed version range and points to an approved build.
+- **`fallbackModel` setting** (v2.1.166) — up to three fallback models, tried in order when the primary is unavailable; the settings-file form of the `--fallback-model` flag.
 
 ## Constraints worth designing around
 

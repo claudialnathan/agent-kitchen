@@ -26,7 +26,7 @@ A dynamic workflow removes the *plan* from the model's drifting context and make
 
 This is the heaviest extension surface in the toolkit. A skill redirects attention; a hook eliminates a concern; a workflow **restructures the whole job** into orchestrated pieces. Earn it. Most tasks that *feel* like they want a workflow want a single subagent or a prose-dispatched skill instead.
 
-> **Workflows are opt-in and cost real tokens.** The runtime won't author one unless the user asked for multi-agent orchestration (the `ultracode` keyword, "use a workflow", a saved `/workflow`, or a skill that calls the Workflow tool). It can spawn dozens of agents. This forge designs workflows; it does not silently run them. If the user hasn't opted in, design and hand back the script, or estimate the cost and ask.
+> **Workflows are opt-in and cost real tokens.** The runtime won't author one unless the user asked for multi-agent orchestration (the `ultracode` keyword, "use a workflow", a saved `/workflow`, or a skill that calls the Workflow tool) — or the session is in `/effort ultracode`, the standing mode that makes authoring-and-running a workflow the default for every substantive task (offered only where the model supports `xhigh`). It can spawn dozens of agents. This forge designs workflows; it does not silently run them. Outside that mode, if the user hasn't opted in, design and hand back the script, or estimate the cost and ask.
 
 ## The three failure modes a workflow exists to fix
 

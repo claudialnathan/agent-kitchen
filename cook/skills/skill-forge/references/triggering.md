@@ -74,11 +74,12 @@ Practical implications:
 
 ## Description-budget triage
 
-If you have 40 skills, the description budget is going to bite. Three levers:
+If you have 40 skills, the description budget is going to bite. Four levers:
 
 1. **Set low-value skills to `"name-only"` in `skillOverrides`** (in `.claude/settings.local.json`). They appear in the `/` menu but their descriptions don't load.
 2. **Set workflows to `disable-model-invocation: true`.** Their descriptions don't load and they cost zero budget. You still invoke them by typing `/`.
 3. **Raise `SLASH_COMMAND_TOOL_CHAR_BUDGET`.** Last resort; usually tightening descriptions is healthier.
+4. **Hide bundled skills you don't use with `disableBundledSkills`** (setting or env var, Claude Code v2.1.169). Stock skills cost description budget every turn whether or not you invoke them; this clears the whole block at once — reach for it when the bundled descriptions, not your own skills, are crowding the listing.
 
 The `/skills` menu lets you cycle through states with `Space`: `on` → `name-only` → `user-invocable-only` → `off`. Press `Enter` to save to `settings.local.json`.
 

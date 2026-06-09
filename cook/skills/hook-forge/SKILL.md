@@ -106,6 +106,7 @@ The full event reference is in [references/events.md](references/events.md). The
 | Approve / deny / modify a permission decision | `PermissionRequest` |
 | Block context compaction | `PreCompact` (return `decision: "block"` or exit 2) |
 | Customize after compaction | `PostCompact` |
+| Transform or hide assistant message text as displayed | `MessageDisplay` |
 
 A handful of events are async (observability-only) and can't block: `SessionStart`, `SessionEnd`, `PostToolUse`, `PostToolUseFailure`, `PermissionDenied`, `CwdChanged`, `FileChanged`, `InstructionsLoaded`, `PostCompact`. The rest can.
 
@@ -203,6 +204,7 @@ The hook surface evolves: new events get added, schemas get richer, exit-code se
 1. **Does it fire?** Trigger the event manually (run the matched tool, submit a prompt, etc.) and check the debug log (`claude --debug`). If the hook didn't fire, the matcher is probably wrong.
 2. **Does it block or not-block correctly?** For blocking hooks, deliberately violate the rule and confirm the action is blocked. For non-blocking, confirm the action proceeds and the side effect happens.
 3. **Does it return useful information?** Stderr on exit 2 is fed to Claude. Write it as a message Claude reads, not a one-word rejection. "Blocked: command tries to write to .env. Use the .env.example template instead." beats "rejected."
+4. **Firing when it shouldn't?** To confirm a hook (vs. stock behavior or another customization) is the cause, restart with `claude --safe-mode` — it starts with all hooks, skills, plugins, and custom settings disabled. If the symptom disappears, bisect your customizations from there. (Claude Code v2.1.169.)
 
 ## Worked examples
 

@@ -1,14 +1,14 @@
 ---
 name: ingest
 description: |
-  Reads URLs / articles / docs in parallel forked subagents (one per source), produces a brief of quoted excerpts with citations, then hands off to the right meta-forge (skill-forge, rule-forge, hook-forge, claude-md-forge). The brief is the artifact — not a kitchen sink, not a paraphrase — and the source material never enters the main thread directly. Quoted excerpts do.
+  Reads URLs / articles / docs in parallel subagents (one per source), produces a brief of quoted excerpts with citations, then hands off to the right meta-forge (skill-forge, rule-forge, hook-forge, claude-md-forge). The brief is the artifact — not a kitchen sink, not a paraphrase — and the source material never enters the main thread directly. Quoted excerpts do.
 when_to_use: |
   User has reading material (URLs, papers, blog posts, internal docs, pasted content) and wants the next meta-forge step to be grounded in those sources, not in Claude's training-data priors. Trigger phrases include "here are some URLs, design a skill for X", "ground the next forge in these sources", "I have reading on Y, help me build the rule", "study these before we design", "ingest these articles", "I want a skill on X, here's the reading", "train for X with these sources". Skip when Claude's training already covers the topic well and adding sources is just redundant.
 disable-model-invocation: true
 harness-targets: [claude]
 ---
 
-<!-- Earned against: Opus 4.7 (claude-opus-4-7), 2026-05-22. Architectural — re-evaluate when grounding-in-sources stops needing explicit scaffolding. Re-tested 2026-05-29 (Opus 4.8): KEPT. A skill-withheld agent reproduced the architecture (one reader per source, verbatim quotes, conflict synthesis) — but only under heavy prompting; the scaffold still buys reliability, the quote contract, and the forge handoff. The bar above is not yet met. 2026-06-08 (Opus 4.8, v2.1.165): added two refinements earned from a self-run on two pasted articles + a URL — (1) a pasted-source-already-in-context branch (extract inline; fork only what must be fetched), and (2) a check-for-existing-brief step before writing, after the run nearly duplicated a same-day brief on adjacent material. -->
+<!-- Earned against: Opus 4.7 (claude-opus-4-7), 2026-05-22. Architectural — re-evaluate when grounding-in-sources stops needing explicit scaffolding. Re-tested 2026-05-29 (Opus 4.8): KEPT. A skill-withheld agent reproduced the architecture (one reader per source, verbatim quotes, conflict synthesis) — but only under heavy prompting; the scaffold still buys reliability, the quote contract, and the forge handoff. The bar above is not yet met. 2026-06-08 (Opus 4.8, v2.1.165): added two refinements earned from a self-run on two pasted articles + a URL — (1) a pasted-source-already-in-context branch (extract inline; dispatch a subagent only for what must be fetched), and (2) a check-for-existing-brief step before writing, after the run nearly duplicated a same-day brief on adjacent material. -->
 
 ## The attention this skill redirects
 
@@ -16,16 +16,16 @@ From "what Claude already knows about topic X" to "what *these specific sources*
 
 Without this redirection, the next forge step runs against priors and silently produces a generic artifact. With it, the brief carries citations, dates, and an explicit rough edge — and the forge designs against current reality.
 
-**The brief is the handoff artifact, not the kitchen sink.** Source material is read in forked subagents and never enters the main thread except as excerpted quotes. The synthesis is bounded.
+**The brief is the handoff artifact, not the kitchen sink.** Source material is read in subagents and never enters the main thread except as excerpted quotes. The synthesis is bounded.
 
 ## How it works (three phases)
 
-### Phase 1 — Per-source forks
+### Phase 1 — Per-source subagents
 
 For each source the user supplies (URLs, file paths, pasted text), spawn one general-purpose `Agent` with the contract in the **Per-source agent prompt template** section below. Discipline:
 
 - **Single source per agent.** No agent reads more than one URL/document. If the user provides 6 sources, dispatch 6 agents in parallel via a single message with multiple Agent tool calls.
-- **Source already pasted in full? Extract inline, don't re-fork.** If the user pasted a source's complete text into the conversation, the fork's isolation benefit is already spent — the material is in the main thread, and re-dispatching it to a subagent only re-transmits the same tokens for no isolation gain. Extract its excerpts inline under the same quote-only contract (verbatim, ≤ 100 words, tagged, relevance-bounded). Still fork every source you'd have to *go fetch* — URLs, file paths, anything not already in-context. The fork buys isolation for material you don't yet hold, not ceremony for material you do.
+- **Source already pasted in full? Extract inline, don't re-dispatch.** If the user pasted a source's complete text into the conversation, the subagent's isolation benefit is already spent — the material is in the main thread, and re-dispatching it only re-transmits the same tokens for no isolation gain. Extract its excerpts inline under the same quote-only contract (verbatim, ≤ 100 words, tagged, relevance-bounded). Still dispatch a subagent for every source you'd have to *go fetch* — URLs, file paths, anything not already in-context. The subagent buys isolation for material you don't yet hold, not ceremony for material you do.
 - **Output is quoted excerpts, not paraphrase.** Each agent returns: source URL + retrieval date + 3–8 verbatim quoted passages directly relevant to the target topic, each ≤ 100 words, each tagged with the section/heading it came from. No summary in prose. Quotes only.
 - **Bound the agent to the topic.** The dispatch prompt names the target topic, and the agent extracts only what is relevant to it. Tangents are excluded.
 - **Stale-source handling.** If a URL 404s, redirects to a different topic, or paywalls the content, the agent reports the failure mode rather than fabricating content. The brief records the failure under **Sources unavailable**.
@@ -98,7 +98,7 @@ If you find yourself wanting to skip any of these defenses for a particular run,
 ## Anti-patterns
 
 - **The kitchen-sink brief.** If Phase 2 produces 4,000 tokens of synthesis "to be thorough", you've defeated the point. The brief is the *small* artifact that survives into the forge. Cut weaker quotes; raise the relevance bar.
-- **The single-agent firehose.** Dispatching one agent to "read all the URLs and synthesize" undoes the parallel-fork architecture. Each source gets its own agent. No exceptions.
+- **The single-agent firehose.** Dispatching one agent to "read all the URLs and synthesize" undoes the parallel-subagent architecture. Each source gets its own agent. No exceptions.
 - **The paraphrase smuggle.** A subagent that returns "the source argues that X" instead of a verbatim quote has done paraphrase, and Phase 2 will treat it as authoritative. Reject paraphrase output and re-dispatch with the contract repeated.
 - **The handoff that assumes skill.** Phase 3 isn't always a skill. Run the triage. If the brief points at a hook or a rule, route there.
 - **The pile of stale URLs.** Sources that 404 or redirect are facts of the brief, not failures of `/ingest`. Record them. Don't substitute alternatives without surfacing the swap to the user.
@@ -116,7 +116,7 @@ Reach for `/ingest` when at least one of:
 Skip when:
 
 - The topic is well-covered in training data and the user is asking from priors anyway.
-- There's only one source — read it inline; the parallel-fork architecture has no leverage.
+- There's only one source — read it inline; the parallel-subagent architecture has no leverage.
 - The user wants a quick answer, not a designed artifact. `/ingest` is part of the forge pipeline; it costs time and tokens.
 
 ## See also

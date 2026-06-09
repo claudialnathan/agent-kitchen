@@ -99,7 +99,7 @@ Both forms cost the same against the 1,536-char budget. The second is easier to 
 ### `effort`
 - **Type:** `low` | `medium` | `high` | `xhigh` | `max` (model-dependent)
 - **Default:** inherits from session
-- **Worth setting:** for skills that need deeper reasoning (e.g., a refactor planner) or shallower (e.g., a fast summarizer). The current Opus 4.7 default is `xhigh`; raising to `max` is rarely worth it and can over-think.
+- **Worth setting:** for skills that need deeper reasoning (e.g., a refactor planner) or shallower (e.g., a fast summarizer). The current Opus 4.8 default is `high` (`xhigh` is reserved for the hardest tasks); raising to `max` is rarely worth it and can over-think.
 - **Pro tip:** include the keyword `ultrathink` anywhere in the skill body to request deeper reasoning on that turn without changing the effort setting.
 
 ### `context`

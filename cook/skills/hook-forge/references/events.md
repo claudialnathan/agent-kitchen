@@ -10,7 +10,7 @@ Events fire at three rhythms:
 - **Once per turn:** `UserPromptSubmit`, `Stop`, `StopFailure`, `UserPromptExpansion`.
 - **On every tool call:** `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `PermissionDenied`.
 
-Plus async events (observability, can't block): `FileChanged`, `ConfigChange`, `CwdChanged`, `InstructionsLoaded`, `Notification`, `SubagentStart`, `SubagentStop`, `TaskCreated`, `TaskCompleted`, `WorktreeCreate`, `WorktreeRemove`, `PreCompact`, `PostCompact`, `Elicitation`, `ElicitationResult`, `TeammateIdle`.
+Plus async events (observability, can't block): `FileChanged`, `ConfigChange`, `CwdChanged`, `InstructionsLoaded`, `Notification`, `MessageDisplay`, `SubagentStart`, `SubagentStop`, `TaskCreated`, `TaskCompleted`, `WorktreeCreate`, `WorktreeRemove`, `PreCompact`, `PostCompact`, `Elicitation`, `ElicitationResult`, `TeammateIdle`.
 
 ## Tool-call events
 
@@ -95,7 +95,7 @@ For preprocessing custom-command expansions.
 - **Matcher:** Not supported.
 - **Can block:** Yes (forces Claude to keep going).
 - **Input:** Common fields only.
-- **Output:** Exit 2 or `decision: "block"` + `reason` to keep going.
+- **Output:** Exit 2 or `decision: "block"` + `reason` to keep going. Or return `hookSpecificOutput.additionalContext` to hand Claude feedback and continue *without* the hook-error path — the non-blocking way to nudge rather than force.
 
 For "don't stop until X is verified" rules. Use sparingly — it can create infinite loops if the hook always blocks.
 
@@ -113,6 +113,7 @@ For paging / alerting on specific failure modes.
 - **Matcher:** Agent type name.
 - **Can block:** SubagentStart yes, SubagentStop yes.
 - **Input:** `agent_type`, `agent_id`, `prompt` (start only).
+- **Output (SubagentStop):** `hookSpecificOutput.additionalContext` hands Claude feedback and continues — the same non-blocking nudge as `Stop`.
 
 For per-subagent setup/teardown (e.g., spin up a test DB before a `db-tester` subagent).
 
@@ -124,7 +125,7 @@ For per-subagent setup/teardown (e.g., spin up a test DB before a `db-tester` su
 - **Matcher:** `startup`, `resume`, `clear`, `compact`.
 - **Can block:** No (async).
 - **Input:** `source`, `model`, optional `agent_type`.
-- **Output:** Plain stdout added as context. Set environment variables by writing to `$CLAUDE_ENV_FILE`.
+- **Output:** Plain stdout added as context. Set environment variables by writing to `$CLAUDE_ENV_FILE`. Return `reloadSkills: true` to make Claude Code re-scan skill/command directories after the SessionStart hooks finish — needed when the hook installs skills mid-session.
 
 The right place for: setting env vars, displaying a banner, loading project-specific context that CLAUDE.md doesn't cover.
 
@@ -210,6 +211,15 @@ For desktop notifications, log shipping, paging.
 
 Pre/post hooks around MCP server input requests.
 
+### MessageDisplay
+
+- **When:** Assistant message text is about to be displayed.
+- **Matcher:** Not supported.
+- **Can block:** No.
+- **Output:** Transform or hide the displayed text. Display-only — the transcript and what Claude actually sees keep the original.
+
+For redaction or display-filtering of assistant output (mask a secret in the rendered text without altering the conversation).
+
 ## Common input fields
 
 Every hook receives:
@@ -220,11 +230,12 @@ Every hook receives:
   "transcript_path": "/path/to/transcript.jsonl",
   "cwd": "/current/directory",
   "permission_mode": "default | plan | acceptEdits | auto | dontAsk | bypassPermissions",
+  "effort": { "level": "high" },
   "hook_event_name": "EventName"
 }
 ```
 
-Plus event-specific fields documented per-event above.
+Plus event-specific fields documented per-event above. The `effort.level` value is also exported as `$CLAUDE_EFFORT` to `command` hooks and the Bash tool — gate a hook's strictness or skip expensive checks at low effort.
 
 ## Quick lookup: "I want to..."
 

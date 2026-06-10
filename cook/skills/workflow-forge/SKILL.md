@@ -1,17 +1,9 @@
 ---
 name: workflow-forge
 description: |
-  Designs dynamic workflows for Claude Code — JavaScript orchestration scripts that fan subagents out with deterministic control flow (the Workflow runtime: `agent()`, `parallel()`, `pipeline()`, `phase()`). Covers when a workflow beats a plain skill, a single subagent, or inline dispatch; the patterns (classify-and-act, fan-out-and-synthesize, adversarial verification); the pipeline-vs-parallel decision; budget scaling; and how to save or package one. Use when designing or reviewing a workflow, when a task needs many coordinated agents or per-item verification, when Claude goes lazy / drifts / prefers its own results on a big multi-part task, or when skill-forge redirected here.
+  Designs dynamic workflows for Claude Code — JavaScript orchestration scripts that fan subagents out with deterministic control flow (the Workflow runtime: `agent()`, `parallel()`, `pipeline()`, `phase()`). Covers when a workflow beats a plain skill, a single subagent, or inline dispatch; the patterns (classify-and-act, fan-out-and-synthesize, adversarial verification); the pipeline-vs-parallel decision; budget scaling; and how to save or package one. Use when a task needs many coordinated agents or per-item verification, or when Claude goes lazy / drifts on a big multi-part task.
 when_to_use: |
-  Triggers:
-  - "design a workflow", "write a workflow", "build a dynamic workflow"
-  - "orchestrate agents", "fan out agents", "one agent per X"
-  - "this needs many subagents", "verify each result", "judge panel"
-  - "Claude stops halfway", "agentic laziness", "goal drift after compaction"
-  - "review my workflow", "pipeline vs parallel", "is this a workflow or a skill"
-  - "skill-forge said this is a workflow"
-  - "save this workflow", "package a workflow in a skill", ".claude/workflows"
-  - "classify and route", "adversarial verification"
+  Triggers: "design / write / review a workflow", "build a dynamic workflow", "orchestrate agents", "fan out agents", "one agent per X", "this needs many subagents", "verify each result", "judge panel", "pipeline vs parallel", "is this a workflow or a skill", "Claude stops halfway", "agentic laziness", "goal drift after compaction", "save this workflow", ".claude/workflows", "classify and route", plus skill-forge redirects.
 paths:
   - "**/.claude/workflows/**"
   - "**/*.workflow.{js,mjs}"
@@ -20,7 +12,7 @@ harness-targets: [claude]
 
 # workflow-forge
 
-<!-- Earned against: Opus 4.8 (claude-opus-4-8[1m]), 2026-06-08, Claude Code v2.1.165. Dynamic workflows shipped v2.1.154 (2026-05-28) as a RESEARCH PREVIEW — the surface is young and will move. Two facts behind this forge have different footing: (a) the Workflow runtime + API (agent/parallel/pipeline/phase, the caps, no-fs) is DOCUMENTED at code.claude.com/docs/en/workflows and matches the in-session Workflow tool contract; (b) packaging a workflow *inside a skill* is BLOG-ASSERTED only (the harness-for-every-task post), not in canonical docs — the documented reuse path is saving to .claude/workflows/ as a /command. The worked example was authored against the runtime but NOT run end-to-end (running one needs explicit opt-in). Sunset: on the next major model release or when workflows leave preview, re-verify the API against the docs, confirm the skill-packaging path is documented (or demote it), and re-test whether the model still goes lazy/drifts on big multi-part tasks unaided — that failure is what justifies the surface. -->
+<!-- Earned against: Opus 4.8, 2026-06-08, v2.1.165 (workflows in research preview) — history: CHANGELOG.md -->
 
 A dynamic workflow removes the *plan* from the model's drifting context and makes it code. The default harness plans and executes in the same window: across a long multi-part task that window degrades, and three failure modes surface. A workflow answers them not with a better prompt but with **deterministic control flow you author** — the loop, the fan-out, the verification are JavaScript; the agents only do the work, each in a fresh context.
 

@@ -1,16 +1,15 @@
 ---
 name: skill-forge
 description: |
-  Triages a skill request — confirms a skill is the right surface, checks whether a good one already exists to reuse or fork, classifies the kind, then writes the SKILL.md so its subject is genuinely good and its anatomy fits the harness. Use when the user wants to create, design, distill, or refactor a skill, asks "should this be a skill?" or "is there already one?", wants to capture a workflow they keep retyping, or is reviewing a skill that under-triggers, over-triggers, or feels generic.
+  Triages a skill request — confirms a skill is the right surface (vs hook / rule / subagent / CLAUDE.md), checks whether a good one already exists to reuse or fork, classifies the kind, then writes the SKILL.md so the subject is genuinely expert and the anatomy fits the harness. Covers new skills, distilling articles/papers/docs into skills, capturing retyped workflows, and reviewing existing skills that under-trigger, over-trigger, or feel generic.
 when_to_use: |
-  Triggers: "make a skill for X", "turn this into a skill", "distill this article/paper/doc into a skill", "I keep typing the same thing", "this should be reusable", "is there already a skill for this?", "reuse or fork an existing skill?", "design a /command for Y", "review my skill", "why isn't my skill triggering", "convert my CLAUDE.md section into a skill".
-  Adjacent intents: deciding between a skill and a hook / subagent / rule, packaging a personal workflow, building a plugin (plugins bundle skills), operationalizing source material you've collated.
+  Triggers: "make a skill for X", "turn this into a skill", "distill this article into a skill", "should this be a skill?", "is there already a skill for this?", "I keep typing the same thing", "design a /command for Y", "review my skill", "why isn't my skill triggering", "convert my CLAUDE.md section into a skill". Adjacent: skill vs hook / subagent / rule, packaging a personal workflow, building a plugin, operationalizing collated sources.
 harness-targets: [claude]
 ---
 
 # skill-forge
 
-<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Re-architected 2026-05-30/31 (Opus 4.8, Claude Code v2.1.156) around two pillars — subject-craft co-equal to harness-anatomy — after user feedback that the forge over-taught anatomy. Pillar 1 carries both an expert-grade depth gate (the what — name the delta over the model's competent default, source/verify, acquire if missing) and the craft canon (the how, sourced to Anthropic's skill best-practices and skill-creator). A 2026-05-31 A/B depth-eval (blind judge panel, 3 technical domains, in evals/) showed the guidance lifts craft (+0.89) and anatomy (+0.44) more than depth (+0.33), and caught two regressions since fixed: a soft "verify" that shipped a deprecated API from recall (now an explicit fetch-and-cite step), and over-imitation of this forge's own [claude] frontmatter onto a portable skill. A 2026-05-31 source-verification of the eval's model-weak (procurement) skill confirmed the depth gate yields correct expert facts (CPR value-for-money clauses, current rule date) but leaks citation-shaped fabrication — an invented quote attributed to a named authority — which earned depth.md point 3 ("cite honestly"). 2026-05-31 dogfood of the local /debrief skill surfaced two refinements since added: a keep-signal counterpart to the sunset audit (record positive evidence against the pin, not only deletion triggers), and a proportional/cost-gated verification tier in "Test and iterate" (read-back → fresh probe → confirm-before-firing the ~1M-token A/B eval). Worked-example failures predate this revision; re-test on the next major model release. 2026-06-06 (Opus 4.8, Claude Code v2.1.165): corrected the frontmatter `name` guidance from "usually omit" to "include it" — directory-name inference is Claude-Code-only, but the open spec, cross-tool consumers, and this repo's preship-check require the field; surfaced when the portable quality-audit skill failed the required-frontmatter gate. 2026-06-08 (Opus 4.8, v2.1.165): added the scheduling/Routines orthogonal note to triage — the six surfaces answer *where* behaviour lives, not *when* it fires; a scheduled or event-triggered job (a 7am briefing, an inbound-email trigger) is a Routine (`/schedule`) running a skill, not a self-scheduling skill. Earned from ingesting practitioner workflow writing that framed everything as triggered 'workflows'. -->
+<!-- Earned against: Opus 4.7, 2026-05-14; re-architected 2026-05-31 (Opus 4.8, v2.1.156); revised 2026-06-10 (Fable 5, v2.1.170) — history: CHANGELOG.md -->
 
 A good skill is two things at once, and most skills fail the first one.
 
@@ -35,7 +34,7 @@ Before anything, name why this skill should exist. There are two legitimate orig
 
 **Name the attention.** Whichever origin: what should the agent be attending to that it isn't — or attending to that it shouldn't? The skill's job is to make the right attention easier, not to script the right answer. If you can name the basis but not the attention shift, you have material, not yet a design. Sit with it longer.
 
-Record the model version this skill is earned against (the repo's `Model-version pinning` convention) and define the sunset trigger now: on the next major model release, re-test — does the failure still reproduce, or has the model absorbed the expertise? If absorbed, delete. Origin-B skills that turned out to encode mere interest are the first to go.
+Record a one-line model pin in the artifact (`<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->`) and log the rationale and sunset trigger in the repo's CHANGELOG.md: on the next major model release, re-test — does the failure still reproduce, or has the model absorbed the expertise? If absorbed, delete. Origin-B skills that turned out to encode mere interest are the first to go. The pin is a trigger, not a history — narrative provenance, eval results, and re-test verdicts belong in the changelog, and never reference the conversation that produced the skill.
 
 ## Before you build — does a good one already exist?
 
@@ -170,12 +169,13 @@ A good subject that never loads, fires wrong, or breaks the loader does nothing.
 
 ### Description first
 
-The description is the _only_ thing the model sees when deciding whether to invoke. Vague descriptions silently under-trigger — Claude consults a skill only when it expects help, and a generic description loses to a specific one (and to no skill at all). Four rules:
+The description is the _only_ thing the model sees when deciding whether to invoke. Vague descriptions silently under-trigger — Claude consults a skill only when it expects help, and a generic description loses to a specific one (and to no skill at all). Five rules:
 
 1. **Lead with the use case, not the noun.** "Cuts a patch release…" beats "A release skill."
 2. **Include the trigger phrases users actually say** — lift wording from the conversation that prompted the skill; casual phrasings, abbreviations, near-misses. Add a _negative_ trigger when the skill over-fires ("…do NOT use for simple data exploration — use `/x` instead").
 3. **The first ~200 chars do most of the matching.** Combined `description` + `when_to_use` is capped at 1,536 chars per skill; past that is truncated in the listing.
 4. **Cross-tool skills lean harder on `description` alone.** The open agentskills.io spec caps `description` at 1,024 chars and ignores `when_to_use` — Cursor and Codex see only the description. If `harness-targets:` is unset (the cross-tool default), keep enough trigger surface in the description itself.
+5. **The cap is a truncation guard, not a target.** Job + scope + the strongest distinct triggers usually lands at 600–900 chars; padding toward 1,536 buys worse matching, not better. Under aggregate-budget pressure (the shared listing budget is ~1% of context — about 8K chars on a 200K session) long entries are cut mid-list, losing exactly the tail triggers they were padded with, and a fleet of near-cap descriptions can overflow the budget by itself. Never restate body discipline in the description — for `paths:` skills the body auto-loads precisely when the rules apply. Keep `when_to_use` to one compact line, never a bullet list: the listing renders it concatenated after the description with a `-` separator, and bullets arrive as run-on artifacts.
 
 Cheap diagnostic: ask a fresh session "when would you use the `<skill>` skill?" — it quotes the description back, and the gap tells you what to add. Anti-patterns, the over/under-trigger fixes, and the train/validation split for tuning at scale are in [references/triggering.md](references/triggering.md) and [references/iteration.md](references/iteration.md).
 

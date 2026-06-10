@@ -13,14 +13,16 @@ The user comes here to design new skills, rules, and hooks. Every one of those i
 
 Propose updates to the relevant forge based on what surfaced, as part of finishing the work. An artifact that revealed a gap is more valuable as a forge improvement than as a one-off.
 
-## Model-version pinning
+## Model-version pinning and provenance
 
 Skills, hooks, rules, and CLAUDE.md entries are earned against a specific model. Both the failure and the model move. The discipline:
 
-- Each non-trivial artifact records the model version it was earned against, in the artifact's `Why` line or as a stripped HTML comment (`<!-- Earned against: Sonnet 4.4, 2026-03-15 -->`). HTML comments cost zero context tokens.
-- On each major model release, re-test the failures that earned the artifacts. Delete the ones whose failures no longer reproduce; rewrite the ones whose failures have shifted.
+- Each non-trivial artifact carries a **one-line** pin: `<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->`. The pin is a trigger, not a history — models, dates, version, nothing else. `bin/preship-check` warns when a pin outgrows one line.
+- Everything else — why the artifact exists, sunset triggers, re-test verdicts, eval results — lives in **CHANGELOG.md** (committed, newest-first, keyed by date and model state). Reference skills by name and section, not line numbers.
+- On each major model release, re-test the failures that earned the artifacts; log verdicts (KEPT / revised / deleted) in CHANGELOG.md. Delete the ones whose failures no longer reproduce; rewrite the ones whose failures have shifted.
+- **Artifacts never reference the conversation that produced them** — no session narration, no addressing the reader, no quoting requests. Write provenance as neutral fact in the changelog. This repo is public; the same rule saltintesta's antipatterns teach for prose applies to comments: the artifact is not the conversation.
 
-Without the pin, audits have no trigger; obsolete scaffolding accumulates instead.
+Without the pin, audits have no trigger; without the changelog, pins bloat into histories squatting in comments.
 
 ## Trajectory and governance
 

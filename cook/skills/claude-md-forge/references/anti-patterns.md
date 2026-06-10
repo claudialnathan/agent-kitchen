@@ -257,7 +257,7 @@ The rule passes when you could write a checklist item that catches a violation. 
 
 ## 16. The cross-project import
 
-<!-- Earned against: Opus 4.7, 2026-05-22. Re-tested 2026-05-29 (Opus 4.8): blind verbatim cross-project import softened — a skill-withheld trial substituted stack lines and dropped the non-transferable ones. But it still kept ALWAYS/NEVER and current-state lines (patterns #1/#3/#14), so the file overall still earns rent. n=1; KEPT. -->
+<!-- Earned against: Opus 4.7, 2026-05-22; re-tested KEPT 2026-05-29 (Opus 4.8) — history: CHANGELOG.md -->
 
 **Looks like:** content adapted from another project's CLAUDE.md — even a *good* one like Bun's or Anthropic's — pulled in verbatim or with section-by-section substitution.
 

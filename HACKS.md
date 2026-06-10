@@ -1,6 +1,6 @@
 # `hacks, FYIs & nice-to-knows`
 
-`Claude Code v2.1.165` · `+ Claude Agent Platform` · verified `2026-06-09`
+`Claude Code v2.1.170` · `+ Claude Agent Platform` · verified `2026-06-10`
 
 ---
 
@@ -83,6 +83,7 @@ The cache matches on the request **prefix**, exactly, so a change anywhere early
 
 
 💡 Pick model and effort at the top of a session; save `/compact` for natural task breaks. Every mid-task model/effort/fast-mode flip is a full uncached turn. Prefer `/rewind` (reuses a warm prefix) over `/compact` (builds a new one) to abandon a bad path.
+💡 `/cd <path>` `🆕 v2.1.169` moves the session to another working directory *without* breaking the prompt cache — beats restarting in the right repo.
 💡 On a Claude subscription the 1-hour cache TTL is automatic (no `ENABLE_PROMPT_CACHING_1H`; that's the API-key/Bedrock/Vertex lever). Watch `cache_read_input_tokens` vs `cache_creation_input_tokens`: high read-ratio means caching works; persistently high *creation* means something keeps changing your prefix.
 
 src: code.claude.com/docs/en/prompt-caching
@@ -181,6 +182,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 | `--worktree <name>` / `-w`                 | Isolated git worktree in one command; pass `#1234` or a PR URL to branch a fresh checkout *from that PR*.   |
 | `--bg --exec 'pytest -x'`                  | Fire-and-forget a shell job as an attachable background row (no model invoked).                             |
 | `--bare` (sets `CLAUDE_CODE_SIMPLE`)       | Skip all auto-discovery (hooks/skills/plugins/MCP/memory/CLAUDE.md): faster, deterministic scripted starts. |
+| `--safe-mode` `🆕 v2.1.169`                | Start with all customizations *disabled* (CLAUDE.md, skills, hooks, plugins, MCP): the clean-room for "is this my config or stock behavior?". |
 | `--exclude-dynamic-system-prompt-sections` | Move per-machine bits (cwd, env, paths) out of the system prompt so the cache reuses across machines.       |
 | `--from-pr <n>` / `--fork-session`         | Resume the session that built a PR / branch a conversation without mutating the original.                   |
 | `--max-budget-usd 5.00`                    | Hard dollar ceiling for unattended `-p` runs.                                                               |
@@ -206,7 +208,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 | `CLAUDE_CODE_TASK_LIST_ID=my-project`        | Share one task list across sessions on the same project.                                   |
 | `CLAUDE_CODE_HIDE_CWD=1`                     | Hide the working dir in the startup logo (clean screenshares).                             |
 | `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1` | One switch: autoupdater + feedback + error-reporting + telemetry off.                      |
-| `MAX_THINKING_TOKENS=0`                      | Disable extended thinking regardless of effort (big cost lever on simple tasks).           |
+| `MAX_THINKING_TOKENS=0`                      | Disable extended thinking regardless of effort (big cost lever on simple tasks). ⚠️ No-op on Fable 5: thinking can't be turned off there. |
 | `ENABLE_TOOL_SEARCH=auto:5`                  | Threshold-load only MCP tools fitting in 5% of context; defer the rest.                    |
 
 
@@ -222,6 +224,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 | `includeGitInstructions: false`                           | Drop built-in git workflow text for a smaller system prompt, better cache.                                                                    |
 | `disableDeepLinkRegistration: "disable"`                  | Stop `claude-cli://` from registering (security lever).                                                                                       |
 | `requiredMinimumVersion` / `…Maximum…`                    | (Managed) refuse to start outside a version band: pin a fleet.                                                                                |
+| `fallbackModel` `🆕 v2.1.166`                             | Up to three fallbacks tried in order when the primary is overloaded/unavailable; the settings form of `--fallback-model`.                     |
+| `disableBundledSkills` `🆕 v2.1.169`                      | Hide *all* bundled skills, workflows, and built-in slash commands from the model in one key: reclaim their description budget.                |
 
 
 **Interactive shortcuts & TUI**
@@ -240,7 +244,10 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 | `/focus` · `/btw`      | Quieter transcript view · ask a side question that **never enters history**.         |
 
 
-src: code.claude.com/docs/en/cli-reference · /env-vars · /settings · /interactive-mode · /fullscreen
+⚠️ Fable 5 (`/model fable`, 🆕 v2.1.170) reroutes classifier-flagged requests (cybersecurity/biology) to Opus mid-session — and can trip on *workspace context* alone (CLAUDE.md, git status, directory names) before you type anything. `claude --safe-mode` isolates whether your config is the trigger; `/config` → "switch models when a message is flagged" off = pause-and-ask instead of silent switch.
+💡 `/model best` resolves to Fable 5 where the org has access, else latest Opus — safe to write into shared settings for mixed-access teams.
+
+src: code.claude.com/docs/en/cli-reference · /env-vars · /settings · /interactive-mode · /fullscreen · /model-config
 
 ---
 
@@ -351,4 +358,4 @@ Record a demo GIF straight from a prompt with the Chrome integration.
 
 ---
 
-Every flag, field, and version here is copied from a doc and re-checked `2026-06-09` against `v2.1.165`. The changelog (`code.claude.com/docs/en/changelog`) is authoritative; on drift, fix it here and re-pin the date.
+Every flag, field, and version here is copied from a doc and re-checked `2026-06-10` against `v2.1.170`. The changelog (`code.claude.com/docs/en/changelog`) is authoritative; on drift, fix it here and re-pin the date.

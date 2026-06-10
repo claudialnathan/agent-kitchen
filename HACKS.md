@@ -10,7 +10,7 @@ STATUS: DRAFT
 <br>
 
 
-| `#`                                  | `SECTION`                    | [`WHEEL`](#13-the-full-circle) `PHASE` |
+| <samp>#</samp>                                  | <samp>SECTION</samp>                    | <samp><a href="#13-the-wheel">WHEEL</a> PHASE</samp> |
 | :----------------------------------- | :--------------------------- | :------------------------------------- |
 | [01](#01-standouts)                  | STANDOUTS                    | `—`                                    |
 | [02](#02-memory-and-context)         | MEMORY AND CONTEXT           | `configure` ·`maintain`                |
@@ -24,15 +24,15 @@ STATUS: DRAFT
 | [10](#10-the-anthropic-playbook)     | THE ANTHROPIC PLAYBOOK       | `plan` · `review`                      |
 | [11](#11-stale-advice)               | STALE ADVICE                 | `maintain`                             |
 | [12](#12-easter-eggs)                | EASTER EGGS                  | `—`                                    |
-| [13](#13-the-full-circle)            | THE FULL CIRCLE              | `⓪ → ⑥ → ⓪`                            |
+| [13](#13-the-wheel)            | THE WHEEL              | `⓪ → ⑥ → ⓪`                            |
 
 ---
 
 <br>
 
-### `01 STANDOUTS`
+<h2 id="01-standouts"><samp>01 STANDOUTS</samp></h2>
 
-Five top-tier — lesser-known or new — features.
+A couple lesser-known or new features I like.
 
 <table>
 <tr><th><samp>FEATURE</samp></th><th><samp>INVOKE</samp></th><th><samp>FUNCTION</samp></th></tr>
@@ -46,7 +46,7 @@ Five top-tier — lesser-known or new — features.
 
 <br>
 
-### `02 MEMORY AND CONTEXT`
+<h2 id="02-memory-and-context"><samp>02 MEMORY AND CONTEXT</samp></h2>
 
 <table>
 <tr><th><samp>FEATURE</samp></th><th><samp>IDENTIFIER</samp></th><th><samp>FUNCTION</samp></th></tr>
@@ -56,6 +56,8 @@ Five top-tier — lesser-known or new — features.
 <tr><td>monorepo noise filter</td><td><code>claudeMdExcludes</code></td><td>Glob/path list skips noisy ancestor CLAUDE.md files; put in <code>.claude/settings.local.json</code> to keep it machine-local.</td></tr>
 <tr><td>context tools</td><td><code>/context</code> · <code>Esc Esc</code> · "Summarize up to here"</td><td><code>/context</code> = your real split (docs' pictures use fake numbers). <code>Esc Esc</code> on an empty prompt rewinds. "Summarize up to here" is a scalpel where <code>/compact</code> is a hammer.</td></tr>
 </table>
+
+<br>
 
 **What survives `/compact`:**
 
@@ -75,7 +77,7 @@ Five top-tier — lesser-known or new — features.
 
 <br>
 
-### `03 SKILLS, PLUGINS, MCP`
+<h2 id="03-skills-plugins-mcp"><samp>03 SKILLS, PLUGINS, MCP</samp></h2>
 
 <table>
 <tr><th><samp>FEATURE</samp></th><th><samp>IDENTIFIER</samp></th><th><samp>FUNCTION</samp></th></tr>
@@ -96,7 +98,7 @@ Five top-tier — lesser-known or new — features.
 
 <br>
 
-### `04 CLI, ENV, SETTINGS, KEYS`
+<h2 id="04-cli-env-settings-keys"><samp>04 CLI, ENV, SETTINGS, KEYS</samp></h2>
 
 Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. This is the hacky subset.
 
@@ -118,7 +120,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>claude mcp serve</code></td><td>Run <strong>Claude Code itself as an MCP server</strong>, exposing its tools to other clients.</td></tr>
 <tr><td><code>claude project purge [path]</code></td><td>Wipe one project's local footprint (transcripts, memory, tasks); <code>--dry-run</code>, <code>--all</code>.</td></tr>
 <tr><td><code>claude setup-token</code></td><td>Long-lived OAuth token for CI/scripts (Claude subscription).</td></tr>
-<tr><td colspan="2" align="center"><kbd>Environment variables</kbd></td></tr>
+<tr><td colspan="2" align="center"><kbd><h4>Environment variables</h4></kbd></td></tr>
 <tr><th><samp>VAR</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>CLAUDE_CODE_EFFORT_LEVEL</code></td><td>The <strong>only</strong> way to make <code>max</code> effort persist across sessions (the setting rejects <code>max</code>).</td></tr>
 <tr><td><code>BASH_DEFAULT_TIMEOUT_MS</code></td><td>Long bash commands <strong>auto-background</strong> past this instead of being killed.</td></tr>
@@ -130,7 +132,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1</code></td><td>One switch: autoupdater + feedback + error-reporting + telemetry off.</td></tr>
 <tr><td><code>MAX_THINKING_TOKENS=0</code></td><td>Disable extended thinking regardless of effort (big cost lever on simple tasks). No-op on Fable 5: thinking can't be turned off there.</td></tr>
 <tr><td><code>ENABLE_TOOL_SEARCH=auto:5</code></td><td>Threshold-load only MCP tools fitting in 5% of context; defer the rest.</td></tr>
-<tr><td colspan="2" align="center"><kbd>settings.json keys</kbd></td></tr>
+<tr><td colspan="2" align="center"><kbd><h4>settings.json keys</h4></kbd></td></tr>
 <tr><th><samp>KEY</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>skillOverrides</code></td><td>Set a skill to <code>"name-only"</code> (keep listed, drop description budget) or <code>"off"</code>, without editing its file; great for noisy third-party skills.</td></tr>
 <tr><td><code>maxSkillDescriptionChars</code> / <code>skillListingBudgetFraction</code><sup>NEW</sup> <kbd><samp>v2.1.105+</samp></kbd></td><td>Tune the 1,536-char per-skill cap / the 1%-of-context listing budget.</td></tr>
@@ -141,7 +143,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>requiredMinimumVersion</code> / <code>…Maximum…</code></td><td>(Managed) refuse to start outside a version band: pin a fleet.</td></tr>
 <tr><td><code>fallbackModel</code><sup>NEW</sup> <kbd><samp>v2.1.166</samp></kbd></td><td>Up to three fallbacks tried in order when the primary is overloaded/unavailable; the settings form of <code>--fallback-model</code>.</td></tr>
 <tr><td><code>disableBundledSkills</code><sup>NEW</sup> <kbd><samp>v2.1.169</samp></kbd></td><td>Hide <em>all</em> bundled skills, workflows, and built-in slash commands from the model in one key: reclaim their description budget.</td></tr>
-<tr><td colspan="2" align="center"><kbd>Interactive shortcuts & TUI</kbd></td></tr>
+<tr><td colspan="2" align="center"><kbd><h4>Interactive shortcuts & TUI</h4></kbd></td></tr>
 <tr><th><samp>KEYS</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>Esc Esc</code></td><td>Empty prompt → rewind menu; with text → clear draft (saved to history, <code>↑</code> recalls).</td></tr>
 <tr><td><code>Ctrl+X Ctrl+K</code></td><td>Kill <strong>all</strong> background subagents (twice within 3 s to confirm).</td></tr>
@@ -164,7 +166,7 @@ Fable 5 (<code>/model fable</code>,<sup>NEW</sup> <kbd><samp>v2.1.170</samp></kb
 
 <br>
 
-### `05 HOOKS`
+<h2 id="05-hooks"><samp>05 HOOKS</samp></h2>
 
 The events and fields nobody reads down to.
 
@@ -189,7 +191,7 @@ The events and fields nobody reads down to.
 
 ---
 
-### `06 PROMPT CACHING`
+<h2 id="06-prompt-caching"><samp>06 PROMPT CACHING</samp></h2>
 
 The cache matches on the request **prefix**, exactly, so a change anywhere early recomputes everything after it. Claude Code orders content least-changing-first: `System prompt → Project context → Conversation`.
 
@@ -210,11 +212,11 @@ Pick model and effort at the top of a session; save <code>/compact</code> for na
 
 On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROMPT_CACHING_1H</code>; that's the API-key/Bedrock/Vertex lever). Watch <code>cache_read_input_tokens</code> vs <code>cache_creation_input_tokens</code>: high read-ratio means caching works; persistently high <em>creation</em> means something keeps changing your prefix.
 
-<sub>src: code.claude.com/docs/en/prompt-caching</sub>
+<sub><a href="https://code.claude.com/docs/en/prompt-caching">src: code.claude.com/docs/en/prompt-caching</a></sub>
 
 ---
 
-### `07 ORCHESTRATION`
+<h2 id="07-orchestration"><samp>07 ORCHESTRATION</samp></h2>
 
 <table>
 <tr><th><code>FEATURE</code></th><th><code>INVOKE</code></th><th><code>FUNCTION</code></th></tr>
@@ -227,11 +229,11 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 - For human sign-off <em>between</em> stages, skip one big workflow or an agent team: workflows forbid mid-run input (only permission prompts pause), and in-process teammates don't survive <code>/resume</code>. Chain separate steps, or use agent view's per-session peek/reply.
 - Three "agents" surfaces, easy to confuse: <code>claude agents</code> (background sessions) ≠ <code>/agents</code> (subagent Library) ≠ agent <em>teams</em> (<code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code>, ~7× tokens). Dynamic workflows (<code>ultracode</code>) are the heaviest fan-out; see <a href="./STATE.md">STATE.md</a>. The workflow JS API isn't in the public docs, so don't assume function names.
 
-<sub>src: code.claude.com/docs/en/sub-agents · /goal · /agent-view · /workflows</sub>
+<sub><a href="https://code.claude.com/docs/en/sub-agents">src: code.claude.com/docs/en/sub-agents</a> · <kbd>/goal</kbd> <kbd>/agent-view</kbd> <kbd>/workflows</kbd></sub>
 
 ---
 
-### `08 SESSIONS, REMOTE, DEEP LINKS`
+<h2 id="08-sessions-remote-deep-links"><samp>08 SESSIONS, REMOTE, DEEP LINKS</samp></h2>
 
 <table>
 <tr><th><code>FEATURE</code></th><th><code>INVOKE</code></th><th><code>FUNCTION</code></th></tr>
@@ -240,6 +242,8 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 <tr><td>remote control<sup>NEW</sup> <kbd><samp>v2.1.51+</samp></kbd></td><td><code>claude remote-control</code> · <code>/rc</code> · <code>--spawn worktree</code></td><td>Local session, phone UI via QR; filesystem + MCP + <code>@</code>-autocomplete intact. <code>/rc</code> hands an in-progress convo over without restarting. <code>--spawn worktree</code> = parallel edits per connection. Outbound HTTPS only. Pro/Max/Team/Enterprise, preview.</td></tr>
 <tr><td>deep links<sup>NEW</sup> <kbd><samp>v2.1.91+</samp></kbd></td><td><code>claude-cli://open?…</code> · <code>vscode://anthropic.claude-code/open</code></td><td>Auto-registered on first run, no install. Opens a terminal (or an IDE tab) in the right repo, prompt pre-typed. Fire via <code>open</code> (macOS) / <code>xdg-open</code> (Linux) / <code>Start-Process</code> (PowerShell).</td></tr>
 </table>
+
+<br>
 
 **Deep-link params:**
 
@@ -256,11 +260,11 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 - Channels + the permission relay beats <code>--dangerously-skip-permissions</code> for unattended runs: a long-running agent that still asks before risky calls, except the ask lands on your phone and the first verdict (terminal or remote) wins.
 - Deep link + Skill is the runbook pattern: store the long prompt as a <code>/skill</code> and let <code>q</code> just name it. Short URLs, and you dodge the 5,000-char limit.
 
-<sub>src: code.claude.com/docs/en/channels · /channels-reference · /remote-control · /deep-links</sub>
+<sub><a href="https://code.claude.com/docs/en/channels">src: code.claude.com/docs/en/channels</a> · <kbd>/channels-reference</kbd> <kbd>/remote-control</kbd> <kbd>/deep-links</kbd></sub>
 
 ---
 
-### `09 PLATFORM AND AGENT SDK`
+<h2 id="09-platform-and-agent-sdk"><samp>09 PLATFORM AND AGENT SDK</samp></h2>
 
 <table>
 <tr><th><code>FEATURE</code></th><th><code>IDENTIFIER</code></th><th><code>FUNCTION</code></th></tr>
@@ -284,11 +288,11 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 - Dreams <code>instructions</code> is a synthesis <em>steer</em> ("focus on architecture decisions, preserve user prefs"), not a line editor — imperative "change X to Y" does nothing; use the Memory Stores API for targeted edits. While <code>running</code>, stream the dream's own <code>session_id</code> to watch what it reads and writes live.
 - Compaction footgun: with tools defined, the model may call a tool instead of writing the summary — add "respond with text only, do not call any tools" to <code>instructions</code>.
 
-<sub>src: platform.claude.com/docs/en/managed-agents/dreams · /memory · /agents-and-tools/tool-use/memory-tool · /build-with-claude/context-editing · /compaction</sub>
+<sub><a href="https://platform.claude.com/docs/en/managed-agents/dreams">src: platform.claude.com/docs/en/managed-agents/dreams</a> · <kbd>/memory</kbd> <kbd>/agents-and-tools/tool-use/memory-tool</kbd> <kbd>/build-with-claude/context-editing</kbd> <kbd>/compaction</kbd></sub>
 
 ---
 
-### `10 THE ANTHROPIC PLAYBOOK`
+<h2 id="10-the-anthropic-playbook"><samp>10 THE ANTHROPIC PLAYBOOK</samp></h2>
 
 Power-moves Anthropic's team documents, not folklore.
 
@@ -301,11 +305,11 @@ Power-moves Anthropic's team documents, not folklore.
 <tr><td>Guardrails in hooks, not prompts. "Never edit <code>.env</code>" in CLAUDE.md is a request; a <code>PreToolUse</code> hook is enforcement. Keep CLAUDE.md under ~200 lines; move reference to skills or <code>.claude/rules/</code>.</td><td>best-practices / team</td></tr>
 </table>
 
-<sub>src: code.claude.com/docs/en/best-practices (orig. anthropic.com/engineering/claude-code-best-practices) · /features-overview</sub>
+<sub><a href="https://code.claude.com/docs/en/best-practices">src: code.claude.com/docs/en/best-practices</a> (orig. <a href="https://anthropic.com/engineering/claude-code-best-practices">anthropic.com/engineering/claude-code-best-practices</a>) · <kbd>/features-overview</kbd></sub>
 
 ---
 
-### `11 STALE ADVICE`
+<h2 id="11-stale-advice"><samp>11 STALE ADVICE</samp></h2>
 
 Renamed, removed, don't-use.
 
@@ -322,7 +326,7 @@ Renamed, removed, don't-use.
 
 ---
 
-### `12 EASTER EGGS`
+<h2 id="12-easter-eggs"><samp>12 EASTER EGGS</samp></h2>
 
 <table>
 <tr><th><code>COMMAND</code></th><th><code>FUNCTION</code></th></tr>
@@ -337,7 +341,7 @@ Record a demo GIF straight from a prompt with the Chrome integration.
 
 ---
 
-### `13 THE WHEEL`
+<h2 id="13-the-wheel"><samp>12 THE WHEEL</samp></h2>
 
 Where everything above sits on one working loop. Phases ⓪–⑥, then the
 feedback arrow makes it a circle: what each lap teaches you becomes the next
@@ -422,7 +426,9 @@ lap's configuration.
    become next session's configuration — the loop closes
 </code><pre>
 
+
 ---
+
 
 ```
 EVERY FLAG, FIELD, AND VERSION ABOVE: COPIED FROM A DOC, NOT RECALLED.

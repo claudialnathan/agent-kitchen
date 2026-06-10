@@ -1,29 +1,9 @@
 ---
 name: hook-forge
 description: |
-  Designs hooks for Claude Code by classifying which lifecycle event fits the rule, choosing the right handler type, and getting the exit-code and JSON-output semantics correct. Hooks fire deterministically on lifecycle events (PreToolUse, PostToolUse, UserPromptSubmit, Stop, SessionStart, etc.); skills express requests that the model interprets. The single most-common authoring mistake is writing a skill for something that should be a hook, or vice versa. Use when the user wants to write, debug, or refactor a hook; when skill-forge's triage redirected to "this should be a hook"; when something must happen the same way every time without the model deciding; when a hook fires unexpectedly or doesn't fire at all.
+  Designs hooks for Claude Code — classifies which lifecycle event fits the rule (PreToolUse, PostToolUse, UserPromptSubmit, Stop, SessionStart…), chooses the right handler type, and gets the exit-code and JSON-output semantics right. Hooks fire deterministically on lifecycle events; skills are requests the model interprets — the most common authoring mistake is building one where the other belongs, in either direction. Use for writing, debugging, or refactoring hooks, and for anything that must happen the same way every time without the model deciding.
 when_to_use: |
-  Triggers:
-  - "write a hook"
-  - "design a hook"
-  - "make this happen every time"
-  - "block this command"
-  - "lint after every edit"
-  - "inject context on prompt submit"
-  - "validate before tool runs"
-  - "this should be deterministic"
-  - "skill-forge said make a hook"
-  - "my hook isn't firing"
-  - "my hook fires too often"
-  - "PreToolUse vs PostToolUse"
-  - "exit code 2 vs 1"
-  - "permissionDecision"
-  - "hook handler types"
-  - "command vs HTTP vs MCP tool hook"
-  - "block secrets from being committed"
-  - "auto-name session"
-  - "where do hooks live"
-  - "hooks in skill frontmatter"
+  Triggers: "write / design a hook", "make this happen every time", "block this command", "block secrets from being committed", "lint after every edit", "inject context on prompt submit", "validate before tool runs", "this should be deterministic", "my hook isn't firing", "my hook fires too often", "PreToolUse vs PostToolUse", "exit code 2 vs 1", "permissionDecision", "hook handler types", "command vs HTTP vs MCP tool hook", "hooks in skill frontmatter", "where do hooks live", "auto-name session", plus skill-forge redirects.
 paths:
   - "**/.claude/settings.json"
   - "**/.claude/settings.local.json"
@@ -35,7 +15,7 @@ harness-targets: [claude]
 
 # hook-forge
 
-<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Craft pass 2026-05-30 (Opus 4.8, Claude Code v2.1.156): added the strictness spectrum (block/warn/log) and false-positive fatigue, and named the "block message teaches" principle, after a cross-forge audit found the anatomy well-covered but hook craft thin. Worked-example failures predate this; re-test on the next major model release. -->
+<!-- Earned against: Opus 4.7, 2026-05-14; craft pass 2026-05-30 (Opus 4.8, v2.1.156) — history: CHANGELOG.md -->
 
 A hook removes a concern from Claude's reach. The harness enforces the rule before the model interprets, decides, or attends to it. This is the strongest form of attention redirection in the toolkit: a skill redirects, a hook eliminates. The same rule shaped as a skill is interpretation the model can talk itself out of; shaped as a hook, it fires every time without the model in the loop.
 

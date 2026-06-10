@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 9 June 2026 | Version: v2.1.169
+Last updated: 10 June 2026 | Version: v2.1.170
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
@@ -45,6 +45,18 @@ Practical consequences:
 ## What's distinctive about June 2026 (vs. last quarter)
 
 Features that changed how skills get built, in rough order of impact:
+
+### Fable 5 (Mythos-class, v2.1.170)
+
+- **`claude-fable-5`** — the first Mythos-class model released for general use; the most capable model in Claude Code, built for tasks larger than a single sitting. Requires v2.1.170+.
+- **Not the default on any plan.** Opt in with `/model fable` (persists via user settings). New aliases: `fable`, and `best` (Fable 5 where the org has access, otherwise latest Opus).
+- Effort levels `low`–`max`, default `high`. Adaptive reasoning is always on; thinking cannot be disabled — `Option+T`, `alwaysThinkingEnabled`, and `MAX_THINKING_TOKENS=0` have no effect.
+- **Classifier fallback**: requests flagged for cybersecurity or biology re-run on the default Opus model, and the session stays there until `/model fable`. Can trigger on the first request from workspace context alone (CLAUDE.md, git status, directory names); `claude --safe-mode` isolates whether customizations are the trigger, and a `/config` toggle pauses to ask instead of switching. `-p` and SDK runs get a refusal instead. Offensive-security, CTF, and biology work reroutes frequently by design.
+- 1M context window always on via the Anthropic API (`claude-fable-5[1m]`). Not available under zero data retention.
+- API pricing $10/$50 per Mtok in/out. Included on Pro/Max/Team/Enterprise subscriptions June 9–22, 2026; usage credits after.
+- Prompting shifts: describe outcomes rather than steps, hand it ambiguous problems, size up tasks you'd normally split; verification reminders are usually unnecessary.
+- New levers: `ANTHROPIC_DEFAULT_FABLE_MODEL` (alias target; also what enables fallback on Bedrock/Vertex/Foundry), `DISABLE_PROMPT_CACHING_FABLE`.
+- **Mythos 5** is the same model without cybersecurity safeguards, restricted to vetted partners — not a Claude Code surface.
 
 ### Dynamic workflows (`/workflows`, v2.1.154)
 
@@ -296,10 +308,11 @@ Cross-tool standards:
 - `https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills` — Agent Skills standard announcement.
 - `https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation` — AAIF formation.
 
-## In flux as of mid-May 2026
+## In flux as of early June 2026
 
 Things that were research previews or moving fast at the time of writing:
 
+- **Fable 5 subscription access** is time-boxed: included at no extra cost on Pro/Max/Team/Enterprise June 9–22, 2026, then usage credits with a phased restoration planned. Classifier-fallback thresholds (triggering in <5% of sessions on average) may also move.
 - **Agent view (`claude agents`)** is research preview. Surface and command shape may shift.
 - **Forked subagents** remain gated behind `CLAUDE_CODE_FORK_SUBAGENT=1` (v2.1.117+); now work in SDK and `-p` modes as well as interactive. Likely to become default eventually.
 - **Auto mode** is in research preview. Default thresholds and classifier behavior may change. `hard_deny` rules are stable.

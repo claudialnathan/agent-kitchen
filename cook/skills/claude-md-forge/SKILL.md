@@ -3,16 +3,7 @@ name: claude-md-forge
 description: |
   Designs CLAUDE.md and the files around it (CLAUDE.local.md, AGENTS.md, .claude/rules/). The discipline: CLAUDE.md holds intent and what the agent can't infer from the code, not enforcement and not current state. Three jobs: bootstrap a new file, audit a bloated existing one, tune a single new entry. Different from /init (generic scaffold) and claude-md-improver (0–100 quality grade). This skill triages each line to the surface where it does work, then writes only what's left.
 when_to_use: |
-  Triggers:
-  - "set up CLAUDE.md", "create CLAUDE.md", "bootstrap CLAUDE.md", "init project for claude"
-  - "review my CLAUDE.md", "audit my CLAUDE.md", "rewrite CLAUDE.md", "CLAUDE.md is too long", "split CLAUDE.md"
-  - "audit AGENTS.md", "tune AGENTS.md", "AGENTS.md is primary", "AGENTS.md is too long"
-  - "add this to CLAUDE.md", "promote to CLAUDE.md", "update CLAUDE.md from this session"
-  - "should this be in CLAUDE.md", "where do project conventions go"
-  - "CLAUDE.md vs auto-memory", "CLAUDE.md vs rule", "CLAUDE.md vs AGENTS.md"
-  - "/init output is generic", "AGENTS.md and CLAUDE.md", "CLAUDE.md import"
-  - "skill-forge said put this in CLAUDE.md"
-  - "rule-forge said also update CLAUDE.md"
+  Triggers: "set up / create / bootstrap CLAUDE.md", "init project for claude", "review / audit / rewrite CLAUDE.md", "CLAUDE.md is too long", "split CLAUDE.md", "add or promote this to CLAUDE.md", "should this be in CLAUDE.md", "where do project conventions go", "CLAUDE.md vs auto-memory / rule / AGENTS.md", "audit or tune AGENTS.md", "AGENTS.md is primary or too long", "CLAUDE.md import", "/init output is generic", plus handoffs from skill-forge and rule-forge.
 paths:
   - "**/CLAUDE.md"
   - "**/CLAUDE.local.md"
@@ -24,7 +15,7 @@ harness-targets: [claude]
 
 # claude-md-forge
 
-<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Reviewed in the 2026-05-30 cross-forge craft audit (Opus 4.8, Claude Code v2.1.156) and found the strongest of the four on content-craft — left essentially as-is (the model the others were brought toward); only the explain-the-why family link added. Worked-example failures predate this; re-test on the next major model release. 2026-06-08 (Opus 4.8, v2.1.165): added the functional CLAUDE.md↔FYI boundary (a behavioral precondition the agent acts on during normal work belongs in CLAUDE.md even when it's publish-flow; only the playbook detail stays in FYI), earned from promoting this repo's plugin-version-bump rule out of FYI. Also 2026-06-08: sharpened the MCP anti-pattern — a connected tool documents its own use (server-level MCP instructions + per-tool descriptions surfaced at call time), so don't restate tool usage in CLAUDE.md; earned from codegraph, which delivers its usage guide over MCP rather than writing to CLAUDE.md/AGENTS.md. -->
+<!-- Earned against: Opus 4.7, 2026-05-14; revised 2026-06-08 (Opus 4.8, v2.1.165) — history: CHANGELOG.md -->
 
 CLAUDE.md is loaded in full every turn. The discipline that justifies the cost: hold only what the agent cannot or should not infer from the code, and write nothing that depicts current state.
 

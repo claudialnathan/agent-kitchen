@@ -3,20 +3,7 @@ name: rule-forge
 description: |
   Designs path-scoped rules at `.claude/rules/<name>.md` for project conventions that should auto-load only when working with files in a specific area. Rules are simpler than skills (no manual invocation, no kinds, no body-shape choices) — the whole design space is "what paths, what body content, vs CLAUDE.md and vs path-scoped skill." Use when designing or refactoring `.claude/rules/`, when CLAUDE.md is growing past ~200 lines and pieces of it are file-specific, when skill-forge's triage redirected to "this should be a path-scoped rule," or when conventions are repeating across files in a directory.
 when_to_use: |
-  Triggers:
-  - "write a rule"
-  - "design a rule"
-  - "this should be a rule"
-  - "claude.md is getting too long"
-  - "claude.md split"
-  - "split rules out of claude.md"
-  - "scope this rule to a directory"
-  - "path-scoped rule"
-  - "skill-forge said make a rule"
-  - "rule vs claude.md"
-  - "rule vs path-scoped skill"
-  - "where do project conventions go"
-  - ".claude/rules/"
+  Triggers: "write / design a rule", "this should be a rule", "path-scoped rule", "scope this rule to a directory", ".claude/rules/", "claude.md is getting too long", "split rules out of claude.md", "rule vs claude.md", "rule vs path-scoped skill", "where do project conventions go", plus skill-forge redirects.
 paths:
   - "**/.claude/rules/**"
   - "**/CLAUDE.md"
@@ -26,7 +13,7 @@ harness-targets: [claude]
 
 # rule-forge
 
-<!-- Earned against: authored 2026-05-14 (Opus 4.7 era). Craft pass 2026-05-30 (Opus 4.8, Claude Code v2.1.156): added "write judgment, not directive — respect the framework" (relocated from skill-forge anti-pattern #17, since path-scoped rules overlap framework territory most) and named explain-the-why. Worked-example failures predate this; re-test on the next major model release. -->
+<!-- Earned against: Opus 4.7, 2026-05-14; craft pass 2026-05-30 (Opus 4.8, v2.1.156) — history: CHANGELOG.md -->
 
 A rule redirects attention when Claude opens files matching a `paths:` glob. Inside the slice, the rule loads and the agent's attention shifts from "how do I structure this?" to "what already-decided convention applies?" Outside the slice, the rule sleeps; it costs no description budget and no body context.
 

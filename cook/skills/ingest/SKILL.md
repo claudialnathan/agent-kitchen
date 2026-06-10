@@ -8,7 +8,7 @@ disable-model-invocation: true
 harness-targets: [claude]
 ---
 
-<!-- Earned against: Opus 4.7 (claude-opus-4-7), 2026-05-22. Architectural — re-evaluate when grounding-in-sources stops needing explicit scaffolding. Re-tested 2026-05-29 (Opus 4.8): KEPT. A skill-withheld agent reproduced the architecture (one reader per source, verbatim quotes, conflict synthesis) — but only under heavy prompting; the scaffold still buys reliability, the quote contract, and the forge handoff. The bar above is not yet met. 2026-06-08 (Opus 4.8, v2.1.165): added two refinements earned from a self-run on two pasted articles + a URL — (1) a pasted-source-already-in-context branch (extract inline; dispatch a subagent only for what must be fetched), and (2) a check-for-existing-brief step before writing, after the run nearly duplicated a same-day brief on adjacent material. -->
+<!-- Earned against: Opus 4.7, 2026-05-22; re-tested KEPT 2026-05-29 (Opus 4.8); revised 2026-06-08 (v2.1.165) — history: CHANGELOG.md -->
 
 ## The attention this skill redirects
 

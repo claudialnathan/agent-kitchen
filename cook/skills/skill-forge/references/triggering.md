@@ -40,7 +40,7 @@ The fix for both directions is the same: **be specific about what the skill is f
 Components, in order of importance:
 
 1. **First clause: what the skill does, framed as the value to the user.** "Cuts a patch release," not "A skill for releases."
-2. **Second clause: when to use it, with specific trigger phrases.** "Use when the user says 'ship a patch', 'release a patch', 'cut a release', or asks to bump the version with no breaking changes."
+2. **Second clause: when to use it, stated as the class of requests.** "Use for any request to cut or ship a patch release, however phrased." A class statement covers what a quoted-phrase list only samples — misses happen at the boundary, where no example matches, and a list reads as exhaustive. Reserve verbatim phrases for signal the class doesn't imply: the skill's name and aliases, goal phrasings, wording that disambiguates sibling skills.
 3. **Optional: when not to use it.** "Skip when the changes include breaking API changes — use `/release-major` instead."
 4. **Optional: scope bounds.** "Operates only on the current branch." "Returns only a summary, never full output."
 

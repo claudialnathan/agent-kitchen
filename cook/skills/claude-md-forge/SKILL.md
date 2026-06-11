@@ -3,7 +3,7 @@ name: claude-md-forge
 description: |
   Designs CLAUDE.md and the files around it (CLAUDE.local.md, AGENTS.md, .claude/rules/). The discipline: CLAUDE.md holds intent and what the agent can't infer from the code, not enforcement and not current state. Three jobs: bootstrap a new file, audit a bloated existing one, tune a single new entry. Different from /init (generic scaffold) and claude-md-improver (0–100 quality grade). This skill triages each line to the surface where it does work, then writes only what's left.
 when_to_use: |
-  Triggers: "set up / create / bootstrap CLAUDE.md", "init project for claude", "review / audit / rewrite CLAUDE.md", "CLAUDE.md is too long", "split CLAUDE.md", "add or promote this to CLAUDE.md", "should this be in CLAUDE.md", "where do project conventions go", "CLAUDE.md vs auto-memory / rule / AGENTS.md", "audit or tune AGENTS.md", "AGENTS.md is primary or too long", "CLAUDE.md import", "/init output is generic", plus handoffs from skill-forge and rule-forge.
+  Any work on CLAUDE.md, CLAUDE.local.md, AGENTS.md, or .claude/rules/: bootstrapping, auditing, splitting, or adding an entry, plus any question about which of those surfaces (or auto-memory) a piece of guidance belongs in. Also handoffs from skill-forge and rule-forge.
 paths:
   - "**/CLAUDE.md"
   - "**/CLAUDE.local.md"

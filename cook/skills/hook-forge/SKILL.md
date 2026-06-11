@@ -1,9 +1,9 @@
 ---
 name: hook-forge
 description: |
-  Designs hooks for Claude Code — classifies which lifecycle event fits the rule (PreToolUse, PostToolUse, UserPromptSubmit, Stop, SessionStart…), chooses the right handler type, and gets the exit-code and JSON-output semantics right. Hooks fire deterministically on lifecycle events; skills are requests the model interprets — the most common authoring mistake is building one where the other belongs, in either direction. Use for writing, debugging, or refactoring hooks, and for anything that must happen the same way every time without the model deciding.
+  Designs hooks for Claude Code: classifies which lifecycle event fits the rule (PreToolUse, PostToolUse, UserPromptSubmit, Stop, SessionStart…), chooses the right handler type, and gets the exit-code and JSON-output semantics right. Hooks fire deterministically on lifecycle events; skills are requests the model interprets; the most common authoring mistake is building one where the other belongs, in either direction. Use for writing, debugging, or refactoring hooks, and for anything that must happen the same way every time without the model deciding.
 when_to_use: |
-  Triggers: "write / design a hook", "make this happen every time", "block this command", "block secrets from being committed", "lint after every edit", "inject context on prompt submit", "validate before tool runs", "this should be deterministic", "my hook isn't firing", "my hook fires too often", "PreToolUse vs PostToolUse", "exit code 2 vs 1", "permissionDecision", "hook handler types", "command vs HTTP vs MCP tool hook", "hooks in skill frontmatter", "where do hooks live", "auto-name session", plus skill-forge redirects.
+  Any work on hooks: writing, debugging, or refactoring one, choosing the lifecycle event or handler type, or making any behavior deterministic ("make this happen every time", "block this"). Also when a hook isn't firing or fires too often, questions about exit-code and JSON-output semantics, and skill-forge redirects.
 paths:
   - "**/.claude/settings.json"
   - "**/.claude/settings.local.json"

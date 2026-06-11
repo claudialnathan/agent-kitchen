@@ -1,9 +1,9 @@
 ---
 name: rule-forge
 description: |
-  Designs path-scoped rules at `.claude/rules/<name>.md` for project conventions that should auto-load only when working with files in a specific area. Rules are simpler than skills (no manual invocation, no kinds, no body-shape choices) — the whole design space is "what paths, what body content, vs CLAUDE.md and vs path-scoped skill." Use when designing or refactoring `.claude/rules/`, when CLAUDE.md is growing past ~200 lines and pieces of it are file-specific, when skill-forge's triage redirected to "this should be a path-scoped rule," or when conventions are repeating across files in a directory.
+  Designs path-scoped rules at `.claude/rules/<name>.md` for project conventions that should auto-load only when working with files in a specific area. Rules are simpler than skills (no manual invocation, no kinds, no body-shape choices); the whole design space is "what paths, what body content, vs CLAUDE.md and vs path-scoped skill." Use when designing or refactoring `.claude/rules/`, when CLAUDE.md is growing past ~200 lines and pieces of it are file-specific, when skill-forge's triage redirected to "this should be a path-scoped rule," or when conventions are repeating across files in a directory.
 when_to_use: |
-  Triggers: "write / design a rule", "this should be a rule", "path-scoped rule", "scope this rule to a directory", ".claude/rules/", "claude.md is getting too long", "split rules out of claude.md", "rule vs claude.md", "rule vs path-scoped skill", "where do project conventions go", plus skill-forge redirects.
+  Any work on .claude/rules/: designing, scoping, or refactoring a rule, splitting file-specific conventions out of a growing CLAUDE.md, or choosing between a rule, CLAUDE.md, and a path-scoped skill. Also skill-forge redirects.
 paths:
   - "**/.claude/rules/**"
   - "**/CLAUDE.md"

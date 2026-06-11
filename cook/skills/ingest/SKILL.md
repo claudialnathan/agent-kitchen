@@ -1,9 +1,9 @@
 ---
 name: ingest
 description: |
-  Reads URLs / articles / docs in parallel subagents (one per source), produces a brief of quoted excerpts with citations, then hands off to the right meta-forge (skill-forge, rule-forge, hook-forge, claude-md-forge). The brief is the artifact — not a kitchen sink, not a paraphrase — and the source material never enters the main thread directly. Quoted excerpts do.
+  Reads URLs / articles / docs in parallel subagents (one per source), produces a brief of quoted excerpts with citations, then hands off to the right meta-forge (skill-forge, rule-forge, hook-forge, claude-md-forge). The brief is the artifact, not a kitchen sink and not a paraphrase; the source material never enters the main thread directly, quoted excerpts do.
 when_to_use: |
-  User has reading material (URLs, papers, blog posts, internal docs, pasted content) and wants the next meta-forge step to be grounded in those sources, not in Claude's training-data priors. Trigger phrases include "here are some URLs, design a skill for X", "ground the next forge in these sources", "I have reading on Y, help me build the rule", "study these before we design", "ingest these articles", "I want a skill on X, here's the reading", "train for X with these sources". Skip when Claude's training already covers the topic well and adding sources is just redundant.
+  User has reading material (URLs, papers, blog posts, internal docs, pasted content) and wants the next meta-forge step grounded in those sources, not in Claude's training-data priors. Skip when Claude's training already covers the topic well and adding sources is just redundant.
 disable-model-invocation: true
 harness-targets: [claude]
 ---

@@ -1,9 +1,9 @@
 ---
 name: workflow-forge
 description: |
-  Designs dynamic workflows for Claude Code — JavaScript orchestration scripts that fan subagents out with deterministic control flow (the Workflow runtime: `agent()`, `parallel()`, `pipeline()`, `phase()`). Covers when a workflow beats a plain skill, a single subagent, or inline dispatch; the patterns (classify-and-act, fan-out-and-synthesize, adversarial verification); the pipeline-vs-parallel decision; budget scaling; and how to save or package one. Use when a task needs many coordinated agents or per-item verification, or when Claude goes lazy / drifts on a big multi-part task.
+  Designs dynamic workflows for Claude Code: JavaScript orchestration scripts that fan subagents out with deterministic control flow (the Workflow runtime: `agent()`, `parallel()`, `pipeline()`, `phase()`). Covers when a workflow beats a plain skill, a single subagent, or inline dispatch; the patterns (classify-and-act, fan-out-and-synthesize, adversarial verification); the pipeline-vs-parallel decision; budget scaling; and how to save or package one. Use when a task needs many coordinated agents or per-item verification, or when Claude goes lazy / drifts on a big multi-part task.
 when_to_use: |
-  Triggers: "design / write / review a workflow", "build a dynamic workflow", "orchestrate agents", "fan out agents", "one agent per X", "this needs many subagents", "verify each result", "judge panel", "pipeline vs parallel", "is this a workflow or a skill", "Claude stops halfway", "agentic laziness", "goal drift after compaction", "save this workflow", ".claude/workflows", "classify and route", plus skill-forge redirects.
+  Any work on a dynamic workflow: designing, writing, or reviewing an orchestration script, deciding between a workflow, a skill, and a single subagent, or pipeline vs parallel. Also any task that wants many coordinated subagents or per-item verification, when Claude goes lazy or drifts on a big multi-part task, and skill-forge redirects.
 paths:
   - "**/.claude/workflows/**"
   - "**/*.workflow.{js,mjs}"

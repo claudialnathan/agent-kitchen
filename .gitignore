@@ -1,11 +1,9 @@
 Icon
 guides/
-NOTES.md
 CLAUDE.local.md
-FYI.md
+wip/
 .claude/skills/
 .claude/ingest/
 scratch/
 .claude/settings.local.json
 .eval-runs/
-rebalance.md

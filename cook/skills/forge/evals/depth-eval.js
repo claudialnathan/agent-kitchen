@@ -1,27 +1,27 @@
 export const meta = {
-  name: 'skill-forge-depth-eval',
-  description: 'A/B quality harness for skill-forge: does following it produce a more expert-grade SKILL.md than the model default? A blind 3-lens judge panel scores depth/craft/anatomy. Domains parameterizable via args.domains.',
+  name: 'forge-depth-eval',
+  description: 'A/B quality harness for the forge skill: does following it produce a more expert-grade SKILL.md than the model default? A blind 3-lens judge panel scores depth/craft/anatomy. Domains parameterizable via args.domains.',
   phases: [
-    { title: 'Generate', detail: 'baseline vs skill-forge-guided SKILL.md per domain' },
+    { title: 'Generate', detail: 'baseline vs forge-guided SKILL.md per domain' },
     { title: 'Judge', detail: 'blind 3-lens panel scores both candidates' },
   ],
 }
 
 // USAGE (run from the repo root via the Workflow tool):
-//   Workflow({ scriptPath: "cook/skills/skill-forge/evals/depth-eval.js" })            // default technical domains
+//   Workflow({ scriptPath: "cook/skills/forge/evals/depth-eval.js" })                  // default technical domains
 //   Workflow({ scriptPath: ".../depth-eval.js", args: { domains: [ {key, prompt}, ... ] } })
 //
 // VALIDITY CAVEATS — read these before trusting the aggregate scores.
 // (Earned against Opus 4.8, 2026-05-31, Claude Code v2.1.156. Re-test on the next major model release.)
 //
-// 1. CONTAMINATION — this is NOT a clean skill-forge-vs-nothing test. The baseline arm's prompt never
-//    names skill-forge, but Workflow subagents auto-discover project skills, and skill-forge's own
+// 1. CONTAMINATION — this is NOT a clean forge-vs-nothing test. The baseline arm's prompt never
+//    names the forge, but Workflow subagents auto-discover project skills, and the forge's own
 //    description matches the literal phrase "design a Claude agent skill" in baselinePrompt below — so it
-//    loads into the baseline agent's context unbidden. Confirmed empirically: baseline transcripts reason
-//    "through the skill-forge lens" (Step 0 / Triage / transformative / cross-tool). So every run measures
-//    EXPLICIT depth.md + content-craft.md reading vs AMBIENT skill-forge — the MARGINAL value of reading the
-//    references, not the absolute value of the skill. Lifts are real but smaller than the headline implies.
-//    A meta-skill loads into its own control; the only clean fix (run where skill-forge is undiscoverable)
+//    loads into the baseline agent's context unbidden. (Confirmed empirically against the pre-consolidation
+//    skill-forge, 2026-05-31: baseline transcripts reasoned "through the skill lens".) So every run measures
+//    EXPLICIT reference reading vs AMBIENT forge — the MARGINAL value of reading the references, not the
+//    absolute value of the skill. Lifts are real but smaller than the headline implies.
+//    A meta-skill loads into its own control; the only clean fix (run where the forge is undiscoverable)
 //    is heavy and currently parked.
 //
 // 2. JUDGE-COMPETENCE CEILING — for model-WEAK domains (a specialised business field), the LLM judge's
@@ -50,7 +50,7 @@ const OUTPUT_SPEC = 'IMPORTANT: this is an evaluation — do NOT create, write, 
 
 const baselinePrompt = (t) => `Design a Claude agent skill (a SKILL.md) for: ${t.prompt}.\n\n${OUTPUT_SPEC}`
 
-const treatmentPrompt = (t) => `First READ these files (relative to the repo root) and follow their methodology:\n- cook/skills/skill-forge/SKILL.md\n- cook/skills/skill-forge/references/depth.md\n- cook/skills/skill-forge/references/content-craft.md\n\nThen, applying that methodology — especially the expert-grade depth gate (name the expertise delta, and FETCH + cite current authoritative sources rather than writing fast-moving facts from memory) and the craft canon — design a Claude agent skill (a SKILL.md) for: ${t.prompt}.\n\n${OUTPUT_SPEC}`
+const treatmentPrompt = (t) => `First READ these files (relative to the repo root) and follow their methodology:\n- cook/skills/forge/SKILL.md\n- cook/skills/forge/references/skills.md\n\nThen, applying that methodology — especially the expert-grade depth gate (name the expertise delta, and FETCH + cite current authoritative sources rather than writing fast-moving facts from memory) and the craft canon — design a Claude agent skill (a SKILL.md) for: ${t.prompt}.\n\n${OUTPUT_SPEC}`
 
 const RUBRIC = `Score each candidate SKILL.md on three axes, integers 0-5 (5 best):
 - depth: does the BODY encode genuine EXPERTISE — the non-obvious moves, trade-offs, failure modes, and verified specifics a senior practitioner knows that a competent generalist model would NOT produce by default — or competent-floor / textbook content the model already knows unprompted? (5 = clear expert delta; 0 = pure floor.)

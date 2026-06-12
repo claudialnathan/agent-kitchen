@@ -1,0 +1,69 @@
+# CLAUDE.md, AGENTS.md, and path-scoped rules
+
+The always-on surfaces. CLAUDE.md is loaded in full every turn; a rule loads whenever a matching file is touched. Canonical reference: `code.claude.com/docs/en/memory` (loading order, `claudeMdExcludes`, AGENTS.md compatibility, path-rule semantics).
+
+## CLAUDE.md
+
+**Verify first.** Every entry rests on fact-claims about how the place works. Before writing or retaining one, check each claim against its source: the filesystem, `package.json` and lockfiles, `.claude-plugin/*`, `.claude/settings*`, skill frontmatter, scripts in `bin/`. A sentence shaped as orientation can hide a wrong mechanism, and the "code is authoritative" caveat only catches it after the agent has acted on the error.
+
+**Then filter.** Three questions; a single no means the content belongs elsewhere:
+
+1. **Still true after the next refactor?** If a rename or package swap falsifies it, it depicts current state — the code already says it. Cut.
+2. **Interpreted, or enforced?** A rule that cannot soften ("never edit `.env`") needs a hook, not prose.
+3. **Whole repo, or a slice?** Path-narrow conventions go to `.claude/rules/<name>.md`.
+
+**What's left is small** — five kinds: *intent* (what this place is for, in a paragraph), *spirit* (dispositions the agent wouldn't infer), *durable harness traps* (failures about how the harness reads the repo — rare and worth their tokens), *pointers* (where the rest of the discipline lives, named once), and *framing caveats* ("if a rule contradicts the code, the code is authoritative" — one line that buys the file resilience).
+
+**Where the rest goes:**
+
+| Candidate | Goes to |
+| :--- | :--- |
+| File layout, dependencies, build/test commands, lint conventions | The code/configs already say it. Cut |
+| "Always X" / "Never Y" enforcement | Hook, or `permissions.deny` |
+| Path-narrow conventions | `.claude/rules/<name>.md` with `paths:` |
+| Procedures with steps | Skill |
+| Personal preferences / scratch | `~/.claude/CLAUDE.md`, auto-memory, or `CLAUDE.local.md` (gitignored) |
+| External system schemas; how to use a connected tool | The MCP server documents its own use — don't restate it |
+
+The CLAUDE.md ↔ local-notes boundary is **functional, not topical**: a behavioral precondition the agent must satisfy during normal work belongs in CLAUDE.md even when it's "publish-flow" (the agent never opens the playbook mid-task); the playbook detail (commands, diagnostics) stays in the unloaded file. Tell: *would an agent doing ordinary work step on this if it weren't in context?*
+
+**Voice.** Intent, not rulebook. "We treat new artifacts as feedback for the forge" frames a disposition; "ALWAYS propose improvements" performs enforcement the file can't deliver — all-caps almost always means the content wants to be a hook. Where a rule isn't its own reason, give the Why inline (rules-with-reasons outperform unreasoned rules by ~7× on misalignment):
+
+```
+- Integration tests hit a real database, not mocks. **Why:** a mock/prod divergence masked a broken migration. **How to apply:** tests/integration/; mocks fine in tests/unit/.
+```
+
+**Ceilings (measured, 2026-05; source in CHANGELOG.md):** past **14 top-level rules** compliance drops sharply (76% → 52%); **examples cost ~3×** a rule and induce overfitting (use one only when prose can't name the edge case); identity prompts and adverbs ("be careful", "act senior") hover ~30% — replace with concrete imperatives. Hold under ~200 lines; a 40-line file with five reasoned rules often outperforms a 200-line one because what's there is read. Phrase capability-agnostically: "match the codebase's enforced style" survives a missing eslint; "always run eslint" fails silently.
+
+**The three jobs**, sharing the same triage:
+
+- **Bootstrap** — run `/init`, then run every line of its output through the filters (most depicts current state and gets cut); write what's left in intent voice.
+- **Audit** — the common job. Read everything in scope (all CLAUDE.mds, local file, AGENTS.md, rules, auto-memory index, plus the sources entries make claims about). Verdict per line: keep / move / cut / rewrite. Show the table before editing. Most CLAUDE.mds shrink by half.
+- **Tune** — land one durable session insight. Bar: the correction landed twice, or the failure cost something concrete. Once is noise.
+
+**When AGENTS.md is primary** (multi-tool repos): AGENTS.md holds the agent-agnostic content; CLAUDE.md opens with `@AGENTS.md` plus a Claude-only addendum (skill triggers, hook config, plan-mode preferences). Tool-specific content doesn't belong in AGENTS.md either.
+
+**Escalation.** A rule that keeps getting missed *despite* being in CLAUDE.md and within the ceilings doesn't want more emphasis — Anthropic's documented answer is a dynamic workflow spawning one verifier agent per rule, each judging the work against its single rule in a fresh context. That's a workflow artifact, not a CLAUDE.md edit.
+
+## Path-scoped rules
+
+`.claude/rules/<name>.md`, frontmatter is just `paths:`. Outside the glob the rule sleeps — no description budget, no body cost — which makes it the cheapest extension surface *when the scope is genuinely narrow*.
+
+A rule is right when all four hold: the content is facts about a slice (not a procedure); the slice is identifiable by paths; it applies without manual invocation; it would bloat CLAUDE.md but doesn't deserve a skill. The bar: **three corrections** on the same convention, and the convention **verified against the slice** — open three or four matching files; if they don't already follow it, the rule is wishful and the agent will mirror whichever it last read.
+
+- **Rule vs path-scoped skill:** identical auto-loading; the skill is also invocable (`/<name>`) and can bundle references. Pure passive conventions → rule; "pull the full reference in on demand" → skill.
+- **Rule vs hook:** rules add context; hooks run checks that can block. "Know X when editing Y" → rule. "Prevent Z" → hook.
+- **Scope:** project (`.claude/rules/`) for this repo's conventions; personal (`~/.claude/rules/`) for stack-wide discipline you reuse across repos — there, don't hardcode project facts; encode the *discovery* ("read `globals.css` for the `@theme` block first") and an escape clause for projects off the assumed stack.
+
+**Globs:** `**` recurses, `*` is single-segment — `src/api/*.ts` misses subdirectories. Multiple paths are OR. Test against the file structure before shipping; a never-matching glob fails silently.
+
+**Body:** declarative bullets, concrete examples, under ~100 lines (at 100+ it's probably a skill). Two voice moves matter more for rules than any other surface, because path-scoped conventions sit closest to framework territory:
+
+- **Condition-shaped, not principle-shaped.** "Fluid before fixed" reads as universal enforcement and gets cited where its conditions don't hold. Restate as judgment naming *when* the pattern earns its keep.
+- **Respect the host framework.** Where a rule overlaps an opinionated framework (Tailwind, shadcn, Next.js), add a one-line preamble: apply within the framework's conventions, configure overrides at its token layer, and skip a rule rather than fight a framework default.
+
+Useful pattern: the rule as elevator pitch with a pointer to the deeper skill ("for the full testing decision framework, see `cache-aware-testing`; this rule is the summary").
+
+**Delete** when: the model release re-test shows the correction is no longer needed; the slice moved (re-glob or retire); or the convention moved (fix the code and keep, update, or delete). A rule contradicting the code is recurring wrong context.
+
+**Slip-ups:** rules that load but don't steer (body too vague or restates defaults — read a transcript); rules duplicating CLAUDE.md; rules depicting current state ("we use Vitest" is in `package.json`); conventions still in flux (conversation corrections are cheaper than maintaining a wrong rule).

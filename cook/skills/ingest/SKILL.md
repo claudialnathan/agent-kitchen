@@ -1,9 +1,9 @@
 ---
 name: ingest
 description: |
-  Reads URLs / articles / docs in parallel subagents (one per source), produces a brief of quoted excerpts with citations, then hands off to the right meta-forge (skill-forge, rule-forge, hook-forge, claude-md-forge). The brief is the artifact, not a kitchen sink and not a paraphrase; the source material never enters the main thread directly, quoted excerpts do.
+  Reads URLs / articles / docs in parallel subagents (one per source), produces a brief of quoted excerpts with citations, then hands off to the forge skill with the right surface in mind. The brief is the artifact, not a kitchen sink and not a paraphrase; the source material never enters the main thread directly, quoted excerpts do.
 when_to_use: |
-  User has reading material (URLs, papers, blog posts, internal docs, pasted content) and wants the next meta-forge step grounded in those sources, not in Claude's training-data priors. Skip when Claude's training already covers the topic well and adding sources is just redundant.
+  User has reading material (URLs, papers, blog posts, internal docs, pasted content) and wants the next forge step grounded in those sources, not in Claude's training-data priors. Skip when Claude's training already covers the topic well and adding sources is just redundant.
 disable-model-invocation: true
 harness-targets: [claude]
 ---
@@ -51,15 +51,15 @@ Write the brief to `.claude/ingest/<topic-slug>.md` so the user can read, edit, 
 
 Display the brief to the user. State your recommended next forge in one sentence with the reason. **Wait for the user to confirm or redirect before invoking the next skill.** The brief is artifact-agnostic; the right next step depends on the rough edge, not on the user's original phrasing.
 
-Run skill-forge's triage ladder against the brief:
+Run the forge's triage ladder against the brief:
 
-- **Recurring procedure or body of knowledge across sessions** → `/skill-forge`
-- **Path-scoped convention that only applies to certain files** → `/rule-forge`
-- **Hard guarantee the model can't reliably enforce** → `/hook-forge`
-- **Session-floor fact every Claude session should hold** → `/claude-md-forge`
+- **Recurring procedure or body of knowledge across sessions** → a skill
+- **Path-scoped convention that only applies to certain files** → a rule
+- **Hard guarantee the model can't reliably enforce** → a hook
+- **Session-floor fact every Claude session should hold** → a CLAUDE.md entry
 - **No clear rough edge; Claude's priors already cover this adequately** → say so and stop. Don't manufacture an artifact for a non-failure.
 
-When the user confirms, invoke the chosen forge and pass the brief path as input. The forge then runs its own design pipeline against the grounded synthesis instead of against priors.
+When the user confirms, invoke `/forge` and pass the brief path plus the recommended surface. The forge then runs its design pipeline against the grounded synthesis instead of against priors.
 
 ## Per-source agent prompt template
 
@@ -122,6 +122,5 @@ Skip when:
 ## See also
 
 - [references/failure-modes.md](references/failure-modes.md) — context-engineering failure modes catalog with primary-source citations.
-- `/skill-forge` — the most common Phase 3 handoff target.
-- `/rule-forge`, `/hook-forge`, `/claude-md-forge` — alternate Phase 3 handoff targets when the rough edge points elsewhere.
-- `workflow-forge` — the same fan-out-and-synthesize expressed as a deterministic JS workflow (real concurrency, schema-enforced quote-only output, resumable), for when the corpus is large or the run must reproduce. See its `examples/ingest-fanout.workflow.mjs`.
+- `/forge` — the Phase 3 handoff target; its triage ladder picks the surface.
+- [examples/ingest-fanout.workflow.mjs](examples/ingest-fanout.workflow.mjs) — this skill's fan-out expressed as a deterministic JS workflow (real concurrency, schema-enforced quote-only output, resumable), for when the corpus is large or the run must reproduce. Authored against the runtime, not yet run end-to-end; treat as a template.

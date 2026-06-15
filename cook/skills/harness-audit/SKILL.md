@@ -23,7 +23,7 @@ List everything that enters context at session start, with its scope and owner:
 - **Skills**: personal (`~/.claude/skills/`), project (`.claude/skills/`), and plugin-delivered (`enabledPlugins` across all settings files). Every visible skill's `description` + `when_to_use` loads every turn.
 - **MCP servers**: `.mcp.json` (minus `disabledMcpjsonServers`, plus `enabledMcpjsonServers` allowlists), plugin-shipped servers, claude.ai connectors. Tool *schemas* defer behind tool search, but server *instruction blocks* load in full.
 - **Agent roster**: every plugin-shipped subagent type adds its description to the Agent tool's listing.
-- **Hooks and settings**: all levels (managed → user → project → local). Note which hooks exist and what they enforce.
+- **Hooks and settings**: all levels (managed → user → project → local). Note which hooks exist and what they enforce, and any managed model/version policy (`availableModels` + `enforceAvailableModels`, `requiredMinimumVersion`).
 
 The session you are in is a specimen: the listings injected into your own context are the ground truth of what loads.
 
@@ -55,7 +55,7 @@ EOF
 
 1. **Self-consistency.** Diff what the harness's documentation claims against what the harness does. Classic finds: a loaded file that says it is not loaded; a dateline pinned to a version several releases back; a "this is enforced" line with no enforcement.
 2. **Duplication across scopes.** The same artifact listed twice pays twice: a project symlink and a user-scope plugin copy of the same skill; two plugins shipping the same command under different names; a personal skill shadowing a project one (personal wins silently).
-3. **Enforcement parity.** Every "always", "never", and "run X before Y" sentence in the instruction files should map to a hook, a CI gate, or a conscious decision to stay manual. A promise with no mechanism is a request, not a guarantee.
+3. **Enforcement parity.** Every "always", "never", and "run X before Y" sentence in the instruction files should map to a hook, a CI gate, a managed setting (a "we standardize on model X" line is enforced only by `availableModels`/`enforceAvailableModels`, not prose), or a conscious decision to stay manual. A promise with no mechanism is a request, not a guarantee.
 4. **Scope discipline.** Each artifact should live at the narrowest scope that serves it. Personal-scope skills used in one domain belong in a toggleable plugin or a project; product plugins needed in some repos should be per-project `enabledPlugins` entries, not global; a fleet of client-work skills in `~/.claude/skills/` taxes every repo on the machine.
 
 ## Step 4 — Triage and apply

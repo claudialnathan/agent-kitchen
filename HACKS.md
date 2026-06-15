@@ -1,8 +1,8 @@
 ```
 HACKS, FYIs & NICE-TO-KNOWS █
-CLAUDE CODE v2.1.170 + CLAUDE AGENT PLATFORM
+CLAUDE CODE v2.1.176 + CLAUDE AGENT PLATFORM
 
-UPDATED: 2026-06-10
+UPDATED: 2026-06-15
 SOURCE REPO: anthropics/claude-code/blob/main/CHANGELOG.md
 STATUS: DRAFT
 ```
@@ -141,6 +141,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>includeGitInstructions: false</code></td><td>Drop built-in git workflow text for a smaller system prompt, better cache.</td></tr>
 <tr><td><code>disableDeepLinkRegistration: "disable"</code></td><td>Stop <code>claude-cli://</code> from registering (security lever).</td></tr>
 <tr><td><code>requiredMinimumVersion</code> / <code>…Maximum…</code></td><td>(Managed) refuse to start outside a version band: pin a fleet.</td></tr>
+<tr><td><code>availableModels</code> + <code>enforceAvailableModels</code><sup>NEW</sup> <kbd><samp>v2.1.175</samp></kbd></td><td>(Managed) allowlist which models a fleet may use; <code>enforceAvailableModels</code> extends the allowlist to the resolved <em>Default</em> model and stops user/project settings widening it. The model analog of the version-band pin above.</td></tr>
 <tr><td><code>fallbackModel</code><sup>NEW</sup> <kbd><samp>v2.1.166</samp></kbd></td><td>Up to three fallbacks tried in order when the primary is overloaded/unavailable; the settings form of <code>--fallback-model</code>.</td></tr>
 <tr><td><code>disableBundledSkills</code><sup>NEW</sup> <kbd><samp>v2.1.169</samp></kbd></td><td>Hide <em>all</em> bundled skills, workflows, and built-in slash commands from the model in one key: reclaim their description budget.</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>Interactive shortcuts & TUI</h4></kbd></td></tr>
@@ -221,6 +222,7 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 <table>
 <tr><th><code>FEATURE</code></th><th><code>INVOKE</code></th><th><code>FUNCTION</code></th></tr>
 <tr><td>forked subagents<sup>NEW</sup> <kbd><samp>v2.1.161+ default-on</samp></kbd></td><td><code>/fork &lt;directive&gt;</code> · <code>CLAUDE_CODE_FORK_SUBAGENT=1</code></td><td>Inherits the <em>entire</em> conversation (zero re-explaining) and shares the parent's prompt cache, so cheaper than a fresh subagent for same-context work. Open a running fork's transcript and steer it mid-flight.</td></tr>
+<tr><td>nested subagents<sup>NEW</sup> <kbd><samp>v2.1.172+</samp></kbd></td><td><code>Agent</code> in a subagent's <code>tools</code> (default)</td><td>A subagent spawns its <em>own</em> subagents: a delegated task that itself fans out (reviewer → a verifier per finding) keeps the sub-fan-out off your main thread, only the top summary returns. Foreground chains self-limit (each blocks its parent); a <em>background</em> subagent loses the <code>Agent</code> tool at depth 5 (fixed, not configurable). Omit <code>Agent</code> from a subagent's <code>tools</code> to block it; a fork still can't spawn a fork.</td></tr>
 <tr><td><code>/goal</code><sup>NEW</sup> <kbd><samp>v2.1.139+</samp></kbd></td><td><code>/goal &lt;condition&gt;</code></td><td>A small fast model re-checks your condition every turn and keeps Claude working until it holds, no per-turn prompting. Judges <em>only the transcript</em>, so write conditions the output can prove: <code>"npm test exits 0 and git status clean, or stop after 20 turns"</code>.</td></tr>
 <tr><td>agent view</td><td><code>claude agents</code> · <code>--json</code></td><td><code>←</code> on an empty prompt backgrounds + jumps here; <code>Ctrl+T</code> pins (survives idle, restarts onto new binaries); <code>s:blocked</code> filters "what needs me"; <code>--json</code> emits an inventory with a <code>waitingFor</code> field.</td></tr>
 <tr><td>respawn</td><td><code>claude respawn --all</code></td><td>Rolls every background session onto an updated Claude Code binary at once.</td></tr>
@@ -432,6 +434,6 @@ lap's configuration.
 
 ```
 EVERY FLAG, FIELD, AND VERSION ABOVE: COPIED FROM A DOC, NOT RECALLED.
-RE-CHECKED: 2026-06-10 · AGAINST: v2.1.170 · AUTHORITATIVE: docs changelog
+RE-CHECKED: 2026-06-15 · AGAINST: v2.1.176 · AUTHORITATIVE: docs changelog
 ON DRIFT: FIX IT HERE, RE-PIN THE DATE.
 ```

@@ -2,13 +2,12 @@
 
 Provenance ledger for the skills in `cook/` and `serve/` and the repo machinery around them: what changed, why, and the model/harness state it was earned against. Artifacts carry only a one-line pin (`<!-- Earned against: <model>, <date>, <version> -->`); the narrative, sunset triggers, and re-test verdicts live here. Newest first. Reference skills by name and section — not line numbers, which rot.
 
-<table>
-<tr><th><samp>SUMMARY</samp></th><th><samp>DETAILS</samp></th><th><samp>FUNCTION</samp></th></tr>
-<tr><td>col1</td><td><code>col2</code></td><td>col3</td></tr>
-<tr><td>col1</td><td><code>col2</code></td><td>col3</td></tr>
-<tr><td colspan="2" align="center"><kbd><h4>Environment variables</h4></kbd></td></tr>
-<tr><td>col1</td><td><code>col2</code></td><td>col3</td></tr>
-</table>
+## 2026-06-15 — Opus 4.8 (`claude-opus-4-8`), Claude Code v2.1.176
+
+- **STATE.md + HACKS.md → v2.1.176.** Changelog delta v2.1.172–176 (no v2.1.171) was almost entirely bug/perf fixes (background sessions, `/model` picker, Bedrock, Remote Control); three entries cleared STATE.md's build/configure/ship filter. STATE.md: nested subagents (v2.1.172) and the `availableModels`+`enforceAvailableModels` managed allowlist (v2.1.175) added under *Other small but useful*; the Fable 5 model-ID line corrected — 1M is default and a `[1m]` suffix is now stripped (v2.1.173), so the ID is `claude-fable-5`. HACKS.md: nested-subagents row (§07) and the managed model-allowlist row (§04) added; all three datelines re-pinned. CLAUDE.md checked against the delta — no contradictions, and a maintenance bump (not a model release) leaves the pin re-test trigger dormant.
+- **forge — nested subagents threaded through.** The cook/serve sweep (run against the freshly-bumped STATE.md as current truth) found the forge silent on a v2.1.172 capability: a subagent whose `tools` include `Agent` (the default) spawns its own subagents. Mechanics added to `references/skills.md` Frontmatter traps, beside the `tools:`-vs-`allowed-tools:` trap — omit `Agent` / `disallowedTools: [Agent]` to keep a subagent leaf-only; foreground self-limits, background caps at depth 5; a fork still can't spawn a fork. Judgment added to SKILL.md: the orchestration triage row and the Workflows "surface line" now seat a nested subagent between a prose-dispatched skill and the workflow runtime — a single delegated task that self-splits (reviewer → a verifier per finding) needs only a nested subagent, while the runtime stays earned for large fan-out, branching, or reproducible runs. Verified against code.claude.com/docs/en/sub-agents.
+- **harness-audit — managed model/version governance in enforcement parity.** Same sweep: the enforcement-parity check (Step 3) and the settings inventory (Step 1) named hooks and CI gates as the mechanisms a prose rule must map to, but not managed settings. A "we standardize on model X" line is enforced only by `availableModels`/`enforceAvailableModels` (v2.1.175), not prose — added as a mechanism type with that example, and the model/version-policy managed settings added to the inventory note. Pin left at the core earning (Fable 5, v2.1.170); this lever's provenance is here.
+- **Held.** A harness-audit roster note (flag which roster entries carry `Agent` and so can fan out) was considered and dropped: nesting is a *runtime* fan-out cost, and that skill's discipline is standing per-session cost — out of its frame. ingest audited and clean: its flat one-subagent-per-source fan-out has no subtask for nesting to fill.
 
 ## 2026-06-12 — Fable 5 (`claude-fable-5`), Claude Code v2.1.170
 

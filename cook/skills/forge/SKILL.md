@@ -44,7 +44,7 @@ Run the ladder in order; first match wins. A refined harness trends toward *fewe
 | A side investigation that would flood the main context | **Subagent**, or a skill with `context: fork` that runs as one |
 | A fact every session should hold ("we use pnpm") | **CLAUDE.md** — [references/always-on.md](references/always-on.md) |
 | A convention that only matters for some files | **Path-scoped rule** — or a path-scoped *skill* if it must also be manually invocable. [references/always-on.md](references/always-on.md) |
-| Deterministic orchestration of many agents (fan-out, per-item verification, classify-then-route) | **Workflow script** — see Workflows below |
+| Deterministic orchestration of many agents — large fan-out, classify-then-route, branching, or a run that must reproduce | **Workflow script** — see Workflows below. A *single* delegated task that itself splits (reviewer → a verifier per finding) may only need a **nested subagent** |
 | None of the above, reusable across sessions | **Skill** — [references/skills.md](references/skills.md) |
 
 Two orthogonal notes:
@@ -95,7 +95,7 @@ Filters, the goes-elsewhere table, voice and the Why pattern, AGENTS.md-primary 
 
 The Workflow tool's own in-session description is the authoritative, current contract for the API *and* the orchestration patterns (pipeline vs parallel, schemas, budget scaling, adversarial verification) — author from it, not from memory. What it doesn't cover:
 
-- **The surface line.** A handful of parallel reads synthesized once is a prose-dispatched skill (`/ingest`); reach for the runtime when the corpus is large, items need individual verification, control flow branches, or the run must reproduce.
+- **The surface line.** A handful of parallel reads synthesized once is a prose-dispatched skill (`/ingest`); a *single* delegated task that itself fans out — a reviewer spawning a verifier per finding — is a **nested subagent**, where only the top summary returns and there's no runtime opt-in; reach for the workflow runtime when the corpus is large, control flow branches, or the run must reproduce.
 - **Packaging.** The documented reuse path is `.claude/workflows/<name>.js` as a `/command`. Shipping workflow files inside a skill folder is blog-asserted only — usable knowingly, not something to depend on.
 - **Opt-in.** Workflows cost real tokens and the runtime requires explicit user opt-in. Design the script; don't fire it unasked.
 

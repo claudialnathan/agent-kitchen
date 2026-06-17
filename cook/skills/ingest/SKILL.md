@@ -1,11 +1,8 @@
 ---
 name: ingest
 description: |
-  Reads URLs / articles / docs in parallel subagents (one per source), produces a brief of quoted excerpts with citations, then hands off to the forge skill with the right surface in mind. The brief is the artifact, not a kitchen sink and not a paraphrase; the source material never enters the main thread directly, quoted excerpts do.
-when_to_use: |
-  User has reading material (URLs, papers, blog posts, internal docs, pasted content) and wants the next forge step grounded in those sources, not in Claude's training-data priors. Skip when Claude's training already covers the topic well and adding sources is just redundant.
+  Reads URLs / articles / docs in parallel subagents (one per source), produces a brief of quoted excerpts with citations, then hands off to the forge skill with the right surface in mind. The brief is the artifact, not a kitchen sink and not a paraphrase; the source material never enters the main thread directly, quoted excerpts do. Use when you have reading material (URLs, papers, blog posts, internal docs, pasted content) and want the next forge step grounded in those sources rather than training-data priors; skip when training already covers the topic well.
 disable-model-invocation: true
-harness-targets: [claude]
 ---
 
 <!-- Earned against: Opus 4.7, 2026-05-22; re-tested KEPT 2026-05-29 (Opus 4.8); revised 2026-06-08 (v2.1.165) — history: CHANGELOG.md -->

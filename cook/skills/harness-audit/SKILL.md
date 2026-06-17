@@ -1,10 +1,7 @@
 ---
 name: harness-audit
 description: |
-  Audits a Claude Code setup end-to-end: what loads every session, what it costs, and whether the harness's own claims hold. Inventories the standing surfaces (CLAUDE.md chain, personal/project/plugin skills, MCP instruction blocks, agent rosters, hooks, settings at every scope), quantifies their per-session token cost, then runs four checks: self-consistency, duplication across scopes, enforcement parity, and scope discipline. Output is a quantified triage (applied / recommended / held), not a vibes review.
-when_to_use: |
-  Any request to review, slim, or sanity-check a Claude Code setup as a whole, including "why is my context so big" and "what loads every session". Run after major harness changes (a new plugin fleet, a new machine, a model release) or when sessions feel slow or expensive from turn one. For a single artifact, the relevant forge owns the audit.
-harness-targets: [claude]
+  Audits a Claude Code setup end-to-end: what loads every session, what it costs, and whether the harness's own claims hold. Inventories the standing surfaces (CLAUDE.md chain, personal/project/plugin skills, MCP instruction blocks, agent rosters, hooks, settings at every scope), quantifies their per-session token cost, then runs four checks: self-consistency, duplication across scopes, enforcement parity, and scope discipline. Output is a quantified triage (applied / recommended / held), not a vibes review. Use to review, slim, or sanity-check a whole Claude Code setup — including 'why is my context so big' or 'what loads every session' — after major harness changes (a new plugin fleet, a new machine, a model release) or when sessions feel slow from turn one; for a single artifact, the relevant forge owns the audit.
 ---
 
 <!-- Earned against: Opus 4.8, 2026-06-10, v2.1.170 — history: CHANGELOG.md -->

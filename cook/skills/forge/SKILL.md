@@ -1,9 +1,7 @@
 ---
 name: forge
 description: |
-  Designs Claude Code harness artifacts. One triage ladder picks the right surface (skill, hook, path-scoped rule, CLAUDE.md or AGENTS.md entry, workflow script, subagent, MCP); the stance holds the bar every artifact must clear (a named failure or an authoritative source, plus a nameable attention shift); per-surface mechanics live in references. Use for creating, reviewing, or refactoring any of these, for distilling articles or docs into one, for skills that under- or over-trigger, hooks that don't fire or fire too often, bloated CLAUDE.mds, and for deciding which surface a behavior belongs on.
-when_to_use: |
-  Any work on a skill, hook, rule, CLAUDE.md, AGENTS.md, or workflow orchestration script. Creating, reviewing, debugging triggering or firing semantics, packaging a /command or plugin, or choosing between surfaces.
+  Designs Claude Code harness artifacts. One triage ladder picks the right surface (skill, hook, path-scoped rule, CLAUDE.md or AGENTS.md entry, workflow script, subagent, MCP); the stance holds the bar every artifact must clear (a named failure or an authoritative source, plus a nameable attention shift); per-surface mechanics live in references. Use for creating, reviewing, or refactoring any of these, for distilling articles or docs into one, for skills that under- or over-trigger, hooks that don't fire or fire too often, bloated CLAUDE.mds, and for deciding which surface a behavior belongs on. Triggers on any work on a skill, hook, rule, CLAUDE.md, AGENTS.md, or workflow orchestration script, including debugging triggering or firing semantics and packaging a /command or plugin.
 paths:
   - "**/.claude/skills/**"
   - "**/.claude/hooks/**"
@@ -15,7 +13,6 @@ paths:
   - "**/CLAUDE.md"
   - "**/CLAUDE.local.md"
   - "**/AGENTS.md"
-harness-targets: [claude]
 ---
 
 # forge

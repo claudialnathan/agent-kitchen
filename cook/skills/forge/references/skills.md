@@ -53,7 +53,7 @@ The kind constrains the form; it doesn't decide worth (that's additive-vs-transf
 - `tools:` is the subagent field; the skill field is `allowed-tools:`. They look alike and aren't.
 - A subagent whose `tools` include `Agent` (the default when `tools` is omitted) can spawn its own subagents; omit `Agent` or set `disallowedTools: [Agent]` to keep it leaf-only. Foreground chains self-limit (each blocks its parent); background nesting caps at depth 5. A fork still can't spawn a fork, but other types it spawns count toward that cap. (2026-06-15, v2.1.172)
 - Setting both `disable-model-invocation: true` and `paths:` — auto-loading is disabled by the former; pick one.
-- Don't copy frontmatter from the skill you're reading: `harness-targets: [claude]` on this forge gates it to Claude Code, and a portable stack skill shouldn't carry it.
+- Don't copy frontmatter from the skill you're reading: this forge's `paths:` globs (`**/.claude/skills/**`, `**/CLAUDE.md`) match harness files, not a stack skill's source — copy the field idea, not the values.
 
 **Substitutions** (run before the body enters context): `$ARGUMENTS`, `$ARGUMENTS[N]` / `$N`, `$<name>` (with `arguments:` declared), `${CLAUDE_SKILL_DIR}` (always use for bundled scripts), `${CLAUDE_SESSION_ID}`, `${CLAUDE_EFFORT}`. If no substitution is present and the user passed arguments, they're appended as `ARGUMENTS: <input>`.
 

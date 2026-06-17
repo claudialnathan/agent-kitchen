@@ -1,9 +1,11 @@
 Icon
 guides/
 CLAUDE.local.md
-wip/
+working/
 .claude/skills/
 .claude/ingest/
+.claude/hooks/doc-drift-gate.sh
 scratch/
 .claude/settings.local.json
 .eval-runs/
+TODO.md

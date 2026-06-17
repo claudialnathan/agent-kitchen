@@ -7,7 +7,7 @@ when_to_use: |
 harness-targets: [claude]
 ---
 
-<!-- Earned against: Fable 5 (claude-fable-5), 2026-06-10, v2.1.170 — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.8, 2026-06-10, v2.1.170 — history: CHANGELOG.md -->
 
 ## The attention this skill redirects
 
@@ -55,7 +55,7 @@ EOF
 
 1. **Self-consistency.** Diff what the harness's documentation claims against what the harness does. Classic finds: a loaded file that says it is not loaded; a dateline pinned to a version several releases back; a "this is enforced" line with no enforcement.
 2. **Duplication across scopes.** The same artifact listed twice pays twice: a project symlink and a user-scope plugin copy of the same skill; two plugins shipping the same command under different names; a personal skill shadowing a project one (personal wins silently).
-3. **Enforcement parity.** Every "always", "never", and "run X before Y" sentence in the instruction files should map to a hook, a CI gate, a managed setting (a "we standardize on model X" line is enforced only by `availableModels`/`enforceAvailableModels`, not prose), or a conscious decision to stay manual. A promise with no mechanism is a request, not a guarantee.
+3. **Enforcement parity.** Every "always", "never", and "run X before Y" sentence in the instruction files should map to a hook, a CI gate, a permission rule (`permissions.deny`, now matching tool parameters too — `Agent(model:opus)`, v2.1.178), a managed setting (a "we standardize on model X" line is enforced only by `availableModels`/`enforceAvailableModels`, not prose), or a conscious decision to stay manual. A promise with no mechanism is a request, not a guarantee.
 4. **Scope discipline.** Each artifact should live at the narrowest scope that serves it. Personal-scope skills used in one domain belong in a toggleable plugin or a project; product plugins needed in some repos should be per-project `enabledPlugins` entries, not global; a fleet of client-work skills in `~/.claude/skills/` taxes every repo on the machine.
 
 ## Step 4 — Triage and apply

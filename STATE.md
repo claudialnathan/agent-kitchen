@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 15 June 2026 | Version: v2.1.176
+Last updated: 17 June 2026 | Version: v2.1.179
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
@@ -46,9 +46,11 @@ Practical consequences:
 
 Features that changed how skills get built, in rough order of impact:
 
-### Fable 5 (Mythos-class, v2.1.170)
+### Fable 5 (Mythos-class, v2.1.170) — suspended 2026-06-12
 
-- **`claude-fable-5`** — the first Mythos-class model released for general use; the most capable model in Claude Code, built for tasks larger than a single sitting. Requires v2.1.170+.
+**Suspended.** A US Commerce Department export-control order (2026-06-12) forced Fable 5 and Mythos 5 offline; Anthropic complied globally — API, AWS, and Foundry — unable to isolate foreign nationals in real time. Indefinite, contested, no restoration timeline. The trigger was a jailbreak that turned Fable 5 toward identifying software vulnerabilities. This is a legal/availability action, not a Claude Code version feature, so it never reached the changelog — a changelog-driven state bump won't catch it. What follows describes the model as shipped, for when access returns.
+
+- **`claude-fable-5`** — the first Mythos-class model released for general use, built for tasks larger than a single sitting. Required v2.1.170+.
 - **Not the default on any plan.** Opt in with `/model fable` (persists via user settings). New aliases: `fable`, and `best` (Fable 5 where the org has access, otherwise latest Opus).
 - Effort levels `low`–`max`, default `high`. Adaptive reasoning is always on; thinking cannot be disabled — `Option+T`, `alwaysThinkingEnabled`, and `MAX_THINKING_TOKENS=0` have no effect.
 - **Classifier fallback**: requests flagged for cybersecurity or biology re-run on the default Opus model, and the session stays there until `/model fable`. Can trigger on the first request from workspace context alone (CLAUDE.md, git status, directory names); `claude --safe-mode` isolates whether customizations are the trigger, and a `/config` toggle pauses to ask instead of switching. `-p` and SDK runs get a refusal instead. Offensive-security, CTF, and biology work reroutes frequently by design.
@@ -192,7 +194,9 @@ The hook surface has accumulated several useful fields:
 - **`requiredMinimumVersion` / `requiredMaximumVersion`** managed settings — Claude Code refuses to start outside the allowed version range and points to an approved build.
 - **`fallbackModel` setting** (v2.1.166) — up to three fallback models, tried in order when the primary is unavailable; the settings-file form of the `--fallback-model` flag.
 - **Nested subagents** (v2.1.172) — a subagent can now spawn its own subagents, so a delegated task that splits into parallel subtasks (a reviewer dispatching a verifier per finding) keeps that fan-out off the main thread; only the top-level summary returns. Foreground chains self-limit (each blocks its parent); a background subagent stops receiving the `Agent` tool at depth 5 (fixed, not configurable). A lighter-weight alternative to a workflow script when the orchestration is a single delegated task, not a standing pipeline.
-- **`availableModels` allowlist + `enforceAvailableModels`** (managed settings; `enforceAvailableModels` added v2.1.175) — restrict which models a deployment may use; with `enforceAvailableModels` on, the allowlist also constrains the resolved Default model (a Default that would resolve to a blocked model falls back to the first allowed one) and user/project settings can't widen a managed list. The model-governance analog to `requiredMinimumVersion`.
+- **`availableModels` allowlist + `enforceAvailableModels`** (managed settings; `enforceAvailableModels` added v2.1.175) — restrict which models a deployment may use; with `enforceAvailableModels` on, the allowlist also constrains the resolved Default model (a Default that would resolve to a blocked model falls back to the first allowed one) and user/project settings can't widen a managed list. `ANTHROPIC_DEFAULT_*_MODEL` env vars and `/fast` can no longer slip a blocked model past it (v2.1.177). The model-governance analog to `requiredMinimumVersion`.
+- **`Tool(param:value)` permission rules** (v2.1.178) — permission rules can now match a tool call's input parameters, with `*` wildcards: e.g. `Agent(model:opus)` blocks Opus subagents. Parameter-level policy in `permissions.deny`/`allow`, where you'd previously have needed a `PreToolUse` hook.
+- **Nested `.claude/` directories resolve by proximity** (v2.1.178) — a skill in a nested `.claude/skills/` loads when you work on files beneath it (dir-qualified `<dir>:<name>` on a name clash, so both survive), and the agent / workflow / output-style in the closest `.claude/` wins a name collision. Monorepo subprojects can carry their own harness.
 
 ## Constraints worth designing around
 
@@ -314,7 +318,7 @@ Cross-tool standards:
 
 Things that were research previews or moving fast at the time of writing:
 
-- **Fable 5 subscription access** is time-boxed: included at no extra cost on Pro/Max/Team/Enterprise June 9–22, 2026, then usage credits with a phased restoration planned. Classifier-fallback thresholds (triggering in <5% of sessions on average) may also move.
+- **Fable 5 is suspended** (2026-06-12, US export-control order — see the Fable 5 section above). The time-boxed subscription window (June 9–22) was cut short three days in. Restoration is uncertain; Anthropic is contesting the order. Until it returns, `/model fable` and `best` resolve to Opus.
 - **Agent view (`claude agents`)** is research preview. Surface and command shape may shift.
 - **Forked subagents** remain gated behind `CLAUDE_CODE_FORK_SUBAGENT=1` (v2.1.117+); now work in SDK and `-p` modes as well as interactive. Likely to become default eventually.
 - **Auto mode** is in research preview. Default thresholds and classifier behavior may change. `hard_deny` rules are stable.

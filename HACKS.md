@@ -1,8 +1,8 @@
 ```
 HACKS, FYIs & NICE-TO-KNOWS █
-CLAUDE CODE v2.1.176 + CLAUDE AGENT PLATFORM
+CLAUDE CODE v2.1.179 + CLAUDE AGENT PLATFORM
 
-UPDATED: 2026-06-15
+UPDATED: 2026-06-17
 SOURCE REPO: anthropics/claude-code/blob/main/CHANGELOG.md
 STATUS: DRAFT
 ```
@@ -36,7 +36,7 @@ A couple lesser-known or new features I like.
 
 <table>
 <tr><th><samp>FEATURE</samp></th><th><samp>INVOKE</samp></th><th><samp>FUNCTION</samp></th></tr>
-<tr><td>dreams</td><td><code>POST /v1/dreams</code></td><td>Offline job rebuilds a memory store from itself + ≤100 transcripts: dupes merged, contradictions resolved, insights surfaced. Curates rotting long-term memory; escape hatch for the 2,000-store cap. → <a href="#09-platform-and-agent-sdk">#09</a></td></tr>
+<tr><td>dreams</td><td><code>POST /v1/dreams</code></td><td>Offline job rebuilds a memory store from itself + ≤100 transcripts: dupes merged, contradictions resolved, insights surfaced. Curates rotting long-term memory; escape hatch for the 2,000-memory per-store cap. → <a href="#09-platform-and-agent-sdk">#09</a></td></tr>
 <tr><td>channels<sup>NEW</sup> <kbd><samp>v2.1.80+</samp></kbd></td><td><code>claude --channels plugin:&lt;name&gt;@&lt;mkt&gt;</code></td><td>Pushes outside events (CI fail, Telegram, <code>curl</code>) <em>into</em> your live session over stdio, files + context already loaded. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
 <tr><td>deep links<sup>NEW</sup> <kbd><samp>v2.1.91+</samp></kbd></td><td><code>claude-cli://open?repo=…&q=…</code></td><td>One click opens Claude in a new terminal, right repo, prompt pre-typed. <code>mailto:</code> for agent sessions. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
 <tr><td>remote control</td><td><code>claude remote-control · /rc</code></td><td>Drive your local session from your phone; full tooling, outbound HTTPS only. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
@@ -84,6 +84,7 @@ A couple lesser-known or new features I like.
 <tr><td>hidden skill</td><td><code>disable-model-invocation: true</code></td><td>Skill stays <em>entirely</em> out of context (not even its description) until you <code>/name</code> it. Put on side-effecting workflows (commit, deploy) for zero standing cost.</td></tr>
 <tr><td>tiny-context skill</td><td><code>context: fork</code> + <code>agent: Explore</code></td><td>Runs a skill in an isolated subagent that skips CLAUDE.md and git status.</td></tr>
 <tr><td>tool search</td><td>default on Sonnet 4+ / Opus 4+</td><td>Defers all MCP tool schemas by default. The "too many MCP servers blow my context" caution is largely obsolete unless you force <code>alwaysLoad</code> or <code>ENABLE_TOOL_SEARCH=false</code>.</td></tr>
+<tr><td>nested <code>.claude/</code><sup>NEW</sup> <kbd><samp>v2.1.178</samp></kbd></td><td>nearest dir wins</td><td>A skill in a nested <code>.claude/skills/</code> loads when you work on files beneath it (<code>&lt;dir&gt;:&lt;name&gt;</code> on a clash); the agent/workflow/output-style in the <em>closest</em> <code>.claude/</code> wins a name collision. Monorepo subprojects carry their own harness.</td></tr>
 <tr><td>inline MCP data</td><td><code>@server:resource</code> (<code>@github:issue://123</code>) · <code>/mcp__server__prompt</code></td><td>Pull live MCP data inline like an <code>@file</code>; surface server prompts as slash commands.</td></tr>
 <tr><td>plugin CLI + state</td><td><code>bin/</code> at plugin root · <code>${CLAUDE_PLUGIN_DATA}</code></td><td><code>bin/</code> joins the Bash <code>PATH</code> while enabled (ship a CLI your skills call by name). <code>${CLAUDE_PLUGIN_DATA}</code> is the persistent state dir that survives updates (install venvs / <code>node_modules</code> there once).</td></tr>
 <tr><td>commit-SHA versioning</td><td>omit <code>version</code> from <code>plugin.json</code> + marketplace entry</td><td>Git commit SHA becomes the version, so every push is an update. Setting a <code>version</code> pins the install cache; <code>/plugin update</code> reports "already at the latest version" until you bump it.</td></tr>
@@ -141,9 +142,10 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>includeGitInstructions: false</code></td><td>Drop built-in git workflow text for a smaller system prompt, better cache.</td></tr>
 <tr><td><code>disableDeepLinkRegistration: "disable"</code></td><td>Stop <code>claude-cli://</code> from registering (security lever).</td></tr>
 <tr><td><code>requiredMinimumVersion</code> / <code>…Maximum…</code></td><td>(Managed) refuse to start outside a version band: pin a fleet.</td></tr>
-<tr><td><code>availableModels</code> + <code>enforceAvailableModels</code><sup>NEW</sup> <kbd><samp>v2.1.175</samp></kbd></td><td>(Managed) allowlist which models a fleet may use; <code>enforceAvailableModels</code> extends the allowlist to the resolved <em>Default</em> model and stops user/project settings widening it. The model analog of the version-band pin above.</td></tr>
+<tr><td><code>availableModels</code> + <code>enforceAvailableModels</code><sup>NEW</sup> <kbd><samp>v2.1.175</samp></kbd></td><td>(Managed) allowlist which models a fleet may use; <code>enforceAvailableModels</code> extends the allowlist to the resolved <em>Default</em> model and stops user/project settings widening it; <code>ANTHROPIC_DEFAULT_*_MODEL</code> and <code>/fast</code> can't bypass it (v2.1.177). The model analog of the version-band pin above.</td></tr>
 <tr><td><code>fallbackModel</code><sup>NEW</sup> <kbd><samp>v2.1.166</samp></kbd></td><td>Up to three fallbacks tried in order when the primary is overloaded/unavailable; the settings form of <code>--fallback-model</code>.</td></tr>
 <tr><td><code>disableBundledSkills</code><sup>NEW</sup> <kbd><samp>v2.1.169</samp></kbd></td><td>Hide <em>all</em> bundled skills, workflows, and built-in slash commands from the model in one key: reclaim their description budget.</td></tr>
+<tr><td><code>Tool(param:value)</code> perm rules<sup>NEW</sup> <kbd><samp>v2.1.178</samp></kbd></td><td>Permission rules match a tool call's <em>input params</em> (with <code>*</code>): e.g. <code>Agent(model:opus)</code> blocks Opus subagents — param-level <code>deny</code>/<code>allow</code> without a <code>PreToolUse</code> hook.</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>Interactive shortcuts & TUI</h4></kbd></td></tr>
 <tr><th><samp>KEYS</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>Esc Esc</code></td><td>Empty prompt → rewind menu; with text → clear draft (saved to history, <code>↑</code> recalls).</td></tr>
@@ -156,6 +158,9 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>/tui fullscreen</code></td><td>Alt-screen renderer; fixes "scroll jumps to top while Claude works" in VS Code/tmux.</td></tr>
 <tr><td><code>/focus</code> · <code>/btw</code></td><td>Quieter transcript view · ask a side question that <strong>never enters history</strong>.</td></tr>
 </table>
+
+> [!CAUTION]
+> **Fable 5 + Mythos 5 suspended 2026-06-12** — a US Commerce export-control order pulled both globally (API/AWS/Foundry); indefinite, Anthropic contesting. Not in the CC changelog, so a changelog-driven bump misses it. The Fable rows describe the model as shipped, for when access returns; until then <code>/model fable</code> and <code>best</code> resolve to Opus.
 
 Fable 5 (<code>/model fable</code>,<sup>NEW</sup> <kbd><samp>v2.1.170</samp></kbd>) reroutes classifier-flagged requests (cybersecurity/biology) to Opus mid-session — and can trip on <em>workspace context</em> alone (CLAUDE.md, git status, directory names) before you type anything. <code>claude --safe-mode</code> isolates whether your config is the trigger; <code>/config</code> → "switch models when a message is flagged" off = pause-and-ask instead of silent switch.
 
@@ -270,7 +275,7 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 
 <table>
 <tr><th><code>FEATURE</code></th><th><code>IDENTIFIER</code></th><th><code>FUNCTION</code></th></tr>
-<tr><td>dreams</td><td><code>POST /v1/dreams</code></td><td>Async: reads a memory store + ≤100 transcripts → writes a <em>new</em> curated store (input never touched; review &amp; swap). Cleans rotting long-term memory; escape hatch for the 2,000-store cap (dream it down, switch, archive). Flow: <code>POST</code> (inputs + <code>model</code> + optional <code>instructions</code>) → poll <code>pending → running → completed | failed | canceled</code> (minutes to tens of minutes) → read <code>outputs[]</code> for the rebuilt <code>memory_store_id</code>.</td></tr>
+<tr><td>dreams</td><td><code>POST /v1/dreams</code></td><td>Async: reads a memory store + ≤100 transcripts → writes a <em>new</em> curated store (input never touched; review &amp; swap). Cleans rotting long-term memory; escape hatch for the 2,000-memory per-store cap (dream it down, switch, archive). Flow: <code>POST</code> (inputs + <code>model</code> + optional <code>instructions</code>) → poll <code>pending → running → completed | failed | canceled</code> (minutes to tens of minutes) → read <code>outputs[]</code> for the rebuilt <code>memory_store_id</code>.</td></tr>
 <tr><td>memory tool</td><td><code>memory_20250818</code></td><td>Claude runs file ops (view/create/str_replace/insert/delete/rename) on a <code>/memories</code> dir <em>your</em> infra stores; JIT-retrieval, ZDR-eligible. An auto-injected line tells it to check memory first and checkpoint "because context may reset at any moment".</td></tr>
 <tr><td>context editing</td><td><code>clear_tool_uses_20250919</code></td><td>Clears stale tool results to placeholders. <code>clear_at_least</code> fires only when it frees ≥N tokens; <code>exclude_tools</code> shields critical results.</td></tr>
 <tr><td>compaction</td><td><code>compact_20260112</code></td><td>Server-side auto-summarisation; the recommended long-run strategy over manual editing.</td></tr>
@@ -343,7 +348,7 @@ Record a demo GIF straight from a prompt with the Chrome integration.
 
 ---
 
-<h2 id="13-the-wheel"><samp>12 THE WHEEL</samp></h2>
+<h2 id="13-the-wheel"><samp>13 THE WHEEL</samp></h2>
 
 Where everything above sits on one working loop. Phases ⓪–⑥, then the
 feedback arrow makes it a circle: what each lap teaches you becomes the next
@@ -426,7 +431,7 @@ lap's configuration.
                                                                       │
    ⓪ CONFIGURE ◀── feedback: corrections, memories, new skills & hooks ┘
    become next session's configuration — the loop closes
-</code><pre>
+</code></pre>
 
 
 ---
@@ -434,6 +439,6 @@ lap's configuration.
 
 ```
 EVERY FLAG, FIELD, AND VERSION ABOVE: COPIED FROM A DOC, NOT RECALLED.
-RE-CHECKED: 2026-06-15 · AGAINST: v2.1.176 · AUTHORITATIVE: docs changelog
+RE-CHECKED: 2026-06-17 · AGAINST: v2.1.179 · AUTHORITATIVE: docs changelog
 ON DRIFT: FIX IT HERE, RE-PIN THE DATE.
 ```

@@ -1,0 +1,75 @@
+AGENT-KITCHEN █
+COOK | SERVE
+
+─────────────────────
+
+agent-kitchen is a second-order harness. It functions as a workshop for the things that configure coding agents (skills, hooks, rules, CLAUDE.md, workflows).
+
+It operates as dotfiles for your agent. Two plugins under a marketplace
+
+⛶ COOK makes and audits the tools
+⛶ SERVE is what's survived for me so far
+
+It's built on the idea that:
+
+A frontier model in 2026 is very competent at most things, But its default in any domain is the competent average version of the thing. Getting it to do a specific, better version of the work you care about means refining its particularity and getting it very good in one specific way, against its own pull toward the middle of every distribution.
+
+The artifacts here are commitments that try to drag a model off that median in a chosen direction. It works on the understanding that any tool that attempts to do this charges rent on future sessions and, as models continuously improve, is ultimately perishable. It is a practice of deciding what tools are worth what's worth pulling the model off its average for.
+
+COOK
+  ⛶ forge: one triage ladder routes a behavior to the right surface (skill, hook, path-scoped rule, CLAUDE.md, workflow, subagent, MCP), with a stance that sets the bar each artifact has to clear.
+  ⛶ harness-audit: inventories everything loaded at session start, counts the per-session token cost, and runs four checks: self-consistency, duplication across scopes, enforcement parity, scope discipline. built to remove things rather than add them.
+  ⛶ ingest: turns a doc or article into an artifact by fanning out one reader subagent per source, grounded in verbatim quotes.
+
+SERVE
+  ⛶ Applied skills: each drags the model off its median default toward one specific taste: Linear-class UI speed, a prose voice, Tailwind/shadcn token discipline, a whole-repo audit method.
+  ⛶ STATE.md + HACKS.md: a verified snapshot of Claude Code's surfaces and its lesser-known features, re-checked against the live changelog on each release.
+
+The ground this is built on moves every day. Two additional artifacts 
+  ⛶ HACKS.md: a hand-crushed digest of Claude's 
+  ⛶ STATE.md: a hand-crushed digest of every Claude Code changelog, current to v2.1.179, catching things the official one misses
+
+COMMITS TO
+  ⛶ prices context before writing anything. forge's first rule is that the cheapest artifact is the one you don't write. every artifact clears three bars: earned by a real failure or a real source; shifts attention in a way you can name; beats the model's default.
+  ⛶ core test is additive vs transformative. does it save you typing, or change what's thinkable? only the second kind earns its place.
+  ⛶ model-pins everything. each artifact records the model, date, and CC version it was earned against. re-test on each release, delete what no longer reproduces. config is code tied to one model's failure modes, not gospel.
+  ⛶ optimized for subtraction to avoid rotting by accretion; built around a deletion habit.
+
+
+
+DISCARDED/UNUSED:
+
+
+
+The artifacts here are commitments that drag the
+  ▎ model off that median in a chosen direction; each charges rent on
+  ▎ every future session, so you make only the ones that earn it, and
+  ▎ delete them once the model holds the edge on its own. The artifacts
+  ▎ are perishable; what compounds is the practice of deciding which are
+  ▎ worth making.
+
+
+  ▎ A frontier model arrives fluent in everything and particular about
+  ▎ nothing. Its default in any domain is the median move, the competent
+  ▎ average version of the thing. So the hard part is particularity:
+  ▎ getting it very good in one specific way, against its own pull
+  ▎ toward the middle of every distribution.
+  ▎
+  ▎ The artifacts here are those commitments. Each one drags the model
+  ▎ off the median in a chosen direction: a specific prose voice,
+  ▎ optimistic-by-default UI, token discipline you can't talk it out of.
+  ▎ Each also charges rent, paid on every session that follows, so you
+  ▎ make only the commitments that earn it.
+  ▎
+  ▎ And because the model keeps improving, a commitment worth making
+  ▎ today can be one it holds on its own tomorrow. So each is pinned to
+  ▎ the model it was earned against, and deleted when it stops earning.
+  ▎ The artifacts are perishable; what compounds is the practice of
+  ▎ deciding which are worth making.
+  ▎
+  ▎ cook is that practice: the skills that design and audit the rest.
+  ▎ serve is its current output. The whole thing is held to its own bar,
+  ▎ and passes the gate it enforces on everything else.
+
+It is not a drop-in extension that will dramatically improve the performance of your agents in the tasks you care most about.
+Junk-drawer prevention system.

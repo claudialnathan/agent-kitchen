@@ -9,6 +9,7 @@ Verified facts about how the loader, the listing, and the lifecycle actually beh
 - Cross-tool: the open agentskills.io spec caps `description` at 1,024 chars and **ignores `when_to_use`** — Cursor and Codex see only the description. The spec, cross-tool consumers, and `bin/preship-check` all require an explicit `name:`.
 - Cheap diagnostic: ask a fresh session "when would you use the `<skill>` skill?" — it quotes the description back, and the gap tells you what to add.
 - Add a *negative* trigger only when the skill demonstrably over-fires.
+- Quantify when it matters: `evals/trigger-eval.js` scores a description's trigger accuracy over a labeled query set (should-fire vs near-miss) and A/Bs `description` alone against `description + when_to_use` — the gap is the cross-tool loss. First run: a well-formed description hit full recall *and* full specificity with zero lift from `when_to_use`.
 
 ## Kinds
 
@@ -33,7 +34,7 @@ The kind constrains the form; it doesn't decide worth (that's additive-vs-transf
 | :--- | :--- |
 | `name` | Always (spec-required for portability; directory-name inference is Claude-Code-only) |
 | `description` | Always — the only thing the model uses to decide invocation |
-| `when_to_use` | Only for trigger surface that doesn't fit the description |
+| `when_to_use` | Rarely earns its place: a good description already covers its semantic neighborhood, so the field usually duplicates it — measure the lift with `evals/trigger-eval.js` before adding. Cross-tool consumers drop it, so portable skills keep triggers in `description` (open-spec cap 1,024 chars) |
 | `argument-hint` / `arguments` | Skills that take args; `arguments: [a, b]` enables `$a`/`$b` named substitution |
 | `disable-model-invocation: true` | Workflow and guarded-action kinds. Side effect: the skill can't be preloaded into subagents via `skills:` |
 | `user-invocable: false` | Background knowledge that isn't a meaningful command; hides from the `/` menu, model can still load it |
@@ -90,4 +91,4 @@ The kind constrains the form; it doesn't decide worth (that's additive-vs-transf
 
 ## Eval
 
-The loop is eval-first: run the task in a fresh session **without** the skill and document exactly what goes wrong — that gap is the spec. Write the minimal instruction that closes it; re-test on two or three *real* prompts (the wording you'd actually type), and read the transcript for the steered-vs-triggered distinction. Reserve the blind A/B panel (`evals/depth-eval.js`, ~0.3–1.1M tokens per domain) for high-stakes rewrites — blind, because a model scores its own output higher when it judges unblinded.
+The loop is eval-first: run the task in a fresh session **without** the skill and document exactly what goes wrong — that gap is the spec. Write the minimal instruction that closes it; re-test on two or three *real* prompts (the wording you'd actually type), and read the transcript for the steered-vs-triggered distinction. Two opt-in harnesses back this when stakes are high — both cost real tokens, confirm before firing: `evals/depth-eval.js`, a blind 3-lens A/B panel (~0.3–1.1M tokens/domain) for *does the body steer toward expert work* (blind, because a model scores its own output higher unblinded); and `evals/trigger-eval.js` for *does the description fire on the right queries and stay quiet on near-misses*, which A/Bs `description` against `description + when_to_use` to size the cross-tool loss.

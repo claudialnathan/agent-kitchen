@@ -20,7 +20,7 @@ harness-targets: [claude]
 
 # forge
 
-<!-- Earned against: Fable 5, 2026-06-12, v2.1.170 — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.8, 2026-06-12, v2.1.170 — history: CHANGELOG.md -->
 
 A harness artifact is a standing claim on every future session's attention. Before any mechanics, it clears three bars:
 
@@ -30,7 +30,7 @@ A harness artifact is a standing claim on every future session's attention. Befo
 
 The test that decides worth is **additive vs transformative**. An artifact that lists steps saves typing and changes nothing foreground; one that pushes mechanics into the background and elevates the real question (*should we ship?*, *is this diff coherent?*) changes what is thinkable. Both can ship — but the additive one must be cheap (hidden from the listing via `disable-model-invocation`, narrowly scoped), because what it keeps in context is not a way of seeing.
 
-Every non-trivial artifact carries a one-line pin — `<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->` — and its rationale, sunset trigger, and re-test verdicts go to CHANGELOG.md, never into the artifact. Artifacts never reference the conversation that produced them.
+Every non-trivial artifact carries a one-line pin — `<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->` — and its rationale, sunset trigger, and re-test verdicts go to CHANGELOG.md, never into the artifact. Artifacts never reference the conversation that produced them. A pinned model can be withdrawn, not just superseded; re-pin to the period's durable default so the trigger stays runnable.
 
 ## Triage — pick the surface
 
@@ -39,7 +39,7 @@ Run the ladder in order; first match wins. A refined harness trends toward *fewe
 | The behavior is... | Surface |
 | :--- | :--- |
 | A guarantee that must hold every time ("never edit `.env`", "lint after every edit") | **Hook** — fires deterministically; a skill is interpreted and can be talked out of. [references/hooks.md](references/hooks.md) |
-| Just "this tool can't be used here", no logic needed | `permissions.deny` in settings — don't write a hook for it |
+| Just "this tool — or this tool-call shape — can't be used here", no logic needed | `permissions.deny` in settings — matches command content *and* parameters (`Bash(rm *)`, `Agent(model:opus)`), so a block that looks conditional often needs no hook |
 | Reaching a system the harness can't see (database, tracker, private API) | **MCP server** — a skill can teach using it well; it can't replace the connection |
 | A side investigation that would flood the main context | **Subagent**, or a skill with `context: fork` that runs as one |
 | A fact every session should hold ("we use pnpm") | **CLAUDE.md** — [references/always-on.md](references/always-on.md) |
@@ -64,7 +64,7 @@ The two failure modes are a bad subject (restates the model's defaults) and bad 
 - **Craft.** Match freedom to fragility (prose for judgment-laden work, exact steps only for fragile procedures). Explain the why — the model generalizes from a reason where it can't from a bare MUST. One worked example conveys altitude more cheaply than a paragraph, and costs ~3× a rule, so use *one*. One default with an escape hatch, one term per concept, and cut any line the model would do without — the context window is a public good.
 - **The description is the only trigger surface.** Describe the class of requests, then anchor it — matching is semantic, and an enumerated phrase list reads as exhaustive, so the unlisted case looks out of scope. Job + scope + strongest distinct triggers lands at 600–900 chars; the 1,536-char cap is a truncation guard, not a target.
 - **The body is recurring cost.** Standing instructions, not one-time steps; once invoked it stays in context unread-from-disk until compaction.
-- **Test against the failure that earned it.** Run the task in a fresh session *without* the skill; the gap is the spec. Then with it — and read the transcript, not just the output: "didn't trigger" and "triggered but didn't steer" look identical from outside. Scale verification to stakes; a blind eval panel (see `evals/depth-eval.js`) is for high-stakes rewrites only, and costs real tokens — confirm before firing.
+- **Test against the failure that earned it.** Run the task in a fresh session *without* the skill; the gap is the spec. Then with it — and read the transcript, not just the output: "didn't trigger" and "triggered but didn't steer" look identical from outside. Scale verification to stakes; the eval harnesses — `evals/depth-eval.js` (does the body steer toward expert work) and `evals/trigger-eval.js` (does the description fire accurately) — are for high-stakes cases only, cost real tokens, and need explicit opt-in: confirm before firing.
 
 Mechanics — listing budgets, frontmatter fields, compaction rules, kinds, naming collisions, YAML traps: [references/skills.md](references/skills.md).
 

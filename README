@@ -8,7 +8,7 @@ This is a kitchen for the things that configure coding agents (skills, hooks, ru
 It operates as dotfiles for your agent in the form of two plugins under a marketplace:
 
 ⛶ COOK makes the tools, tastes them, dates them, throws out what's gone stale.
-⛶ SERVE is what's survived for me so far. It still tastes better than anything store-bought.
+⛶ SERVE is what's survived for me so far. It still tastes better than store-bought.
 
 The kitchen is built on the idea that:
 

@@ -3,7 +3,7 @@ COOK | SERVE
 
 ─────────────────────
 
-This is a kitchen for the things that configure coding agents (skills, hooks, rules, CLAUDE.md, workflows).
+agent-kitchen is a second-order harness; it is a kitchen for the things that configure coding agents (skills, hooks, rules, CLAUDE.md, workflows).
 
 It operates as dotfiles for your agent in the form of two plugins under a marketplace:
 

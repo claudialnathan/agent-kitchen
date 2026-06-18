@@ -5,9 +5,12 @@
 //
 // Installs the REAL skill in a throwaway project, drives an actual `claude -p` session per
 // query, and reports whether the model invoked the skill ON ITS OWN — the genuine trigger
-// decision, not a guess about it. This is the ground-truth counterpart to evals/trigger-eval.js
-// (a text-only proxy: a judge reasons about the listing). Use the proxy for cheap relative A/B;
-// use this when a real fire/no-fire verdict has to be trusted.
+// decision, not a guess about it. A miss is labeled (stolen by a named competing skill, or handled
+// inline), CLI/auth errors are excluded from the rates rather than miscounted as no-fires, and each
+// run confirms the candidate actually loaded (a silent --add-dir failure would otherwise read as
+// "never fires"). This is the ground-truth counterpart to evals/trigger-eval.js (a text-only proxy:
+// a judge reasons about the listing). Use the proxy for cheap relative A/B; use this when a real
+// fire/no-fire verdict has to be trusted.
 //
 // HOW IT DIFFERS FROM skill-creator's run_eval.py (the prior art this realizes):
 //   - It loads the ACTUAL SKILL.md (real name + description, optionally a swapped description),
@@ -115,10 +118,15 @@ function makeTempProject() {
   return root
 }
 
-// ---- one live query: did the candidate fire? --------------------------------
-// Detection = an `assistant` tool_use of the Skill tool whose input.skill is the candidate (exact —
-// a different skill firing is a non-fire for us), or a Read of the candidate's own file. We stop the
-// instant the decision is observable: a matching Skill call (fired) or the first prose answer (declined).
+// ---- one live query: what did the candidate do? ----------------------------
+// Resolves a rich outcome, not a bare boolean, so a no-fire isn't ambiguous:
+//   fired   — the candidate's Skill tool_use (exact input.skill match), or a Read of its own file.
+//   other   — a DIFFERENT skill fired first: the query was stolen, not handled inline. (records which)
+//   inline  — the turn ended (end_turn / result) with no skill loaded: the model just did the task.
+//   error   — CLI/auth failure, non-zero exit, or timeout: NOT a no-fire; excluded from rates.
+// Also reads the `init` event to confirm the candidate is actually in the session listing (a silent
+// `--add-dir` failure otherwise reads as "never fires") and to record how many skills competed.
+// We stop the instant the decision is observable: a Skill call (candidate or other) or the turn end.
 function runOne(query, addDir) {
   return new Promise((resolve) => {
     const env = { ...process.env }; delete env.CLAUDECODE
@@ -126,28 +134,37 @@ function runOne(query, addDir) {
     if (MODEL) cmd.push('--model', MODEL)
     const child = spawn('claude', cmd, { cwd: process.cwd(), env, stdio: ['ignore', 'pipe', 'ignore'] })
     let done = false
-    const finish = (fired) => { if (done) return; done = true; clearTimeout(timer); try { child.kill('SIGKILL') } catch (_e) {} ; resolve(fired) }
-    const timer = setTimeout(() => finish(false), TIMEOUT_MS)
+    const res = { fired: false, other: null, inline: false, error: false, listed: null, competitors: null, model: null }
+    const finish = (patch) => { if (done) return; done = true; clearTimeout(timer); Object.assign(res, patch); try { child.kill('SIGKILL') } catch (_e) {} ; resolve(res) }
+    const timer = setTimeout(() => finish({ error: true }), TIMEOUT_MS)
     const rl = readline.createInterface({ input: child.stdout })
     rl.on('line', (line) => {
       line = line.trim(); if (!line) return
       let ev; try { ev = JSON.parse(line) } catch (_e) { return }
+      if (ev.subtype === 'init') {
+        const skills = ev.skills || []
+        res.listed = skills.includes(SKILL.name); res.competitors = skills.length; res.model = ev.model || null
+        return
+      }
       if (ev.type === 'assistant') {
         const msg = ev.message || {}
         for (const c of (msg.content || [])) {
           if (c.type !== 'tool_use') continue
-          if (c.name === 'Skill' && String((c.input && c.input.skill) || '').includes(SKILL.name)) return finish(true)
-          if (c.name === 'Read' && String((c.input && c.input.file_path) || '').includes(`/skills/${SKILL.name}/`)) return finish(true)
+          if (c.name === 'Skill') {
+            const s = String((c.input && c.input.skill) || '')
+            return s.includes(SKILL.name) ? finish({ fired: true }) : finish({ other: s || '(unknown)' })
+          }
+          if (c.name === 'Read' && String((c.input && c.input.file_path) || '').includes(`/skills/${SKILL.name}/`)) return finish({ fired: true })
         }
-        // The model prefaces tool calls with text, so prose is NOT a decline. Only a finished
-        // turn (end_turn) with no skill load is — that bounds a no-fire to its final message.
-        if (msg.stop_reason === 'end_turn') return finish(false)
+        // The model prefaces tool calls with text, so prose is NOT a decline. Only a finished turn
+        // (end_turn) with no skill load is — that bounds a no-fire to its final message.
+        if (msg.stop_reason === 'end_turn') return finish({ inline: true })
       } else if (ev.type === 'result') {
-        finish(false)
+        finish(ev.is_error ? { error: true } : { inline: true })
       }
     })
-    child.on('close', () => finish(false))
-    child.on('error', () => finish(false))
+    child.on('close', () => finish({ error: true }))
+    child.on('error', () => finish({ error: true }))
   })
 }
 
@@ -175,38 +192,61 @@ async function pool(jobs, n, worker) {
   }
 
   const addDir = makeTempProject()
-  let fires
+  let results
   try {
-    fires = await pool(jobs, CONCURRENCY, (job) => runOne(QUERIES[job.qi].q, addDir))
+    results = await pool(jobs, CONCURRENCY, (job) => runOne(QUERIES[job.qi].q, addDir))
   } finally {
     try { fs.rmSync(addDir, { recursive: true, force: true }) } catch (_e) {}
   }
 
-  // aggregate per query
-  const rate = QUERIES.map((_, qi) => {
-    const mine = jobs.map((j, k) => (j.qi === qi ? fires[k] : null)).filter((x) => x !== null)
-    return mine.length ? mine.filter(Boolean).length / mine.length : 0
-  })
-  const fired = (qi) => rate[qi] >= THRESHOLD
-  const perQuery = QUERIES.map((q, qi) => ({ q: q.q, should: q.should, rate: +rate[qi].toFixed(2), fired: fired(qi), pass: q.should ? fired(qi) : !fired(qi) }))
-
-  const shouldIdx = QUERIES.map((q, i) => [q, i]).filter(([q]) => q.should).map(([, i]) => i)
-  const negIdx = QUERIES.map((q, i) => [q, i]).filter(([q]) => !q.should).map(([, i]) => i)
   const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
+
+  // per query: rate over VALID (non-error) runs; null = inconclusive (all errored). When it didn't
+  // fire, say why — stolen by another skill (named) or handled inline.
+  const perQuery = QUERIES.map((q, qi) => {
+    const runs = jobs.map((j, k) => (j.qi === qi ? results[k] : null)).filter(Boolean)
+    const errors = runs.filter((r) => r.error).length
+    const valid = runs.filter((r) => !r.error)
+    const fires = valid.filter((r) => r.fired).length
+    const rate = valid.length ? fires / valid.length : null
+    const others = {}; let inlineN = 0
+    for (const r of valid) { if (r.fired) continue; if (r.other) others[r.other] = (others[r.other] || 0) + 1; else if (r.inline) inlineN++ }
+    const top = Object.entries(others).sort((a, b) => b[1] - a[1])[0]
+    const fired = rate !== null && rate >= THRESHOLD
+    let alt = ''
+    if (rate !== null && !fired) alt = top ? `lost to ${top[0]}×${top[1]}${inlineN ? `, inline×${inlineN}` : ''}` : `inline×${inlineN}`
+    return { q: q.q, should: q.should, valid: valid.length, fires, errors, rate: rate === null ? null : +rate.toFixed(2), fired, inconclusive: rate === null, alt }
+  })
+  const isFired = (r) => r.rate !== null && r.rate >= THRESHOLD
+  const pass = (r) => (r.should ? isFired(r) : !isFired(r))
+
+  // sanity: was the candidate actually in the listing, and how many skills competed?
+  const listedRuns = results.filter((r) => r.listed !== null)
+  const listedOK = listedRuns.length > 0 && listedRuns.every((r) => r.listed)
+  const notListed = listedRuns.filter((r) => !r.listed).length
+  const competitors = (results.find((r) => r.competitors != null) || {}).competitors ?? null
+  const detectedModel = (results.find((r) => r.model) || {}).model || MODEL || '(configured default)'
+  const totalErrors = results.filter((r) => r.error).length
+
+  const scored = perQuery.filter((r) => !r.inconclusive)
+  const sf = scored.filter((r) => r.should), ss = scored.filter((r) => !r.should)
   const summary = {
-    skill: SKILL.name,
-    model: MODEL || '(configured default)',
-    reps: REPS,
-    recall: +mean(shouldIdx.map((i) => (fired(i) ? 1 : 0))).toFixed(2),
-    specificity: +mean(negIdx.map((i) => (!fired(i) ? 1 : 0))).toFixed(2),
-    accuracy: +mean(perQuery.map((r) => (r.pass ? 1 : 0))).toFixed(2),
+    skill: SKILL.name, model: detectedModel, reps: REPS,
+    recall: +mean(sf.map((r) => (isFired(r) ? 1 : 0))).toFixed(2),
+    specificity: +mean(ss.map((r) => (!isFired(r) ? 1 : 0))).toFixed(2),
+    accuracy: +mean(scored.map((r) => (pass(r) ? 1 : 0))).toFixed(2),
+    competitors, candidateListed: listedOK, errors: totalErrors, inconclusiveQueries: perQuery.filter((r) => r.inconclusive).length,
   }
 
   if (AS_JSON) { console.log(JSON.stringify({ summary, perQuery }, null, 2)); return }
-  console.log(`\n  skill=${summary.skill}  model=${summary.model}  reps=${summary.reps}`)
+  console.log(`\n  skill=${summary.skill}  model=${summary.model}  reps=${summary.reps}  competing-skills=${competitors ?? '?'}`)
+  if (!listedOK) console.log(`  ⚠️  candidate NOT in the listing in ${notListed}/${listedRuns.length} runs — --add-dir likely failed; results below are INVALID.`)
+  if (totalErrors) console.log(`  ⚠️  ${totalErrors}/${jobs.length} runs errored (excluded from rates)${summary.inconclusiveQueries ? `; ${summary.inconclusiveQueries} queries all-errored (inconclusive)` : ''}.`)
   console.log(`  recall(should-fire)=${summary.recall}  specificity(should-stay)=${summary.specificity}  accuracy=${summary.accuracy}\n`)
   for (const r of perQuery) {
-    const tag = r.pass ? 'PASS' : 'FAIL'
-    console.log(`  [${tag}] fire-rate=${r.rate} want=${r.should ? 'fire' : 'stay'}  ${r.q.slice(0, 72)}`)
+    const tag = r.inconclusive ? '----' : (pass(r) ? 'PASS' : 'FAIL')
+    const why = r.alt ? `  (${r.alt})` : ''
+    const count = r.inconclusive ? 'all-errored' : `${r.fires}/${r.valid}`
+    console.log(`  [${tag}] fired=${count} want=${r.should ? 'fire' : 'stay'}  ${r.q.slice(0, 64)}${why}`)
   }
 })()

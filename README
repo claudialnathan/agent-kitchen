@@ -12,7 +12,7 @@ It operates as dotfiles for your agent in the form of two plugins under a market
 
 The kitchen is built on the idea that:
 
-A frontier model in 2026 is very competent at most things, But its default in any domain is the competent average version of the thing. Getting it to do a specific, better version of the work you care about means refining its particularity and getting it very good in one specific way, against its own pull toward the middle of every distribution.
+A frontier model in 2026 is very competent at most things, but its default in any domain is the competent average version of the thing. Getting it to do a specific, better version of the work you care about means refining its particularity and getting it very good in one specific way, against its own pull toward the middle of every distribution.
 
 The artifacts here are commitments that try to drag a model off that median in a chosen direction. It works on the understanding that any tool that attempts to do this charges rent on future sessions and, as models continue to improve, is ultimately perishable. It is a practice of deciding what's worth pulling the model off its average for.
 

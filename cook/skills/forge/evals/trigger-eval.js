@@ -20,8 +20,10 @@ export const meta = {
 //
 // VALIDITY CAVEATS (earned against Opus 4.8, 2026-06-17, Claude Code v2.1.179 — re-test on the next major model release):
 // 1. PROXY, not a live invocation. The judge reasons about the listing entry and one query; it does not run a real
-//    session with the skill installed (the skill-creator's run_loop drives `claude -p` for that). It scores the
-//    DESCRIPTION's discriminating power — the thing you actually edit — one step removed from a live trigger.
+//    session with the skill installed. `evals/invocation-eval.js` is the live ground truth for that (drives a real
+//    `claude -p` and watches whether the skill fires). This scores the DESCRIPTION's discriminating power — the thing
+//    you actually edit — one step removed from a live trigger; prefer it for cheap relative A/B, the live run for a
+//    verdict that must hold (the proxy can read full recall where the real model just handles the prompt inline).
 // 2. SINGLE-SKILL binary. The judge sees one candidate, not the full competing listing, so inter-skill competition
 //    (two skills fighting for one query) is out of scope; add distractor entries to the prompt to test that later.
 // 3. Judge family == generator family. Treat large variant gaps as signal and hairline gaps as noise; reps smooth

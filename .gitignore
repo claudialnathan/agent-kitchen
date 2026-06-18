@@ -9,3 +9,4 @@ scratch/
 .claude/settings.local.json
 .eval-runs/
 TODO.md
+claudia/

@@ -1,8 +1,8 @@
 ```
 HACKS, FYIs & NICE-TO-KNOWS █
-CLAUDE CODE v2.1.179 + CLAUDE AGENT PLATFORM
+CLAUDE CODE v2.1.191 + CLAUDE AGENT PLATFORM
 
-UPDATED: 2026-06-17
+UPDATED: 2026-06-25
 SOURCE REPO: anthropics/claude-code/blob/main/CHANGELOG.md
 STATUS: DRAFT
 ```
@@ -121,6 +121,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>claude mcp serve</code></td><td>Run <strong>Claude Code itself as an MCP server</strong>, exposing its tools to other clients.</td></tr>
 <tr><td><code>claude project purge [path]</code></td><td>Wipe one project's local footprint (transcripts, memory, tasks); <code>--dry-run</code>, <code>--all</code>.</td></tr>
 <tr><td><code>claude setup-token</code></td><td>Long-lived OAuth token for CI/scripts (Claude subscription).</td></tr>
+<tr><td><code>claude mcp login &lt;name&gt;</code> / <code>logout</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td>Authenticate an MCP server from the CLI without the <code>/mcp</code> menu; <code>--no-browser</code> completes OAuth over SSH via paste-the-URL.</td></tr>
+<tr><td><code>/config key=value</code><sup>NEW</sup> <kbd><samp>v2.1.181</samp></kbd></td><td>Set <em>any</em> setting from the prompt (<code>/config thinking=false</code>) — scriptable in <code>-p</code> and Remote Control, no settings.json edit. <code>/config --help</code> lists the keys.</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>Environment variables</h4></kbd></td></tr>
 <tr><th><samp>VAR</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>CLAUDE_CODE_EFFORT_LEVEL</code></td><td>The <strong>only</strong> way to make <code>max</code> effort persist across sessions (the setting rejects <code>max</code>).</td></tr>
@@ -133,6 +135,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1</code></td><td>One switch: autoupdater + feedback + error-reporting + telemetry off.</td></tr>
 <tr><td><code>MAX_THINKING_TOKENS=0</code></td><td>Disable extended thinking regardless of effort (big cost lever on simple tasks). No-op on Fable 5: thinking can't be turned off there.</td></tr>
 <tr><td><code>ENABLE_TOOL_SEARCH=auto:5</code></td><td>Threshold-load only MCP tools fitting in 5% of context; defer the rest.</td></tr>
+<tr><td><code>CLAUDE_CODE_RETRY_WATCHDOG</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td><code>CLAUDE_CODE_MAX_RETRIES</code> now caps at 15; for unattended sessions that must not give up, this watchdog is the supported alternative.</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>settings.json keys</h4></kbd></td></tr>
 <tr><th><samp>KEY</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>skillOverrides</code></td><td>Set a skill to <code>"name-only"</code> (keep listed, drop description budget) or <code>"off"</code>, without editing its file; great for noisy third-party skills.</td></tr>
@@ -146,6 +149,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>fallbackModel</code><sup>NEW</sup> <kbd><samp>v2.1.166</samp></kbd></td><td>Up to three fallbacks tried in order when the primary is overloaded/unavailable; the settings form of <code>--fallback-model</code>.</td></tr>
 <tr><td><code>disableBundledSkills</code><sup>NEW</sup> <kbd><samp>v2.1.169</samp></kbd></td><td>Hide <em>all</em> bundled skills, workflows, and built-in slash commands from the model in one key: reclaim their description budget.</td></tr>
 <tr><td><code>Tool(param:value)</code> perm rules<sup>NEW</sup> <kbd><samp>v2.1.178</samp></kbd></td><td>Permission rules match a tool call's <em>input params</em> (with <code>*</code>): e.g. <code>Agent(model:opus)</code> blocks Opus subagents — param-level <code>deny</code>/<code>allow</code> without a <code>PreToolUse</code> hook.</td></tr>
+<tr><td><code>sandbox.credentials</code><sup>NEW</sup> <kbd><samp>v2.1.187</samp></kbd></td><td>Block sandboxed commands from reading credential files and secret env vars — defense-in-depth for untrusted shell.</td></tr>
+<tr><td><code>respondToBashCommands: false</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td>Revert the new default where a <code>!</code> bash run makes Claude react to the output; keeps <code>!</code> output as context only.</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>Interactive shortcuts & TUI</h4></kbd></td></tr>
 <tr><th><samp>KEYS</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>Esc Esc</code></td><td>Empty prompt → rewind menu; with text → clear draft (saved to history, <code>↑</code> recalls).</td></tr>
@@ -227,7 +232,7 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 <table>
 <tr><th><code>FEATURE</code></th><th><code>INVOKE</code></th><th><code>FUNCTION</code></th></tr>
 <tr><td>forked subagents<sup>NEW</sup> <kbd><samp>v2.1.161+ default-on</samp></kbd></td><td><code>/fork &lt;directive&gt;</code> · <code>CLAUDE_CODE_FORK_SUBAGENT=1</code></td><td>Inherits the <em>entire</em> conversation (zero re-explaining) and shares the parent's prompt cache, so cheaper than a fresh subagent for same-context work. Open a running fork's transcript and steer it mid-flight.</td></tr>
-<tr><td>nested subagents<sup>NEW</sup> <kbd><samp>v2.1.172+</samp></kbd></td><td><code>Agent</code> in a subagent's <code>tools</code> (default)</td><td>A subagent spawns its <em>own</em> subagents: a delegated task that itself fans out (reviewer → a verifier per finding) keeps the sub-fan-out off your main thread, only the top summary returns. Foreground chains self-limit (each blocks its parent); a <em>background</em> subagent loses the <code>Agent</code> tool at depth 5 (fixed, not configurable). Omit <code>Agent</code> from a subagent's <code>tools</code> to block it; a fork still can't spawn a fork.</td></tr>
+<tr><td>nested subagents<sup>NEW</sup> <kbd><samp>v2.1.172+</samp></kbd></td><td><code>Agent</code> in a subagent's <code>tools</code> (default)</td><td>A subagent spawns its <em>own</em> subagents: a delegated task that itself fans out (reviewer → a verifier per finding) keeps the sub-fan-out off your main thread, only the top summary returns. Both chains cap at depth 5 now (fixed, not configurable): a <em>background</em> subagent loses the <code>Agent</code> tool there, and foreground chains hit the same limit (v2.1.181) on top of self-limiting by each blocking its parent. Omit <code>Agent</code> from a subagent's <code>tools</code> to block it; a fork still can't spawn a fork.</td></tr>
 <tr><td><code>/goal</code><sup>NEW</sup> <kbd><samp>v2.1.139+</samp></kbd></td><td><code>/goal &lt;condition&gt;</code></td><td>A small fast model re-checks your condition every turn and keeps Claude working until it holds, no per-turn prompting. Judges <em>only the transcript</em>, so write conditions the output can prove: <code>"npm test exits 0 and git status clean, or stop after 20 turns"</code>.</td></tr>
 <tr><td>agent view</td><td><code>claude agents</code> · <code>--json</code></td><td><code>←</code> on an empty prompt backgrounds + jumps here; <code>Ctrl+T</code> pins (survives idle, restarts onto new binaries); <code>s:blocked</code> filters "what needs me"; <code>--json</code> emits an inventory with a <code>waitingFor</code> field.</td></tr>
 <tr><td>respawn</td><td><code>claude respawn --all</code></td><td>Rolls every background session onto an updated Claude Code binary at once.</td></tr>
@@ -439,6 +444,6 @@ lap's configuration.
 
 ```
 EVERY FLAG, FIELD, AND VERSION ABOVE: COPIED FROM A DOC, NOT RECALLED.
-RE-CHECKED: 2026-06-17 · AGAINST: v2.1.179 · AUTHORITATIVE: docs changelog
+RE-CHECKED: 2026-06-25 · AGAINST: v2.1.191 · AUTHORITATIVE: docs changelog
 ON DRIFT: FIX IT HERE, RE-PIN THE DATE.
 ```

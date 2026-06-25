@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 17 June 2026 | Version: v2.1.179
+Last updated: 25 June 2026 | Version: v2.1.191
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
@@ -84,6 +84,7 @@ Features that changed how skills get built, in rough order of impact:
 - New hook: `PermissionDenied` fires on classifier denials; `retry: true` lets the model try a different approach.
 - No longer gated: the `--enable-auto-mode` flag was removed, and the first-use opt-in consent prompt is gone too (v2.1.152).
 - `settings.autoMode.hard_deny` defines classifier rules that block unconditionally regardless of user intent or allow exceptions — useful as a policy-grade backstop.
+- **Destructive-command guards** (v2.1.183) — independent of `hard_deny`, auto mode now blocks unrequested `git reset --hard` / `git checkout -- .` / `git clean -fd` / `git stash drop`, `git commit --amend` on a commit the agent didn't make this session, and `terraform`/`pulumi`/`cdk destroy` unless you named the stack.
 
 ### Forked subagents (`/fork`, w17)
 
@@ -193,10 +194,15 @@ The hook surface has accumulated several useful fields:
 - **`acceptEdits` guards code-execution writes** — it now prompts before writing files that can run code on open: shell startup files (`.zshenv`, `.zlogin`), `~/.config/git/`, and build configs (`.npmrc`, `.yarnrc*`, `bunfig.toml`, `.bazelrc`, `.pre-commit-config.yaml`, `.devcontainer/`).
 - **`requiredMinimumVersion` / `requiredMaximumVersion`** managed settings — Claude Code refuses to start outside the allowed version range and points to an approved build.
 - **`fallbackModel` setting** (v2.1.166) — up to three fallback models, tried in order when the primary is unavailable; the settings-file form of the `--fallback-model` flag.
-- **Nested subagents** (v2.1.172) — a subagent can now spawn its own subagents, so a delegated task that splits into parallel subtasks (a reviewer dispatching a verifier per finding) keeps that fan-out off the main thread; only the top-level summary returns. Foreground chains self-limit (each blocks its parent); a background subagent stops receiving the `Agent` tool at depth 5 (fixed, not configurable). A lighter-weight alternative to a workflow script when the orchestration is a single delegated task, not a standing pipeline.
+- **Nested subagents** (v2.1.172) — a subagent can now spawn its own subagents, so a delegated task that splits into parallel subtasks (a reviewer dispatching a verifier per finding) keeps that fan-out off the main thread; only the top-level summary returns. A background subagent stops receiving the `Agent` tool at depth 5; foreground chains hit the same depth-5 cap (v2.1.181) on top of self-limiting by each blocking its parent. Fixed, not configurable. A lighter-weight alternative to a workflow script when the orchestration is a single delegated task, not a standing pipeline.
 - **`availableModels` allowlist + `enforceAvailableModels`** (managed settings; `enforceAvailableModels` added v2.1.175) — restrict which models a deployment may use; with `enforceAvailableModels` on, the allowlist also constrains the resolved Default model (a Default that would resolve to a blocked model falls back to the first allowed one) and user/project settings can't widen a managed list. `ANTHROPIC_DEFAULT_*_MODEL` env vars and `/fast` can no longer slip a blocked model past it (v2.1.177). The model-governance analog to `requiredMinimumVersion`.
 - **`Tool(param:value)` permission rules** (v2.1.178) — permission rules can now match a tool call's input parameters, with `*` wildcards: e.g. `Agent(model:opus)` blocks Opus subagents. Parameter-level policy in `permissions.deny`/`allow`, where you'd previously have needed a `PreToolUse` hook.
 - **Nested `.claude/` directories resolve by proximity** (v2.1.178) — a skill in a nested `.claude/skills/` loads when you work on files beneath it (dir-qualified `<dir>:<name>` on a name clash, so both survive), and the agent / workflow / output-style in the closest `.claude/` wins a name collision. Monorepo subprojects can carry their own harness.
+- **`/config key=value`** (v2.1.181) — set any setting straight from the prompt (e.g. `/config thinking=false`); works in interactive, `-p`, and Remote Control. `/config --help` lists the shorthand keys.
+- **`!` bash output now gets a response** (v2.1.186) — a `! <command>` run prompts Claude to react to the output, not just load it into context; `respondToBashCommands: false` restores the old context-only behavior.
+- **`claude mcp login <name>` / `claude mcp logout <name>`** (v2.1.186) — authenticate an MCP server from the CLI without opening `/mcp`; `--no-browser` redirects the flow over SSH.
+- **Skill frontmatter keys are case-style-insensitive** (v2.1.186) — `display-name`, `default-enabled`, `fallback`, and `metadata.*` accept kebab-case, snake_case, or camelCase; malformed YAML frontmatter now loads the body with empty metadata instead of failing silently.
+- **`sandbox.credentials` setting** (v2.1.187) — blocks sandboxed commands from reading credential files and secret environment variables.
 
 ## Constraints worth designing around
 

@@ -25,14 +25,18 @@ export const meta = {
 //    is heavy and currently parked.
 //
 // 2. JUDGE-COMPETENCE CEILING — for model-WEAK domains (a specialised business field), the LLM judge's
-//    DEPTH verdict is unreliable: the judge is as weak in-domain as the generators. Treat craft/anatomy as
-//    the trustworthy machine signal, and use the returned baselineSkill / skillForgeSkill texts as the
-//    artifact a HUMAN domain expert judges for depth. The human is the ground truth for depth, not the panel.
+//    DEPTH verdict is unreliable: the judge is as weak in-domain as the generators. The fix is to CALIBRATE
+//    depth against ground truth — an exemplar / reference solution written by (or with) a domain expert, plus
+//    human review of the returned baselineSkill / skillForgeSkill texts. Depth stays the verdict that matters;
+//    do NOT substitute craft/anatomy for it. Craft/anatomy are reliable machine signals but they are HYGIENE,
+//    not the grade — a skill can be flawlessly-shaped and still encode floor. The human is ground truth for depth.
 //
-// 3. ANATOMY REGRESSION (watch-item, n=2) — the guided arm LOST anatomy in two model-weak runs (-0.22, -0.67).
-//    Hypothesis: reading depth/craft references pulls length and attention toward substance and inflates the
-//    description or relaxes frontmatter discipline. Not actioned at n=2; re-check the description budget and
-//    stray frontmatter if it recurs at n>2.
+// 3. ANATOMY vs SUBSTANCE TRADE (n=2) — the guided arm scored lower on anatomy in two model-weak runs
+//    (-0.22, -0.67) while gaining depth: reading the references pulled length and attention toward substance,
+//    inflating the description / relaxing frontmatter. This is usually the RIGHT trade, not a regression —
+//    substance over polish is the point. It is only a real failure if the looser anatomy stops the skill from
+//    FIRING (check with invocation-eval.js). A longer description that still triggers is fine; tighten anatomy
+//    only once depth is where it needs to be.
 //
 // Returns { aggregate, perTask } with both generated skills (baselineSkill / skillForgeSkill) per domain.
 

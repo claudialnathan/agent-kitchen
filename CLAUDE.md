@@ -6,6 +6,7 @@ This file holds intent and durable traps about how the harness reads this place.
 
 The user comes here to design new harness-related tools. Every one of those is also evidence about the forge. When a session creates a new artifact, after delivery ask:
 
+- **Was the output actually excellent?** Judge an artifact by the work it makes an agent produce — would the best practitioner in its domain call that work expert-grade? — and judge it by that *first*. The artifact's own properties (token cost, trigger precision, provenance hygiene) are hygiene; they never stand in for the quality of the output. A flawlessly-shaped skill that yields competent-floor work has failed. The trap, learned the hard way: scoring an artifact on what's easy to measure while the output — the only thing that matters — goes ungraded.
 - What was friction during the design? Did the forge anticipate it, or did you have to improvise?
 - Was anything missing from the forge's triage, stance, or references?
 - Did any anti-pattern bite that the forge doesn't currently warn about?

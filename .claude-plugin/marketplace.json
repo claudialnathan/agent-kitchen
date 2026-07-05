@@ -8,7 +8,7 @@
     {
       "name": "cook",
       "source": "./cook",
-      "description": "The meta layer that designs Claude Code artifacts: forge (skills, hooks, rules, CLAUDE.md, workflows), ingest, and harness-audit. The reusable design layer.",
+      "description": "The meta layer that designs Claude Code artifacts: forge (skills, hooks, rules, CLAUDE.md, workflows), ingest, harvest (mine transcripts for the failures that earn artifacts), and harness-audit. The reusable design layer.",
       "license": "MIT",
       "keywords": ["claude-code", "skills", "meta-skills", "forge"]
     },

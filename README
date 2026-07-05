@@ -24,6 +24,8 @@ COOK
 
 ⛶ HARNESS-AUDIT: inventories everything loaded at session start, counts the per-session token cost, and runs four checks: self-consistency, duplication across scopes, enforcement parity, scope discipline. built to remove things rather than add them.
  
+⛶ HARVEST: mines session transcripts for the corrections the user had to make twice, dedups them against the standing harness, and hands survivors to the forge as earned-failure evidence.
+
 ⛶ INGEST: turns resources provided by the user into an artifact by fanning out one reader subagent per source, grounded in verbatim quotes.
 
 ─────────────────────

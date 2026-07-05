@@ -37,10 +37,11 @@ Common input on every hook: `session_id`, `transcript_path`, `cwd`, `permission_
 | Matcher value | Behavior |
 | :--- | :--- |
 | `"*"`, `""`, omitted | matches all |
-| Letters/digits/`_`/`\|` only | exact match or `\|`-list: `"Edit\|Write"` |
-| Anything else | JavaScript regex: `"^Notebook"`, `"mcp__memory__.*"` |
+| Letters/digits/`_`/`-`/`\|` only | exact match or `\|`-list: `"Edit\|Write"`. Hyphens joined the exact-match set in **v2.1.195** — `code-reviewer` / `mcp__brave-search` now match only that literal, not as a substring (pre-v2.1.195 they were unanchored regex) |
+| Anything else | JavaScript regex (unanchored): `"^Notebook"`, `"mcp__memory__.*"` |
 
 - Tool events match on tool name; MCP tools follow `mcp__<server>__<tool>`.
+- **Wildcard a hyphenated MCP server explicitly:** `mcp__brave-search__.*` matches every tool from `brave-search`; since v2.1.195 a bare `mcp__brave-search` exact-matches only a tool of that literal name, so the `__.*` form is the version-safe way to catch the whole server.
 - Event-specific matchers: `SessionStart` (`startup`/`resume`/`clear`/`compact`), `SessionEnd` (`clear`/`logout`/...), `Notification` (`permission_prompt`/...), `SubagentStart`/`Stop` (agent type), `PreCompact`/`PostCompact` (`manual`/`auto`), `StopFailure` (`rate_limit`/`authentication_failed`/...). `FileChanged` matches **literal filenames** (`.env|.envrc`) — not standard matcher rules.
 - The classic miss: `"Edit"` does not match `Write`. Use `"Edit|Write|MultiEdit"`.
 

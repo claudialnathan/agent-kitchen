@@ -2,6 +2,10 @@ This is a place where harness-related tools for AI agents are created and evalua
 
 This file holds intent and durable traps about how the harness reads this place. It does not depict the current state of the repo. The filesystem does that, and CLAUDE.md restating it would only go stale. If a statement here contradicts what you see in the code, the code is authoritative; flag the drift before relying on the rule.
 
+## What the kitchen optimizes for
+
+Cook's artifacts compete with two forces only: the unaided frontier model, which improves every release and absorbs generic craft, and the owner's time. Durable value comes from what the model cannot have — the owner's taste made operational, local truths of a repo or team, verified post-cutoff currency, observed failure history. The standing claim this repo maintains: **everything in serve provably beats the unaided current model at its job.** Per-skill probe files (`evals/probes.md`) keep that claim checkable; deletion is the expected end of every artifact, not a failure of one. Publication upkeep (STATE.md, HACKS.md) serves those documents' own readers — real work, but not the kitchen's product.
+
 ## New artifacts are feedback for the forge
 
 The user comes here to design new harness-related tools. Every one of those is also evidence about the forge. When a session creates a new artifact, after delivery ask:
@@ -22,7 +26,7 @@ Skills, hooks, rules, CLAUDE.md entries, etcetera, are earned against a specific
 
 - Each non-trivial artifact carries a **one-line** pin: `<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->`. The pin is a trigger, not a history — models, dates, version, nothing else. `bin/preship-check` warns when a pin outgrows one line.
 - Everything else — why the artifact exists, sunset triggers, re-test verdicts, eval results — lives in **CHANGELOG.md** (committed, newest-first, keyed by date and model state). Reference skills by name and section, not line numbers.
-- On each major model release, re-test the failures that earned the artifacts; log verdicts (KEPT / revised / deleted) in CHANGELOG.md. Delete the ones whose failures no longer reproduce; rewrite the ones whose failures have shifted. A model can also be **withdrawn**, not just superseded — a pin to an unreachable model is a dead trigger; re-pin those artifacts to the period's durable default and record the withdrawal in CHANGELOG.md.
+- On each major model release (or newly adopted working model), re-test the failures that earned the artifacts; the runnable form is the skill's `evals/probes.md` — prose reconstruction is the fallback for artifacts that predate their probe file. Log verdicts (KEPT / revised / deleted) in CHANGELOG.md. Delete the ones whose failures no longer reproduce; rewrite the ones whose failures have shifted. A model can also be **withdrawn**, not just superseded — a pin to an unreachable model is a dead trigger; re-pin those artifacts to the period's durable default and record the withdrawal in CHANGELOG.md.
 - **Artifacts do not reference the conversation that produced them** — no session narration, no addressing the reader, no quoting requests. Write provenance as neutral fact in the changelog. References to these may dilute and steer you toward context that is stale.
 - **And the artifact is not the bibliography.** Skill bodies are standing instructions to the agent. This sort of provenance lives in the skill's own README `src:url` links and CHANGELOG.md. Canonical doc URLs the agent can verify against mid-task are the exception — they direct action.
 

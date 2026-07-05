@@ -1,8 +1,8 @@
 ```
 HACKS, FYIs & NICE-TO-KNOWS █
-CLAUDE CODE v2.1.191 + CLAUDE AGENT PLATFORM
+CLAUDE CODE v2.1.201 + CLAUDE AGENT PLATFORM
 
-UPDATED: 2026-06-25
+UPDATED: 2026-07-04
 SOURCE REPO: anthropics/claude-code/blob/main/CHANGELOG.md
 STATUS: DRAFT
 ```
@@ -128,6 +128,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>CLAUDE_CODE_EFFORT_LEVEL</code></td><td>The <strong>only</strong> way to make <code>max</code> effort persist across sessions (the setting rejects <code>max</code>).</td></tr>
 <tr><td><code>BASH_DEFAULT_TIMEOUT_MS</code></td><td>Long bash commands <strong>auto-background</strong> past this instead of being killed.</td></tr>
 <tr><td><code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE</code></td><td>Trigger auto-compaction earlier than the ~95% default (e.g. <code>50</code>).</td></tr>
+<tr><td><code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code></td><td>Absolute-token auto-compact threshold for 1M-window sessions (Sonnet 5 default ~967K) — the token-count companion to the percent override above.</td></tr>
 <tr><td><code>CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY</code></td><td>Crank parallel read-only tools/subagents above the default <code>10</code>.</td></tr>
 <tr><td><code>CLAUDE_CODE_ATTRIBUTION_HEADER=0</code></td><td>Drop the attribution block for a smaller, more cacheable system prompt.</td></tr>
 <tr><td><code>CLAUDE_CODE_TASK_LIST_ID=my-project</code></td><td>Share one task list across sessions on the same project.</td></tr>
@@ -135,7 +136,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1</code></td><td>One switch: autoupdater + feedback + error-reporting + telemetry off.</td></tr>
 <tr><td><code>MAX_THINKING_TOKENS=0</code></td><td>Disable extended thinking regardless of effort (big cost lever on simple tasks). No-op on Fable 5: thinking can't be turned off there.</td></tr>
 <tr><td><code>ENABLE_TOOL_SEARCH=auto:5</code></td><td>Threshold-load only MCP tools fitting in 5% of context; defer the rest.</td></tr>
-<tr><td><code>CLAUDE_CODE_RETRY_WATCHDOG</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td><code>CLAUDE_CODE_MAX_RETRIES</code> now caps at 15; for unattended sessions that must not give up, this watchdog is the supported alternative.</td></tr>
+<tr><td><code>CLAUDE_CODE_RETRY_WATCHDOG</code><sup>NEW</sup> <kbd><samp>v2.1.199</samp></kbd></td><td>Raises the default retry count for non-capacity transient errors to 300 and <em>lifts</em> the former cap of 15 on <code>CLAUDE_CODE_MAX_RETRIES</code>: the supported lever for unattended sessions that must not give up.</td></tr>
+<tr><td><code>CLAUDE_ENABLE_STREAM_WATCHDOG=0</code><sup>NEW</sup> <kbd><samp>v2.1.196</samp></kbd></td><td>Opt out of the idle-stream watchdog, now on by default for <em>all</em> providers — it aborts and retries a response stream that emits no events for 5 min.</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>settings.json keys</h4></kbd></td></tr>
 <tr><th><samp>KEY</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>skillOverrides</code></td><td>Set a skill to <code>"name-only"</code> (keep listed, drop description budget) or <code>"off"</code>, without editing its file; great for noisy third-party skills.</td></tr>
@@ -164,8 +166,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>/focus</code> · <code>/btw</code></td><td>Quieter transcript view · ask a side question that <strong>never enters history</strong>.</td></tr>
 </table>
 
-> [!CAUTION]
-> **Fable 5 + Mythos 5 suspended 2026-06-12** — a US Commerce export-control order pulled both globally (API/AWS/Foundry); indefinite, Anthropic contesting. Not in the CC changelog, so a changelog-driven bump misses it. The Fable rows describe the model as shipped, for when access returns; until then <code>/model fable</code> and <code>best</code> resolve to Opus.
+> [!NOTE]
+> **Fable 5 + Mythos 5 restored 2026-07-01** — a 19-day US export-control suspension (from 2026-06-12) was lifted 2026-06-30; both are back globally (API/AWS/Foundry), rollout throttled to ≤50% of weekly usage limits through 2026-07-07, then usage credits. Neither the suspension nor the restoration hit the CC changelog: model availability moves independently of it, so check it out of band on every bump.
 
 Fable 5 (<code>/model fable</code>,<sup>NEW</sup> <kbd><samp>v2.1.170</samp></kbd>) reroutes classifier-flagged requests (cybersecurity/biology) to Opus mid-session — and can trip on <em>workspace context</em> alone (CLAUDE.md, git status, directory names) before you type anything. <code>claude --safe-mode</code> isolates whether your config is the trigger; <code>/config</code> → "switch models when a message is flagged" off = pause-and-ask instead of silent switch.
 
@@ -239,7 +241,7 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 </table>
 
 - For human sign-off <em>between</em> stages, skip one big workflow or an agent team: workflows forbid mid-run input (only permission prompts pause), and in-process teammates don't survive <code>/resume</code>. Chain separate steps, or use agent view's per-session peek/reply.
-- Three "agents" surfaces, easy to confuse: <code>claude agents</code> (background sessions) ≠ <code>/agents</code> (subagent Library) ≠ agent <em>teams</em> (<code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code>, ~7× tokens). Dynamic workflows (<code>ultracode</code>) are the heaviest fan-out; see <a href="./STATE.md">STATE.md</a>. The workflow JS API isn't in the public docs, so don't assume function names.
+- Two "agents" surfaces, easy to confuse: <code>claude agents</code> (background sessions) ≠ agent <em>teams</em> (<code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code>, ~7× tokens). The <code>/agents</code> wizard was <strong>removed</strong> (v2.1.198) — create/manage subagents by asking Claude or editing <code>.claude/agents/</code>. Dynamic workflows (<code>ultracode</code>) are the heaviest fan-out; see <a href="./STATE.md">STATE.md</a>. The workflow JS API isn't in the public docs, so don't assume function names.
 
 <sub><a href="https://code.claude.com/docs/en/sub-agents">src: code.claude.com/docs/en/sub-agents</a> · <kbd>/goal</kbd> <kbd>/agent-view</kbd> <kbd>/workflows</kbd></sub>
 
@@ -333,6 +335,7 @@ Renamed, removed, don't-use.
 <tr><td><code>/pr-comments</code> · <code>/extra-usage</code></td><td>gone (just ask to view PR comments) · renamed <code>/usage-credits</code>.</td></tr>
 <tr><td><code>think</code> / <code>think hard</code> as keywords</td><td>only <code>ultrathink</code> is parsed now (the ladder lives in the original best-practices post).</td></tr>
 <tr><td><code>TodoWrite</code></td><td>replaced by <code>TaskCreate</code>/<code>TaskGet</code>/<code>TaskList</code><sup>NEW</sup> <kbd><samp>v2.1.142+</samp></kbd>; <code>CLAUDE_CODE_ENABLE_TASKS=0</code> reverts.</td></tr>
+<tr><td>the <code>/agents</code> wizard (Running tab + Library)</td><td>removed v2.1.198; create/manage subagents by asking Claude or editing <code>.claude/agents/</code>. <code>claude agents</code> (the CLI session list) is unrelated and still current.</td></tr>
 <tr><td>Windsurf in <code>/ide</code></td><td>rebranded Devin Desktop.</td></tr>
 </table>
 
@@ -444,6 +447,6 @@ lap's configuration.
 
 ```
 EVERY FLAG, FIELD, AND VERSION ABOVE: COPIED FROM A DOC, NOT RECALLED.
-RE-CHECKED: 2026-06-25 · AGAINST: v2.1.191 · AUTHORITATIVE: docs changelog
+RE-CHECKED: 2026-07-04 · AGAINST: v2.1.201 · AUTHORITATIVE: docs changelog
 ON DRIFT: FIX IT HERE, RE-PIN THE DATE.
 ```

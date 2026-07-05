@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 25 June 2026 | Version: v2.1.191
+Last updated: 4 July 2026 | Version: v2.1.201
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
@@ -42,20 +42,29 @@ Practical consequences:
 - Knowledge skills with broad applicability should be path-scoped (`paths:` glob) so they don't load when out of scope.
 - Reference docs > 150 lines belong in sibling files, not inline.
 
-## What's distinctive about June 2026 (vs. last quarter)
+## What's distinctive about July 2026 (vs. last quarter)
 
 Features that changed how skills get built, in rough order of impact:
 
-### Fable 5 (Mythos-class, v2.1.170) — suspended 2026-06-12
+### Sonnet 5 (new default on Pro-tier plans, v2.1.197)
 
-**Suspended.** A US Commerce Department export-control order (2026-06-12) forced Fable 5 and Mythos 5 offline; Anthropic complied globally — API, AWS, and Foundry — unable to isolate foreign nationals in real time. Indefinite, contested, no restoration timeline. The trigger was a jailbreak that turned Fable 5 toward identifying software vulnerabilities. This is a legal/availability action, not a Claude Code version feature, so it never reached the changelog — a changelog-driven state bump won't catch it. What follows describes the model as shipped, for when access returns.
+- **`claude-sonnet-5`** — launched 30 June 2026. The default model in Claude Code for **Pro, Team Standard, and Enterprise subscription seats**. Opus 4.8 stays the default for **Max, Team Premium, Enterprise pay-as-you-go, and the Anthropic API**; the `sonnet` alias resolves to Sonnet 5 on the API. Requires v2.1.197+.
+- **1M context is native and unconditional** — no 200K variant, no `[1m]` suffix, no usage credits on any plan (unlike Opus's plan-gated 1M). Sessions auto-compact at ~967K tokens by default; `CLAUDE_CODE_AUTO_COMPACT_WINDOW` changes the threshold, `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` caps it back to 200K.
+- **New tokenizer inflates token counts ~30%** for the same text vs Sonnet 4.6. Re-measure anything you budget in tokens — `max_tokens` limits, context-window text capacity, per-request cost. Counts carried over from older models are wrong.
+- Effort levels `low`–`max`, default `high`. Adaptive thinking is on by default; manual extended thinking (`budget_tokens`) and non-default sampling params (`temperature`/`top_p`/`top_k`) now return HTTP 400 — the same constraint Opus 4.8 already had.
+- **First Sonnet-tier model with real-time cybersecurity safeguards.** Flagged requests refuse as a *successful* HTTP 200 with `stop_reason: "refusal"`, not an API error. Unlike Fable 5, there's no automatic Opus fallback documented — a flagged request just refuses.
+- Pricing $3/$15 per Mtok; **introductory $2/$10 through 31 August 2026**.
+
+### Fable 5 (Mythos-class, v2.1.170) — restored 2026-07-01
+
+**Back online.** A US Commerce export-control order (2026-06-12) — triggered by a jailbreak that turned Fable 5 toward finding software vulnerabilities — forced Fable 5 and Mythos 5 offline globally (API, AWS, Foundry) for 19 days. Commerce lifted the order 2026-06-30 once Anthropic agreed to proactively detect security risks, co-develop future-release protocols, and report malicious activity; both models resumed worldwide 2026-07-01. The lesson stands: **model availability moves independently of the changelog** — neither the suspension nor the restoration appeared there, so check status out of band on every bump.
 
 - **`claude-fable-5`** — the first Mythos-class model released for general use, built for tasks larger than a single sitting. Required v2.1.170+.
 - **Not the default on any plan.** Opt in with `/model fable` (persists via user settings). New aliases: `fable`, and `best` (Fable 5 where the org has access, otherwise latest Opus).
 - Effort levels `low`–`max`, default `high`. Adaptive reasoning is always on; thinking cannot be disabled — `Option+T`, `alwaysThinkingEnabled`, and `MAX_THINKING_TOKENS=0` have no effect.
 - **Classifier fallback**: requests flagged for cybersecurity or biology re-run on the default Opus model, and the session stays there until `/model fable`. Can trigger on the first request from workspace context alone (CLAUDE.md, git status, directory names); `claude --safe-mode` isolates whether customizations are the trigger, and a `/config` toggle pauses to ask instead of switching. `-p` and SDK runs get a refusal instead. Offensive-security, CTF, and biology work reroutes frequently by design.
 - 1M context window always on via the Anthropic API; the model ID is `claude-fable-5` (a `[1m]` suffix is redundant and stripped automatically). Not available under zero data retention.
-- API pricing $10/$50 per Mtok in/out. Included on Pro/Max/Team/Enterprise subscriptions June 9–22, 2026; usage credits after.
+- API pricing $10/$50 per Mtok in/out. The June 9–22 subscription-inclusion window was cut short by the suspension; on restoration (2026-07-01) rollout was throttled to ≤50% of weekly usage limits through 2026-07-07, then via usage credits.
 - Prompting shifts: describe outcomes rather than steps, hand it ambiguous problems, size up tasks you'd normally split; verification reminders are usually unnecessary.
 - New levers: `ANTHROPIC_DEFAULT_FABLE_MODEL` (alias target; also what enables fallback on Bedrock/Vertex/Foundry), `DISABLE_PROMPT_CACHING_FABLE`.
 - **Mythos 5** is the same model without cybersecurity safeguards, restricted to vetted partners — not a Claude Code surface.
@@ -84,6 +93,7 @@ Features that changed how skills get built, in rough order of impact:
 - New hook: `PermissionDenied` fires on classifier denials; `retry: true` lets the model try a different approach.
 - No longer gated: the `--enable-auto-mode` flag was removed, and the first-use opt-in consent prompt is gone too (v2.1.152).
 - `settings.autoMode.hard_deny` defines classifier rules that block unconditionally regardless of user intent or allow exceptions — useful as a policy-grade backstop.
+- `autoMode.classifyAllShell` (v2.1.193) routes **every** Bash/PowerShell command through the classifier, not just arbitrary-code-execution patterns — tighter, at the cost of more classifier calls. Denial reasons now land in the transcript, the denial toast, and `/permissions` recent denials.
 - **Destructive-command guards** (v2.1.183) — independent of `hard_deny`, auto mode now blocks unrequested `git reset --hard` / `git checkout -- .` / `git clean -fd` / `git stash drop`, `git commit --amend` on a commit the agent didn't make this session, and `terraform`/`pulumi`/`cdk destroy` unless you named the stack.
 
 ### Forked subagents (`/fork`, w17)
@@ -112,11 +122,11 @@ Features that changed how skills get built, in rough order of impact:
 - `/ultraplan` drafts a plan in a cloud session; review in browser; execute remotely or pull back to CLI.
 - `claude ultrareview [target]` runs the review non-interactively from CI or scripts (`--json` for raw output; exits 0 on completion, 1 on failure).
 
-### Opus 4.8 (now default, v2.1.154)
+### Opus 4.8 (default on Max/API tiers, v2.1.154)
 
-- Opus 4.8 (`claude-opus-4-8`) is the current default Opus; it defaults to **high** effort, with `/effort xhigh` reserved for the hardest tasks.
+- Opus 4.8 (`claude-opus-4-8`) is the default model on Max, Team Premium, Enterprise pay-as-you-go, and the Anthropic API (Sonnet 5 is the default on Pro-tier — see above); it defaults to **high** effort, with `/effort xhigh` reserved for the hardest tasks.
 - Effort levels: `low`, `medium`, `high`, `xhigh`, `max`. `/effort` opens an interactive slider when called without args (slider labels are now "Faster"/"Smarter").
-- The **lean system prompt** is now the default for Opus 4.8 and newer; Haiku, Sonnet, and Opus 4.7-and-earlier keep the full prompt. Smaller standing prompt, more room for your context.
+- The **lean system prompt** shipped as the default with Opus 4.8 (v2.1.154); older models kept the full prompt. Which side newer lines (Sonnet 5, Fable 5) land on is undocumented — `/context` shows the session's actual system-prompt size when it matters.
 - 1M context window included for Max/Team/Enterprise on Opus.
 - Fast mode on Opus 4.8 runs at 2× the standard rate for ~2.5× the speed. `CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE` is deprecated (removed 2026-06-01); for fast mode on 4.6, switch with `/model claude-opus-4-6[1m]` then `/fast on`.
 - Opus 4.7 (`claude-opus-4-7`) is still selectable via `/model`; it introduced the effort-level scale and always-on adaptive reasoning.
@@ -148,6 +158,8 @@ The hook surface has accumulated several useful fields:
 - **`MessageDisplay` hook event** — transform or hide assistant message text as it's displayed (v2.1.152).
 - **Effort context** — hooks receive `effort.level` in their JSON input and `$CLAUDE_EFFORT` in their environment; Bash commands also get `$CLAUDE_EFFORT`.
 - **MCP servers receive `CLAUDE_PROJECT_DIR`** in their environment, matching hooks. Plugin configs can reference `${CLAUDE_PROJECT_DIR}` in commands.
+- **`agent_needs_input` / `agent_completed` Notification events** (v2.1.198) — background `claude agents` sessions fire the `Notification` hook when they block on input or finish, so unattended fleets can wire up push/desktop alerts.
+- **Hyphenated matchers now exact-match** (v2.1.195) — a matcher like `code-reviewer` or `mcp__brave-search` used to substring-match; it no longer does. To match all tools from a hyphenated MCP server, write `mcp__brave-search__.*`. Comma-separated matchers (`"Bash,PowerShell"`) also fire correctly now (v2.1.191).
 
 ### Plugin executables on PATH (w14)
 
@@ -203,6 +215,11 @@ The hook surface has accumulated several useful fields:
 - **`claude mcp login <name>` / `claude mcp logout <name>`** (v2.1.186) — authenticate an MCP server from the CLI without opening `/mcp`; `--no-browser` redirects the flow over SSH.
 - **Skill frontmatter keys are case-style-insensitive** (v2.1.186) — `display-name`, `default-enabled`, `fallback`, and `metadata.*` accept kebab-case, snake_case, or camelCase; malformed YAML frontmatter now loads the body with empty metadata instead of failing silently.
 - **`sandbox.credentials` setting** (v2.1.187) — blocks sandboxed commands from reading credential files and secret environment variables.
+- **Subagents run in the background by default** (GA, v2.1.198) — Claude keeps working while a delegated subagent runs and is notified on completion, instead of blocking the turn. Background agents launched from `claude agents` now also commit, push, and open a draft PR when they finish code work in a worktree.
+- **Stacked slash-skill invocations load all leading skills** (v2.1.199) — `/skill-a /skill-b do XYZ` now loads every leading skill (up to 5), not just the first; useful for composing a stance from several skills in one prompt.
+- **`"default"` permission mode is now labelled "Manual"** (v2.1.200) across the CLI, `--help`, VS Code, and JetBrains. `--permission-mode manual` and `"defaultMode": "manual"` are accepted alongside the old `default`; both still work.
+- **Organization default models** (v2.1.196, Enterprise) — admins set a Claude Code default in the claude.ai console, org-wide or per role; it shows as "Org default" / "Role default" in `/model`. A starting point, not a restriction — any explicit model selection overrides it. The soft-default analog to the hard `availableModels` allowlist.
+- **`claude_code.assistant_response` OTEL log event** (v2.1.193) carries the model's response text. Redacted unless `OTEL_LOG_ASSISTANT_RESPONSES=1`; but when that var is *unset* it follows `OTEL_LOG_USER_PROMPTS` — so a deployment already logging prompts starts logging responses on upgrade. Set `OTEL_LOG_ASSISTANT_RESPONSES=0` to keep prompts-only.
 
 ## Constraints worth designing around
 
@@ -226,10 +243,11 @@ These exist in stock Claude Code; building parallel skills competes for descript
 - **`/debug`** (skill) — captures debug logs from current point forward; analyzes issues.
 - **`/loop`** (skill) — recurring or self-paced prompt execution.
 - **`/claude-api`** (skill) — Claude API reference + migration helper for Anthropic SDK code.
+- **`/dataviz`** (skill, v2.1.198) — chart and dashboard design guidance with a runnable color-palette validator.
 - **`/fewer-permission-prompts`** (skill) — transcript-driven allowlist generator.
 - **`/init`** — generates starter CLAUDE.md from codebase analysis. `CLAUDE_CODE_NEW_INIT=1` enables an interactive multi-phase flow that also walks through skills, hooks, memory.
 - **`/skills`** — list/manage skills with cycling visibility states.
-- **`/agents`** — manage subagents (Running tab + Library).
+- **Subagent management** — the `/agents` wizard was **removed** (v2.1.198); create or manage subagents by asking Claude, or edit `.claude/agents/` directly.
 - **`claude agents`** (CLI) — unified session list across running, blocked, and done sessions.
 - **`/goal`** (skill) — set a completion condition; Claude keeps working across turns until met.
 - **`/team-onboarding`** — package a local Claude Code setup as a teammate ramp-up guide.
@@ -320,11 +338,11 @@ Cross-tool standards:
 - `https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills` — Agent Skills standard announcement.
 - `https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation` — AAIF formation.
 
-## In flux as of early June 2026
+## In flux as of early July 2026
 
 Things that were research previews or moving fast at the time of writing:
 
-- **Fable 5 is suspended** (2026-06-12, US export-control order — see the Fable 5 section above). The time-boxed subscription window (June 9–22) was cut short three days in. Restoration is uncertain; Anthropic is contesting the order. Until it returns, `/model fable` and `best` resolve to Opus.
+- **Fable 5 is back** (restored 2026-07-01 after the US export-control order was lifted — see the Fable 5 section above). `/model fable` selects it again and `best` resolves to it where the org has access. Rollout was throttled to ≤50% of weekly usage limits through 2026-07-07, then usage credits. The episode is a standing reminder that model availability moves independently of the changelog.
 - **Agent view (`claude agents`)** is research preview. Surface and command shape may shift.
 - **Forked subagents** remain gated behind `CLAUDE_CODE_FORK_SUBAGENT=1` (v2.1.117+); now work in SDK and `-p` modes as well as interactive. Likely to become default eventually.
 - **Auto mode** is in research preview. Default thresholds and classifier behavior may change. `hard_deny` rules are stable.

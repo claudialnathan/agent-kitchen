@@ -15,7 +15,7 @@
     {
       "name": "serve",
       "source": "./serve",
-      "description": "Applied skills: shadcn-tailwind, design-engineer, speed-daemon, quality-audit, saltintesta, flavored-md, worklog. Stack-specific discipline served on top of cook.",
+      "description": "Applied skills: shadcn-tailwind, design-engineer, speed-daemon, quality-audit, saltintesta, flavored-md, zoom-out, worklog. Stack-specific discipline served on top of cook.",
       "license": "MIT",
       "keywords": ["claude-code", "skills", "applied"]
     }

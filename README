@@ -12,19 +12,23 @@ It operates as dotfiles for your agent in the form of two plugins under a market
 
 The kitchen is built on the idea that:
 
-A frontier model in 2026 is very competent at most things, but its default in any domain is the competent average version of the thing. Getting it to do a specific, better version of the work you care about means refining its particularity and getting it very good in one specific way, against its own pull toward the middle of every distribution.
+A frontier model in 2026 is very competent at most things, but its default in any domain is the competent average version of the thing. The artifacts here are commitments that drag the model off that median in a chosen direction.
 
-The artifacts here are commitments that try to drag a model off that median in a chosen direction. It works on the understanding that any tool that attempts to do this charges rent on future sessions and, as models continue to improve, is ultimately perishable. It is a practice of deciding what's worth pulling the model off its average for.
+Every artifact competes with two forces: the unaided frontier model, which absorbs generic craft with each release, and the owner's time, which every artifact charges rent on. 
+
+So durable value comes from what the model cannot have: the owner's taste made operational, local truths of a repo or team, verified facts from after the training cutoff, and failures actually observed in sessions. Everything else gets absorbed, so deletion is the expected end of every artifact here, not a failure of one.
 
 ─────────────────────
 
 COOK
 
-⛶ FORGE: one triage ladder routes a behavior to the right surface (skill, hook, path-scoped rule, CLAUDE.md, workflow, subagent, MCP), with a stance that sets the bar each artifact has to clear.
+The loop: HARVEST finds failures, FORGE turns them into artifacts, probes check they still earn their place and HARNESS-AUDIT removes what doesn't.
 
-⛶ HARNESS-AUDIT: inventories everything loaded at session start, counts the per-session token cost, and runs four checks: self-consistency, duplication across scopes, enforcement parity, scope discipline. built to remove things rather than add them.
- 
-⛶ HARVEST: mines session transcripts for the corrections the user had to make twice, dedups them against the standing harness, and hands survivors to the forge as earned-failure evidence.
+⛶ FORGE: one triage ladder routes a behavior to the right surface (skill, hook, path-scoped rule, CLAUDE.md, workflow, subagent, MCP), with a stance that sets the bar each artifact has to clear. judges an artifact by the work it makes the agent produce, not by the artifact's own shape.
+
+⛶ HARNESS-AUDIT: inventories everything loaded at session start, counts the per-session token cost, and runs four checks: self-consistency, duplication across scopes, enforcement parity, scope discipline. Built to remove things rather than add them.
+
+⛶ HARVEST: mines session transcripts for the corrections the user had to make twice, dedups them against the standing harness, and hands survivors to the forge as earned-failure evidence. the without-the-skill baseline already ran, in production, in those sessions.
 
 ⛶ INGEST: turns resources provided by the user into an artifact by fanning out one reader subagent per source, grounded in verbatim quotes.
 
@@ -32,20 +36,28 @@ COOK
 
 SERVE
 
-⛶ My applied skills (an example of what COOK has produced that has survived several seasons of models and audits).
+My applied skills (what COOK has produced that has survived several seasons of models and audits).
+
+⛶ The standing claim: everything in SERVE provably beats the unaided current model at its job. Each skill keeps the failures that earned it as runnable fixtures in evals/probes.md: the verbatim prompt, what the bare model gets wrong, and the pass criterion.
+
+⛶ On each model release the probes replay against the bare model in a clean session. Verdicts land in a per-model table and CHANGELOG.md. When every probe passes unaided, the model has absorbed the skill's job and the skill is deleted.
+
+⛶ Absorption is not monotonic: a case one model absorbed can regress on the next model line, so probes never retire while the skill lives.
 
 ─────────────────────
 
 STATE.md + HACKS.md are a verified snapshot of Claude Code's surfaces and lesser-known features, re-checked against the live changelog on each release.
 
+CHANGELOG.md is the provenance ledger: why each artifact exists, what it was re-tested against, and the keep/revise/delete verdicts. The artifacts themselves carry only a one-line model pin.
+
 ─────────────────────
 
-The harness in general:
+The harness:
 
 ⛶ Prices context before writing anything. Every artifact clears three bars: earned by a real failure or a real source; shifts attention in a way you can name; beats the model's default.
 
 ⛶ Tests if it's additive vs transformative. Does it save you typing, or change what's thinkable? Only the second kind earns its place.
- 
+
 ⛶ Model-pins everything. Each artifact records the model, date, and version it was earned against.
 
 ⛶ Is optimized for subtraction to avoid rotting by accretion.

@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 ## The attention this skill redirects
 
-From "wait until a failure annoys the owner into naming it" to "the corrections are already on disk; read them." Every session transcript records what the user had to say twice, what they rejected, what they redirected — the exact evidence the forge's earned-bar demands. Without this skill that evidence surfaces only when a human happens to remember it. With it, intake is a query.
+From "wait until a gap annoys the owner into naming it" to "the corrections are already on disk; read them." Every session transcript records what the user had to say twice, what they rejected, what they redirected — the exact evidence the forge's earned-bar demands. Without this skill that evidence surfaces only when a human happens to remember it. With it, intake is a query.
 
 ## Where the material lives
 
@@ -43,7 +43,7 @@ Evidence bar, per the forge: the same correction in **two or more sessions**, or
 
 ## Phase 3 — Candidates to the forge
 
-Present a table: cluster, verbatim exemplar quote, evidence count (sessions + dates), already-encoded-where (or "nowhere"), proposed surface from the forge's triage ladder (skill / hook / rule / CLAUDE.md entry / fix-existing). The user picks; hand each survivor to `/forge` with its quotes as the earned-failure evidence. The quotes are the spec — the forge's without-the-skill baseline already ran, in production, in those sessions.
+Present a table: cluster, verbatim exemplar quote, evidence count (sessions + dates), already-encoded-where (or "nowhere"), proposed surface from the forge's triage ladder (skill / hook / rule / CLAUDE.md entry / fix-existing). The user picks; hand each survivor to `/forge` with its quotes as the earned-intent evidence. The quotes are the spec — the forge's without-the-skill baseline already ran, in production, in those sessions.
 
 ## Anti-patterns
 

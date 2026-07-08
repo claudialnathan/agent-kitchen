@@ -10,3 +10,12 @@ scratch/
 .eval-runs/
 TODO.md
 claudia/
+
+# Eval / probe RUN OUTPUTS — keep the scripts (gen-probe.sh, grade-probe.js, run-probe*.sh),
+# the manifests (*-batch.txt), and the probes.md specs tracked; do NOT commit produced output.
+# (recorded baselines are re-runnable and --safe-mode leaks account context — the record of
+#  truth is the probes.md verdict table + CHANGELOG, per the essay's own evidence model.)
+**/evals/runs/
+**/evals/baselines/
+cook/skills/forge/evals/publish-readiness-*.md
+cook/skills/forge/evals/*owner-grade*.md

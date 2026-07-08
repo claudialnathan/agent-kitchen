@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>agent-kitchen</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #FCFCFC;
+    --card: #FFFFFF;
+    --ink: #202020;
+    --body: #424242;
+    --muted: #767676;
+    --faint: #9B9B9B;
+    --line: #E8E8E8;
+    --hairline: #F0F0F0;
+    --green: #3B9440;
+    --blue: #2B9FFF;
+    --salmon: #D97757;
+    --salmon-text: #AD6A56;
+    --peri: #6E6EF7;
+    --black-btn: #141414;
+    --ring: 0 0 0 1px rgba(0,0,0,.06), 0 1px 2px -1px rgba(0,0,0,.06), 0 2px 4px rgba(0,0,0,.04);
+    --sans: "Inter Variable", InterVariable, Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  html { background: var(--bg); }
+  body {
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.625;
+    color: var(--body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .page {
+    max-width: 668px;
+    margin: 0 auto;
+    padding: 56px 24px 110px;
+  }
+  p { margin: 0 0 24px; }
+  p:last-child { margin-bottom: 0; }
+  h1 {
+    font-size: 24px;
+    font-weight: 550;
+    font-variation-settings: "wght" 550;
+    letter-spacing: -0.3px;
+    line-height: 1.33;
+    color: var(--ink);
+    margin: 0 0 16px;
+  }
+  .mono { font-family: var(--mono); }
+
+  /* ---------- pills & buttons ---------- */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: var(--card);
+    box-shadow: var(--ring);
+    font-size: 13px;
+    font-weight: 450;
+    font-variation-settings: "wght" 450;
+    color: var(--body);
+    white-space: nowrap;
+  }
+  .pill svg { flex-shrink: 0; }
+  .pill .count {
+    background: #F0F0F0;
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .btn-black {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: var(--black-btn);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    font-variation-settings: "wght" 500;
+    text-decoration: none;
+  }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 999px;
+    background: var(--card);
+    box-shadow: var(--ring);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .icon-btn:active { transform: translateY(1px); }
+
+  /* ---------- layout chrome ---------- */
+  .meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 36px;
+  }
+  .meta-row .group { display: flex; gap: 8px; }
+
+  .divider {
+    display: flex;
+    justify-content: space-between;
+    margin: 48px 0;
+  }
+  .divider span {
+    width: 16px; height: 2px;
+    border-radius: 999px;
+    background: var(--line);
+  }
+
+  .section-pill { margin-bottom: 18px; }
+  .section-pill .pill { color: var(--ink); }
+
+  .cap {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  /* ---------- cards ---------- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+  .fig { margin: 28px 0; }
+
+  /* ---------- terminal hero ---------- */
+  .bleed { width: 820px; margin-left: -76px; }
+  @media (max-width: 920px) { .bleed { width: 100%; margin-left: 0; } }
+  .term-wrap {
+    background: #F4F4F4;
+    border-radius: 24px;
+    padding: 22px;
+    margin: 8px 0 36px;
+  }
+  .term {
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: var(--ring);
+    overflow: hidden;
+  }
+  .term-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .term-bar .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .term-bar .title {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+  .term-body {
+    padding: 22px 26px 28px;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+  .term-body .dim { color: var(--faint); }
+  .term-body .row { display: flex; gap: 16px; align-items: flex-start; margin: 18px 0; }
+  .term-rule { border: none; border-top: 1px solid var(--hairline); margin: 16px -26px; }
+  .term-body .cmd { color: var(--peri); }
+  .term-body .desc { color: var(--salmon-text); }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 16px;
+    background: var(--ink);
+    vertical-align: -2px;
+  }
+
+  /* ---------- install row ---------- */
+  .install {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 28px 0 0;
+  }
+  .install code {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--green);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---------- comparison duo ---------- */
+  .duo-label { text-align: center; margin-bottom: 14px; }
+  .duo-label .pill { height: 26px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 560px) { .duo { grid-template-columns: 1fr; } }
+  .duo .card { padding: 20px; }
+  .duo .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--body);
+  }
+  .badge {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .badge.x { background: #CFCFCF; }
+  .badge.check { background: var(--blue); }
+  .duo ul { list-style: none; display: grid; gap: 8px; font-size: 14px; line-height: 1.45; }
+  .duo .absorbed ul { color: var(--muted); }
+  .duo .durable ul { color: var(--body); }
+  .duo .foot {
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--faint);
+  }
+
+  /* ---------- loop diagram ---------- */
+  .loop-card { padding: 30px 24px 22px; }
+  .loop-caps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 4px;
+  }
+  .loop-caps div {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    text-align: center;
+    padding: 0 4px;
+  }
+
+  /* ---------- lifecycle ---------- */
+  .life { padding: 30px 24px 24px; display: flex; flex-direction: column; align-items: center; }
+  .node-black {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 15px;
+    border-radius: 999px;
+    background: var(--black-btn);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  .node-white {
+    display: inline-flex;
+    align-items: center;
+    text-align: center;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: var(--card);
+    box-shadow: var(--ring);
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .vline { width: 1px; height: 22px; background: #DBDBDB; }
+  .split { width: 100%; max-width: 520px; height: 32px; display: block; }
+  .life-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media (max-width: 560px) { .life-grid { grid-template-columns: 1fr; } }
+  .life-grid > div { display: flex; flex-direction: column; }
+  .life-grid .lbl {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .life-grid .box {
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    flex: 1;
+  }
+  .box.keep { border: 1px solid var(--line); background: var(--card); }
+  .box.gone { border: 1px dashed #D4D4D4; background: transparent; }
+  .box .t { font-size: 14px; color: var(--ink); line-height: 1.45; }
+  .box .s { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-top: 5px; }
+  .life-note {
+    margin-top: 26px;
+    max-width: 460px;
+    line-height: 1.6;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+
+  /* ---------- pin card ---------- */
+  .pin-card { overflow: hidden; }
+  .pin-card .filebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 16px;
+    background: #FAFAFA;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .pin-card .filebar + .body-block { border-top: none; }
+  .pin-card .fname {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pin-card .chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--card);
+    box-shadow: var(--ring);
+    border-radius: 999px;
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+  .pin-card .body-block {
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.9;
+    border-bottom: 1px solid var(--hairline);
+    overflow-x: auto;
+  }
+  .pin-card .body-block:last-child { border-bottom: none; }
+  .pin-line { color: var(--green); white-space: pre-wrap; }
+  .ledger { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+  .ledger b { color: var(--ink); font-weight: 550; font-variation-settings: "wght" 550; }
+
+  /* ---------- chat card ---------- */
+  .chat { overflow: hidden; }
+  .chat .row {
+    display: flex;
+    gap: 12px;
+    padding: 16px 18px;
+    align-items: flex-start;
+  }
+  .chat .row + .row { border-top: 1px solid var(--hairline); }
+  .avatar {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: #fff;
+    margin-top: 1px;
+  }
+  .avatar.cn { background: var(--black-btn); }
+  .avatar.cl { background: var(--salmon); }
+  .chat .msg { font-size: 14px; line-height: 1.55; color: var(--body); padding-top: 2px; }
+
+  /* ---------- footer ---------- */
+  footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  footer .block { color: var(--salmon); }
+  footer a { color: var(--muted); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- meta row -->
+  <div class="meta-row">
+    <div class="group">
+      <span class="pill">second-order harness</span>
+      <span class="pill">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#9B9B9B" stroke-width="1.4" stroke-linecap="round"><rect x="2" y="3" width="10" height="9" rx="1.5"/><line x1="2" y1="6" x2="12" y2="6"/><line x1="4.8" y1="1.6" x2="4.8" y2="3.6"/><line x1="9.2" y1="1.6" x2="9.2" y2="3.6"/></svg>
+        July 2026
+      </span>
+    </div>
+    <a class="btn-black" href="https://github.com/claudialnathan/agent-kitchen">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="#fff"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+
+  <!-- terminal hero -->
+  <div class="bleed">
+    <div class="term-wrap">
+      <div class="term">
+        <div class="term-bar">
+          <span class="dot" style="background:#FF5F57"></span>
+          <span class="dot" style="background:#FEBC2E"></span>
+          <span class="dot" style="background:#28C840"></span>
+          <span class="title">claudia@kitchen — claude</span>
+        </div>
+        <div class="term-body">
+          <div><span style="color:var(--green)">→</span>&nbsp; agent-kitchen <span class="dim">git:(main)</span> claude</div>
+          <div class="row">
+            <svg width="44" height="34" viewBox="0 0 22 17" fill="none" aria-hidden="true">
+              <rect x="4" y="0" width="2" height="3" fill="#D97757"/>
+              <rect x="16" y="0" width="2" height="3" fill="#D97757"/>
+              <rect x="2" y="3" width="18" height="9" fill="#D97757"/>
+              <rect x="6" y="5" width="2" height="4" fill="#8A3B24"/>
+              <rect x="14" y="5" width="2" height="4" fill="#8A3B24"/>
+              <rect x="3" y="12" width="2" height="4" fill="#D97757"/>
+              <rect x="8" y="12" width="2" height="4" fill="#D97757"/>
+              <rect x="12" y="12" width="2" height="4" fill="#D97757"/>
+              <rect x="17" y="12" width="2" height="4" fill="#D97757"/>
+            </svg>
+            <div>
+              <div>Claude Code v2.1.201</div>
+              <div class="dim">Fable 5 · Claude Max</div>
+              <div class="dim">~/repos/claude-code/agent-kitchen</div>
+            </div>
+          </div>
+          <hr class="term-rule">
+          <div><span class="dim">&gt;</span> /forge <span class="cursor"></span></div>
+          <hr class="term-rule">
+          <div class="cmd">/forge</div>
+          <div class="desc">Designs Claude Code harness artifacts. One triage ladder picks the
+            right surface; the stance holds the bar: a named failure or an
+            authoritative source, plus an attention shift you can name. Judges an
+            artifact by the work it makes the agent produce, not by the artifact's
+            own shape.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h1>agent-kitchen</h1>
+
+  <p>This is a side project, about a year old. It started with corrections: when I
+  caught myself telling Claude Code the same thing a second time, I wrote it down
+  where the agent would see it. Many of the skills here started that way, as a
+  sentence I was tired of saying twice. The repo part came later, when I started
+  asking which of those sentences were still needed, and how I'd know.</p>
+
+  <p>Like everyone, I was reading a lot about how to work with these things. At some
+  point I noticed where all that advice ends up: the model's default is the consensus
+  of it, and whatever a post can teach everyone comes free with a later release. So I
+  let the feed go. The facts I still need, like what changed in Claude Code and when,
+  the harness verifies against each release and keeps as a snapshot. Keeping up became
+  the harness's job.</p>
+
+  <p>I kept the trending vocabulary out too. A borrowed name carries the most popular
+  version of the idea it names, and if I'd built under those names I'd have drifted
+  into building the popular things. So I described what I wanted in the words I
+  already had. It's why things in this repo get cooked and tasted and go stale,
+  instead of getting orchestrated.</p>
+
+  <p>Most of the year went into conversations with nothing at the end of them. I asked
+  the model what it actually does with an instruction, why a skill changed nothing,
+  what it would delete from this repo if I let it. I brought it writing that had
+  nothing to do with AI. I challenged its answers and let it challenge mine, and
+  whatever neither of us could break got written down.</p>
+
+  <p>My own taste went in on the same terms: each opinion I write down becomes a test
+  the bare model takes on every release, and the ones it catches up to get deleted. I
+  never had to take my own word for it.</p>
+
+  <p>The model gets better every few months without any help from me. But what I want,
+  it can only get from me. This repo is a year of telling it.</p>
+
+  <div class="divider"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+  <!-- WHAT IT IS -->
+  <div class="section-pill">
+    <span class="pill">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#9B9B9B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.2" y="2.2" width="9.6" height="9.6" rx="2.4"/><rect x="5.4" y="5.4" width="3.2" height="3.2" rx="0.8"/></svg>
+      What it is
+    </span>
+  </div>
+
+  <p>Claude Code reads a layer of files before it touches your code: skills, hooks,
+  rules, CLAUDE.md, workflow scripts. That layer decides a surprising amount of what
+  the agent actually does, and most people write it once and never look at it again.
+  agent-kitchen treats that layer as the product. Most repos configure a project; this
+  one configures the thing that configures it, which is why I call it a second-order
+  harness. It runs as two plugins under one marketplace.
+  <strong style="font-weight:550;color:var(--ink)">COOK</strong> makes the tools, tastes
+  them, dates them, throws out what's gone stale.
+  <strong style="font-weight:550;color:var(--ink)">SERVE</strong> is what has survived so
+  far. It still tastes better than store-bought.</p>
+
+  <!-- install -->
+  <div class="install">
+    <code id="cmd">/plugin marketplace add claudialnathan/agent-kitchen</code>
+    <button class="icon-btn" onclick="copyCmd(this)" title="Copy">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="#767676" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="8" rx="2"/><path d="M10 3.5V3a1.8 1.8 0 0 0-1.8-1.8H3.8A1.8 1.8 0 0 0 2 3v4.4a1.8 1.8 0 0 0 1.8 1.8h.5"/></svg>
+    </button>
+  </div>
+
+  <div class="divider"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+  <!-- THE PREMISE -->
+  <div class="section-pill">
+    <span class="pill">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#9B9B9B" stroke-width="1.4" stroke-linecap="round"><line x1="2" y1="10.5" x2="12" y2="10.5"/><circle cx="7" cy="4.5" r="2.4"/></svg>
+      The premise
+    </span>
+  </div>
+
+  <p>Ask a frontier model for anything and you get the most probable competent version
+  of the thing: the median commit message, the median review, the median skill. That's
+  what a model is. So a harness that works is a short list of places where what you
+  want is not what's most probable, and every artifact here is one entry on that list:
+  a commitment that drags the model off its median in a direction I chose.</p>
+
+  <div class="card fig" style="padding: 30px 24px 20px;">
+    <svg viewBox="0 0 604 176" width="100%" fill="none" aria-label="A distribution with its median marked as the default, and an artifact pulling output off the median">
+      <defs>
+        <marker id="ah2" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+          <path d="M1 1 L5.5 3.5 L1 6" stroke="#D97757" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- baseline -->
+      <line x1="30" y1="140" x2="574" y2="140" stroke="#EDEDED" stroke-width="1.2"/>
+      <!-- distribution curve -->
+      <path d="M 46 139 C 160 139, 226 26, 302 26 C 378 26, 444 139, 558 139" stroke="#D6D6D6" stroke-width="1.5"/>
+      <!-- median drop -->
+      <line x1="302" y1="32" x2="302" y2="140" stroke="#C9C9C9" stroke-width="1.2" stroke-dasharray="3 4"/>
+      <circle cx="302" cy="26" r="3.5" fill="#202020"/>
+      <!-- artifact pull -->
+      <path d="M 312 30 Q 390 44 424 102" stroke="#D97757" stroke-width="1.4" marker-end="url(#ah2)"/>
+      <circle cx="430" cy="112" r="3.5" fill="#D97757"/>
+      <line x1="430" y1="118" x2="430" y2="140" stroke="#E8C7BB" stroke-width="1.2" stroke-dasharray="3 4"/>
+      <!-- labels -->
+      <g font-family="ui-monospace, SF Mono, Menlo, monospace" font-size="11" text-anchor="middle">
+        <text x="302" y="160" fill="#767676">the default</text>
+        <text x="430" y="160" fill="#AD6A56">with the artifact</text>
+      </g>
+    </svg>
+  </div>
+
+  <p>Each one competes with two forces: the frontier model, which absorbs generic craft
+  with every release, and my time, which every artifact charges rent on. Any rule a
+  stranger could have written is on borrowed time.</p>
+
+  <div class="fig">
+    <div class="duo-label"><span class="pill">what survives the squeeze</span></div>
+    <div class="duo">
+      <div class="card absorbed">
+        <div class="head">
+          <span class="tag">absorbed</span>
+          <span class="badge x"><svg width="10" height="10" viewBox="0 0 10 10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg></span>
+        </div>
+        <ul>
+          <li>prompt patterns</li>
+          <li>best-practice checklists</li>
+          <li>generic personas</li>
+          <li>craft the docs already teach</li>
+        </ul>
+        <div class="foot">free with the next release</div>
+      </div>
+      <div class="card durable">
+        <div class="head">
+          <span class="tag">durable</span>
+          <span class="badge check"><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,5.8 4.4,8.2 9,3"/></svg></span>
+        </div>
+        <ul>
+          <li>taste made operational</li>
+          <li>local truths of a repo or team</li>
+          <li>post-cutoff facts, verified</li>
+          <li>failures observed in session</li>
+        </ul>
+        <div class="foot">the model can't train its way here</div>
+      </div>
+    </div>
+  </div>
+
+  <p>So deletion is the expected end of every artifact here, not the failure of one.</p>
+
+  <div class="divider"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+  <!-- ONE ARTIFACT -->
+  <div class="section-pill">
+    <span class="pill">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#9B9B9B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1.5h5L11.5 5v7.5h-8.5z"/><path d="M8 1.5V5h3.5"/></svg>
+      One artifact, start to finish
+    </span>
+  </div>
+
+  <p>One of the skills in SERVE is called speed-daemon. It exists because the React a
+  bare model writes waits for the network: click, spinner, then the interface moves.
+  The skill flips that default. The interface moves first, the network catches up, and
+  a failed request rolls the change back with a visible error. Underneath it is one
+  opinion: an app should feel like Linear, and this is the component-layer pattern
+  that gets you there.</p>
+
+  <p>It earned its place on 2026-05-22, when Opus 4.7 kept writing the waiting version.
+  The skill carries that fact as a one-line pin, and it keeps the failures that earned
+  it as five runnable probes: the verbatim prompt, what the bare model got wrong, what
+  passing looks like. Everything else, why it exists and every verdict since, lives in
+  CHANGELOG.md. A fix only means something relative to the model it fixed.</p>
+
+  <div class="card pin-card fig">
+    <div class="filebar">
+      <span class="fname">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#9B9B9B" stroke-width="1.3" stroke-linejoin="round"><path d="M3 1.5h5L11.5 5v7.5h-8.5z"/><path d="M8 1.5V5h3.5"/></svg>
+        serve/skills/speed-daemon/SKILL.md
+      </span>
+      <span class="chip">the artifact carries one line</span>
+    </div>
+    <div class="body-block">
+      <span class="pin-line">&lt;!-- Earned against: Opus 4.7, 2026-05-22 — history: CHANGELOG.md --&gt;</span>
+    </div>
+    <div class="filebar" style="border-top:1px solid var(--hairline)">
+      <span class="fname">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="#9B9B9B" stroke-width="1.3" stroke-linejoin="round"><path d="M3 1.5h5L11.5 5v7.5h-8.5z"/><path d="M8 1.5V5h3.5"/></svg>
+        CHANGELOG.md
+      </span>
+      <span class="chip">everything else</span>
+    </div>
+    <div class="body-block ledger">
+      2026-07-05 · Fable 5 · probes replayed: <b>KEPT</b> — 4 of 5 still earning<br>
+      2026-07-05 · Fable 5 · toggle probe: absorbed by Opus 4.8, <b>failing again</b><br>
+      2026-05-22 · Opus 4.7 · earned: the bare model ships pessimistic mutations
+    </div>
+  </div>
+
+  <p>The probes are what keep the claim honest, and they've already paid for themselves
+  twice. A week after the skill shipped, Opus 4.8 passed the easiest probe unaided, and
+  a one-probe check would have deleted a skill that was still needed; the other four
+  probes still failed, so the rule became that nothing dies until every probe passes.
+  Then the first Fable 5 replay found that same easy case failing again. Absorption
+  runs backwards too, so probes never retire while the skill lives. The verdict this
+  release: four of five still earning, KEPT.</p>
+
+  <p>The day all five pass unaided, the model has absorbed the job and the skill gets
+  deleted. That has already happened once elsewhere in the kitchen: a workflow-design
+  skill died when the tool it wrapped began carrying the same guidance in its own
+  description.</p>
+
+  <div class="divider"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+  <!-- COOK -->
+  <div class="section-pill">
+    <span class="pill">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#9B9B9B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11.7 7A4.7 4.7 0 1 1 9.9 3.3"/><polyline points="10.2,1.2 10.2,3.6 7.8,3.6"/></svg>
+      Cook
+    </span>
+  </div>
+
+  <p>COOK is where artifacts come from, and it runs as a loop. It mines session
+  transcripts for the corrections I had to make twice. Once is conversation; twice is
+  a failure worth keeping, and the no-skill baseline already ran, in production, in
+  those sessions. The forge routes each failure to the surface that should hold it (a
+  skill, a hook, a path-scoped rule, a line of CLAUDE.md) and holds everything to one
+  bar: earned by a real failure or a real source, shifts the agent's attention in a way
+  you can name, beats the model's default. Probes keep the earning failure runnable.
+  And because everything the agent loads at session start is context some task can't
+  use, an audit prices what each artifact costs to carry and removes what doesn't
+  cover its rent.</p>
+
+  <div class="card loop-card fig">
+    <svg viewBox="0 0 604 104" width="100%" fill="none" aria-label="The cook loop: harvest, forge, probes, audit, and back">
+      <defs>
+        <marker id="ah" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+          <path d="M1 1 L5.5 3.5 L1 6" stroke="#BDBDBD" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- return path -->
+      <path d="M528.5 44 L528.5 68 Q528.5 80 516.5 80 L87.5 80 Q75.5 80 75.5 68 L75.5 52" stroke="#D6D6D6" stroke-width="1.3" stroke-dasharray="3 4" marker-end="url(#ah)"/>
+      <rect x="227" y="70" width="150" height="20" rx="10" fill="#FFFFFF" stroke="#EDEDED"/>
+      <text x="302" y="83.5" font-family="ui-monospace, SF Mono, Menlo, monospace" font-size="11" fill="#767676" text-anchor="middle">keep · revise · delete</text>
+      <!-- nodes -->
+      <g font-family="ui-monospace, SF Mono, Menlo, monospace" font-size="12" letter-spacing="1">
+        <rect x="27.5" y="10" width="96" height="34" rx="17" fill="#FFFFFF" stroke="#E4E4E4"/>
+        <text x="75.5" y="31.5" fill="#202020" text-anchor="middle">HARVEST</text>
+        <rect x="188.5" y="10" width="76" height="34" rx="17" fill="#FFFFFF" stroke="#E4E4E4"/>
+        <text x="226.5" y="31.5" fill="#202020" text-anchor="middle">FORGE</text>
+        <rect x="335.5" y="10" width="84" height="34" rx="17" fill="#FFFFFF" stroke="#E4E4E4"/>
+        <text x="377.5" y="31.5" fill="#202020" text-anchor="middle">PROBES</text>
+        <rect x="490.5" y="10" width="76" height="34" rx="17" fill="#FFFFFF" stroke="#E4E4E4"/>
+        <text x="528.5" y="31.5" fill="#202020" text-anchor="middle">AUDIT</text>
+      </g>
+      <!-- forward arrows -->
+      <line x1="133.5" y1="27" x2="178.5" y2="27" stroke="#BDBDBD" stroke-width="1.3" marker-end="url(#ah)"/>
+      <line x1="274.5" y1="27" x2="325.5" y2="27" stroke="#BDBDBD" stroke-width="1.3" marker-end="url(#ah)"/>
+      <line x1="429.5" y1="27" x2="480.5" y2="27" stroke="#BDBDBD" stroke-width="1.3" marker-end="url(#ah)"/>
+    </svg>
+    <div class="loop-caps">
+      <div>corrections<br>made twice</div>
+      <div>failure becomes<br>artifact</div>
+      <div>the failure,<br>runnable</div>
+      <div>pays rent<br>or leaves</div>
+    </div>
+  </div>
+
+  <p>The forge's hardest question is whether an artifact is additive or transformative:
+  does it save me typing, or does it change what the agent can think of doing? Only the
+  second kind earns its context.</p>
+
+  <div class="divider"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+  <!-- SERVE -->
+  <div class="section-pill">
+    <span class="pill">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#9B9B9B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.2"/><polyline points="4.7,7.1 6.3,8.7 9.4,5.4"/></svg>
+      Serve
+    </span>
+  </div>
+
+  <p>SERVE carries the standing claim that everything in it beats the unaided current
+  model at its job, provably, the way speed-daemon just did. On each model release
+  every probe in the plugin replays against the bare model in a clean session, and the
+  verdicts land in the changelog: keep, revise, delete.</p>
+
+  <div class="card life fig">
+    <span class="node-black">MODEL RELEASE</span>
+    <span class="vline"></span>
+    <span class="node-white">replay every probe against the bare model, clean session</span>
+    <svg class="split" viewBox="0 0 520 32" fill="none" preserveAspectRatio="none">
+      <path d="M260 0 L260 8 Q260 16 250 16 L140 16 Q130 16 130 24 L130 32" stroke="#DBDBDB" stroke-width="1.2"/>
+      <path d="M260 0 L260 8 Q260 16 270 16 L380 16 Q390 16 390 24 L390 32" stroke="#DBDBDB" stroke-width="1.2"/>
+    </svg>
+    <div class="life-grid">
+      <div>
+        <div class="lbl">a probe still fails</div>
+        <div class="box keep">
+          <span class="badge check"><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,5.8 4.4,8.2 9,3"/></svg></span>
+          <div>
+            <div class="t">the skill keeps its place</div>
+            <div class="s">re-pin · verdict: KEPT</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="lbl">every probe passes unaided</div>
+        <div class="box gone">
+          <span class="badge x"><svg width="10" height="10" viewBox="0 0 10 10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg></span>
+          <div>
+            <div class="t">the job is absorbed, the skill is deleted</div>
+            <div class="s">verdict in CHANGELOG.md: DELETED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="life-note">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#9B9B9B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.3 7A4.7 4.7 0 1 1 4.1 10.7"/><polyline points="3.8,12.8 3.8,10.4 6.2,10.4"/></svg>
+      absorption is not monotonic · probes never retire
+    </div>
+  </div>
+
+  <p>Provably is only as strong as the pass call, so the pass criterion gets written
+  the day the failure happens, as things a judge can check in the output, never
+  adjectives. Skills that encode taste get two verdicts per replay, the mechanical one
+  and mine, and mine wins. When the two disagree, that's a finding: an output that
+  passes every written tell and still reads wrong means the tells are missing one, and
+  the gap gets harvested. What taste means here is concrete. One probe asks for
+  animation on a surface people hit a hundred times a day; the bare model delivers it,
+  with real craft and zero pushback. Knowing how is absorbed. Knowing when not to is
+  still mine.</p>
+
+  <div class="divider"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+  <!-- HOW IT WAS MADE -->
+  <div class="section-pill">
+    <span class="pill">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#9B9B9B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8.2a1.6 1.6 0 0 1-1.6 1.6H6.2L3 12.4V3.9a1.6 1.6 0 0 1 1.6-1.6h5.8A1.6 1.6 0 0 1 12 3.9z"/></svg>
+      How it was made
+    </span>
+  </div>
+
+  <p>All of it was made in conversation with the thing it configures. The artifacts
+  are the residue of the arguments: each one points to a session where the bare model
+  failed and the fix proved worth keeping. The artifact itself never mentions the chat
+  that produced it, though; the next reader was never there.</p>
+
+  <div class="fig">
+    <div class="card chat">
+      <div class="row">
+        <span class="avatar cn">CN</span>
+        <span class="msg">Would this rule change anything you'd actually do?</span>
+      </div>
+      <div class="row">
+        <span class="avatar cl">✳</span>
+        <span class="msg">Not much. The default already covers it.</span>
+      </div>
+      <div class="row">
+        <span class="avatar cn">CN</span>
+        <span class="msg">Then it doesn't ship. What would change something?</span>
+      </div>
+      <div class="row">
+        <span class="avatar cl">✳</span>
+        <span class="msg">Tell me what you'd delete from your own writing. That I can't guess.</span>
+      </div>
+    </div>
+    <div class="cap">most artifacts die here, before they're written</div>
+  </div>
+
+  <p>There's no standard for any of this yet; nobody has kept one coding agent
+  configured across enough model releases for one to form. What I have is the idea
+  from the top: the model hands you the most probable version of whatever you ask for,
+  and the harness is the short list of places where I want something else. Neither
+  side can write that list alone. I can't see the distribution from where I stand; the
+  model can't guess my deviations from where it does. So the list gets written in
+  conversation, and the pins, probes and verdicts are the bookkeeping that keeps it
+  true while the base underneath it moves.</p>
+
+  <p>The next model release will delete some of these artifacts. What's left is what
+  the model still can't have.</p>
+
+  <div class="divider"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+  <footer>
+    <span style="color:var(--ink)">AGENT-KITCHEN</span>
+    <span class="block">█</span>
+    <span>COOK | SERVE</span>
+    <span>·</span>
+    <a href="https://github.com/claudialnathan/agent-kitchen">github.com/claudialnathan/agent-kitchen</a>
+  </footer>
+
+</div>
+<script>
+  function copyCmd(btn) {
+    navigator.clipboard.writeText(document.getElementById('cmd').textContent.trim());
+    const svg = btn.innerHTML;
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="#3B9440" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,8 6.2,11.2 12,4.5"/></svg>';
+    setTimeout(() => { btn.innerHTML = svg; }, 1200);
+  }
+</script>
+</body>
+</html>

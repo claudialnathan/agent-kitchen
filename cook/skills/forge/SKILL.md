@@ -17,7 +17,7 @@ paths:
 
 # forge
 
-<!-- Earned against: Opus 4.8, 2026-06-19, v2.1.177; revised 2026-07-05 (Fable 5, v2.1.201) — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.8, 2026-06-19, v2.1.177 — history: CHANGELOG.md -->
 
 A skill transplants expertise. Its only measure is the work it makes the agent produce — judged at the output, against the standard of the best practitioner alive in the domain. Surfaces, triggering, token cost, lifecycle — everything else in this file — is plumbing that gets that expertise in front of the agent at the right moment. A flawlessly-packaged artifact encoding mediocre expertise is worthless; a roughly-packaged one encoding genuine expertise is valuable. Optimize in that order, always.
 
@@ -33,7 +33,7 @@ An artifact earns its existence on three bars, heaviest first:
 
 The test of *kind* is **additive vs transformative** — and it is about the work, not the token bill. An additive artifact lists steps and changes nothing foreground; the agent still attends to mechanics. A transformative one pushes mechanics into the background and elevates the real question (*should we ship?*, *is this result trustworthy?*, *is this even the right problem?*) — it changes what the agent can think about. Aim transformative. Cost discipline — lean bodies, tight descriptions, the right surface — is real and lives below; it is how you *afford* the expertise, never what you trade it for.
 
-Every non-trivial artifact carries a one-line pin — `<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->` — and its rationale, sunset trigger, and re-test verdicts go to CHANGELOG.md, never into the artifact. Artifacts never reference the conversation that produced them. A pinned model can be withdrawn, not just superseded; re-pin to the period's durable default so the trigger stays runnable.
+Every non-trivial artifact carries a one-line pin — `<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->` — recording the earning event only; rationale, sunset triggers, re-test verdicts, and revision notes go to CHANGELOG.md, never into the artifact. Appended `re-tested`/`revised` clauses are history wearing the pin's format — they pass as pin material because they too are models and dates, and that is exactly how pins re-bloat. Artifacts never reference the conversation that produced them. A pinned model can be withdrawn, not just superseded; re-pin to the period's durable default so the trigger stays runnable.
 
 ## Triage — pick the surface
 

@@ -128,8 +128,9 @@ done
 # 7. Model-version pins (advisory). CLAUDE.md "Model-version pinning and provenance":
 #    each non-trivial artifact carries a ONE-LINE pin near the top of the body
 #    (`<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->`) that triggers a
-#    sunset audit when a new model lands. History, sunset triggers, and re-test verdicts
-#    live in CHANGELOG.md, not in the pin. Reports per-skill but doesn't fail —
+#    sunset audit when a new model lands. The pin records the earning event ONLY:
+#    re-tested/revised clauses are history wearing the pin's format and live in
+#    CHANGELOG.md, not in the pin. Reports per-skill but doesn't fail —
 #    judgement of "non-trivial" stays with the author.
 echo
 echo "Model-version pins (advisory; history belongs in CHANGELOG.md):"
@@ -141,6 +142,8 @@ for d in cook/skills/*/ serve/skills/*/; do
   if [ -n "$pin" ]; then
     if [ "${#pin}" -gt 180 ]; then
       printf "  %-30s pinned — warn: %d chars; pins are one line, move the history to CHANGELOG.md\n" "$(basename "$d")" "${#pin}"
+    elif printf '%s' "$pin" | grep -qiE ';[[:space:]]*(re-?tested|revised|KEPT|DELETED)'; then
+      printf "  %-30s pinned — warn: second event in pin (%s); the pin records the earning event only, verdicts and revisions go to CHANGELOG.md\n" "$(basename "$d")" "$pin"
     else
       printf "  %-30s pinned (%s)\n" "$(basename "$d")" "$pin"
     fi

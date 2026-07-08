@@ -5,7 +5,7 @@ description: |
 disable-model-invocation: true
 ---
 
-<!-- Earned against: Opus 4.7, 2026-05-22; re-tested KEPT 2026-05-29 (Opus 4.8); revised 2026-06-08 (v2.1.165) — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.7, 2026-05-22 — history: CHANGELOG.md -->
 
 ## The attention this skill redirects
 

@@ -12,6 +12,8 @@ From "read the config files and comment" to "measure what every session pays bef
 
 The default failure is a vibes review: opening CLAUDE.md, calling it well-written, and missing that the setup burns five figures of tokens per session on descriptions, instructions, and rosters nobody chose deliberately. The second failure is trusting the harness's documentation of itself — files that say "this is not loaded" while being loaded, checklists that say "always run X" with nothing enforcing X.
 
+The third failure is this skill's own trap: treating cost as the verdict. Tokens are what's easy to count; what a surface lets the owner produce is what decides, and an audit that only counts always lands on cut — the cheapest harness is the empty one. A surface the owner reaches for is already earning its cost, and that she uses it is the evidence it clears the bar, not a number to override. Report what each surface costs so the owner spends deliberately; never strip toward zero.
+
 ## Step 1 — Inventory the standing surfaces
 
 List everything that enters context at session start, with its scope and owner:
@@ -72,9 +74,11 @@ Finding and quantifying these gaps is this skill's job; authoring the fixes — 
 
 Forge writes only inside the current repository. Everything at **machine scope** — anything under `~/.claude/` (personal skills, user `CLAUDE.md`/`settings.json`, `skillOverrides`, user-scope hooks), enterprise or managed settings, global `enabledPlugins`, and anything that changes another repo — is **inventory-and-report only**. Never edit it, never stage an edit, never ask "shall I apply this?"; the audit's job at machine scope ends at the observation the owner acts on herself. This holds even when the finding is obviously correct and the fix is one line — the owner owns her machine. It is a hard boundary, not a default to weigh.
 
+A cost is not yet a verdict. Before any finding recommends removing or disabling a capability — a skill, plugin, MCP server, or hook — weigh whether the owner uses it; a used surface is reported at its cost, never cut, and a disable becomes a recommendation only where she confirms she does not reach for it. Removing a capability is never **Applied**, whatever its scope: an unrequested disable is the harm the audit exists to prevent, not a saving it delivers.
+
 Every finding is quantified and lands in one bucket:
 
-- **Applied** — current-repo and reversible: content moves (splitting a loaded file), project-local settings in *this* repo's `.claude/`. Apply directly; note the reversal where the change lives.
+- **Applied** — current-repo, reversible, and capability-preserving: content moves (splitting a loaded file), reorganizing project-local settings in *this* repo's `.claude/`. Never a disable or a deletion. Apply directly; note the reversal where the change lives.
 - **Proposed** — current-repo behavior-config the auto-mode classifier gates: this repo's hooks, `settings.local.json`, project-scope plugin toggles. Present exact file contents, ask, apply on an explicit yes. The classifier denies harness self-modification without explicit intent — surface the change and ask; never route around a denial.
 - **Reported** — every machine-scope and cross-repo finding. State the exact edit the owner can make herself (file, change, token saving) and stop. No staged file, no apply prompt, no question that reads as an offer to apply.
 - **Held** — fails the bar: would not change what the user or agent actually does.
@@ -82,7 +86,7 @@ Every finding is quantified and lands in one bucket:
 ## Anti-patterns
 
 - **Vibes without counts.** "Your CLAUDE.md looks clean" is not an audit.
-- **Equating more skills with more capability.** Past the description budget, each addition taxes every turn of every session; the marginal skill must out-earn its standing cost.
+- **Recommending a cut you never use-tested.** Flagging a skill, plugin, or server for removal on token cost alone, without weighing whether the owner reaches for it. The description budget is real and the *unchosen* marginal artifact taxes every turn — but a used one out-earns its cost by being used; report its cost, do not charge it as waste.
 - **Bulk-disabling without a reversal note.** Every disable gets a one-line "flip this back by..." where the change lives.
 - **Auditing only the visible skill list.** MCP instruction blocks and agent rosters are quieter and often bigger.
 - **Drifting into skill-body content review.** Whether a *skill's* guidance is expert-grade is the forge's job; this skill audits the setup — including the always-on CLAUDE.md chain that frames it — not the quality of individual artifact bodies.

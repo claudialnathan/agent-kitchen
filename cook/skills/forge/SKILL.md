@@ -35,6 +35,8 @@ The test of *kind* is **additive vs transformative** — and it is about the wor
 
 Every non-trivial artifact carries a one-line pin — `<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->` — recording the earning event only; rationale, sunset triggers, re-test verdicts, and revision notes go to CHANGELOG.md, never into the artifact. Appended `re-tested`/`revised` clauses are history wearing the pin's format — they pass as pin material because they too are models and dates, and that is exactly how pins re-bloat. Artifacts never reference the conversation that produced them. A pinned model can be withdrawn, not just superseded; re-pin to the period's durable default so the trigger stays runnable.
 
+**Scope: build in-repo, never reach into machine scope.** Every artifact forge writes lands inside the current repository. Machine-scope surfaces — anything under `~/.claude/`, user or enterprise `settings.json`, global `enabledPlugins`/`skillOverrides`, user-scope hooks — are read for context but never written, staged, or offered for apply, even during an audit and even when the fix is one obvious line. Installing or enabling an artifact machine-wide is the owner's action to take; report it, don't perform it. A hard boundary, not a default to weigh.
+
 ## Triage — pick the surface
 
 Run the ladder in order; first match wins. A refined harness trends toward *fewer* artifacts, each doing what only it can.

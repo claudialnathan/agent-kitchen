@@ -1,8 +1,8 @@
 ```
 HACKS, FYIs & NICE-TO-KNOWS █
-CLAUDE CODE v2.1.201 + CLAUDE AGENT PLATFORM
+CLAUDE CODE v2.1.204 + CLAUDE AGENT PLATFORM
 
-UPDATED: 2026-07-04
+UPDATED: 2026-07-08
 SOURCE REPO: anthropics/claude-code/blob/main/CHANGELOG.md
 STATUS: DRAFT
 ```
@@ -167,7 +167,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 </table>
 
 > [!NOTE]
-> **Fable 5 + Mythos 5 restored 2026-07-01** — a 19-day US export-control suspension (from 2026-06-12) was lifted 2026-06-30; both are back globally (API/AWS/Foundry), rollout throttled to ≤50% of weekly usage limits through 2026-07-07, then usage credits. Neither the suspension nor the restoration hit the CC changelog: model availability moves independently of it, so check it out of band on every bump.
+> **Fable 5 + Mythos 5 restored 2026-07-01** — a 19-day US export-control suspension (from 2026-06-12) was lifted 2026-06-30; both are back globally (API/AWS/Foundry), rollout throttled to ≤50% of weekly usage limits through 2026-07-12, then usage credits. Neither the suspension nor the restoration hit the CC changelog: model availability moves independently of it, so check it out of band on every bump.
 
 Fable 5 (<code>/model fable</code>,<sup>NEW</sup> <kbd><samp>v2.1.170</samp></kbd>) reroutes classifier-flagged requests (cybersecurity/biology) to Opus mid-session — and can trip on <em>workspace context</em> alone (CLAUDE.md, git status, directory names) before you type anything. <code>claude --safe-mode</code> isolates whether your config is the trigger; <code>/config</code> → "switch models when a message is flagged" off = pause-and-ask instead of silent switch.
 
@@ -447,6 +447,6 @@ lap's configuration.
 
 ```
 EVERY FLAG, FIELD, AND VERSION ABOVE: COPIED FROM A DOC, NOT RECALLED.
-RE-CHECKED: 2026-07-04 · AGAINST: v2.1.201 · AUTHORITATIVE: docs changelog
+RE-CHECKED: 2026-07-08 · AGAINST: v2.1.204 · AUTHORITATIVE: docs changelog
 ON DRIFT: FIX IT HERE, RE-PIN THE DATE.
 ```

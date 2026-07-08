@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 4 July 2026 | Version: v2.1.201
+Last updated: 8 July 2026 | Version: v2.1.204
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
@@ -64,7 +64,7 @@ Features that changed how skills get built, in rough order of impact:
 - Effort levels `low`–`max`, default `high`. Adaptive reasoning is always on; thinking cannot be disabled — `Option+T`, `alwaysThinkingEnabled`, and `MAX_THINKING_TOKENS=0` have no effect.
 - **Classifier fallback**: requests flagged for cybersecurity or biology re-run on the default Opus model, and the session stays there until `/model fable`. Can trigger on the first request from workspace context alone (CLAUDE.md, git status, directory names); `claude --safe-mode` isolates whether customizations are the trigger, and a `/config` toggle pauses to ask instead of switching. `-p` and SDK runs get a refusal instead. Offensive-security, CTF, and biology work reroutes frequently by design.
 - 1M context window always on via the Anthropic API; the model ID is `claude-fable-5` (a `[1m]` suffix is redundant and stripped automatically). Not available under zero data retention.
-- API pricing $10/$50 per Mtok in/out. The June 9–22 subscription-inclusion window was cut short by the suspension; on restoration (2026-07-01) rollout was throttled to ≤50% of weekly usage limits through 2026-07-07, then via usage credits.
+- API pricing $10/$50 per Mtok in/out. The June 9–22 subscription-inclusion window was cut short by the suspension; on restoration (2026-07-01) rollout was throttled to ≤50% of weekly usage limits through 2026-07-12, then via usage credits.
 - Prompting shifts: describe outcomes rather than steps, hand it ambiguous problems, size up tasks you'd normally split; verification reminders are usually unnecessary.
 - New levers: `ANTHROPIC_DEFAULT_FABLE_MODEL` (alias target; also what enables fallback on Bedrock/Vertex/Foundry), `DISABLE_PROMPT_CACHING_FABLE`.
 - **Mythos 5** is the same model without cybersecurity safeguards, restricted to vetted partners — not a Claude Code surface.
@@ -75,6 +75,7 @@ Features that changed how skills get built, in rough order of impact:
 - `/workflows` shows your runs.
 - Type `ultracode` in a prompt to fire one off — renamed from the bare word `workflow`, which no longer triggers a run (asking in your own words still does). The keyword highlights violet in the input; a `/config` setting disables it.
 - `/effort ultracode` makes workflows the default — Claude authors and runs one for every substantive task, not just on the keyword. Offered only where the model supports `xhigh`.
+- A **Dynamic workflow size** setting (`/config`, v2.1.202) steers how large Claude generally makes workflows (small/medium/large agent counts) — advisory guidance, not an enforced cap.
 - The heaviest fan-out option, alongside agent teams and `/batch`; the model decomposes and pipelines the work itself.
 - **It's an authorable artifact, not just a prompt.** A workflow is a JavaScript orchestration script (`agent()` / `parallel()` / `pipeline()` / `phase()`); the runtime runs it in the background while agents work in fresh contexts. Sandbox: no filesystem, no `Date.now()`/`Math.random()` in the script; ~16 concurrent agents, 1,000 per run. Save a run as a reusable `/command` in `.claude/workflows/<name>.js` (input via the global `args`).
 - **Why the surface exists:** it replaces the model's plan-and-execute-in-one-drifting-context default with deterministic control flow — countering *agentic laziness* (declaring a 50-item task done at 35), *self-preferential bias* (preferring its own results when it self-grades — hence adversarial verification in a separate agent), and *goal drift* after compaction.
@@ -213,6 +214,7 @@ The hook surface has accumulated several useful fields:
 - **`/config key=value`** (v2.1.181) — set any setting straight from the prompt (e.g. `/config thinking=false`); works in interactive, `-p`, and Remote Control. `/config --help` lists the shorthand keys.
 - **`!` bash output now gets a response** (v2.1.186) — a `! <command>` run prompts Claude to react to the output, not just load it into context; `respondToBashCommands: false` restores the old context-only behavior.
 - **`claude mcp login <name>` / `claude mcp logout <name>`** (v2.1.186) — authenticate an MCP server from the CLI without opening `/mcp`; `--no-browser` redirects the flow over SSH.
+- **MCP `roots/list` includes the session's extra working dirs** (v2.1.203) — additional (`--add-dir`) roots now appear alongside the primary cwd, with a `notifications/roots/list_changed` when the set changes; a workspace-aware MCP server can drop its own dir-discovery heuristics.
 - **Skill frontmatter keys are case-style-insensitive** (v2.1.186) — `display-name`, `default-enabled`, `fallback`, and `metadata.*` accept kebab-case, snake_case, or camelCase; malformed YAML frontmatter now loads the body with empty metadata instead of failing silently.
 - **`sandbox.credentials` setting** (v2.1.187) — blocks sandboxed commands from reading credential files and secret environment variables.
 - **Subagents run in the background by default** (GA, v2.1.198) — Claude keeps working while a delegated subagent runs and is notified on completion, instead of blocking the turn. Background agents launched from `claude agents` now also commit, push, and open a draft PR when they finish code work in a worktree.
@@ -237,7 +239,7 @@ The hook surface has accumulated several useful fields:
 
 These exist in stock Claude Code; building parallel skills competes for description budget:
 
-- **`/code-review`** (skill) — reports correctness bugs in the current diff at the requested effort level (e.g. `/code-review high`); `--comment` posts findings as inline GitHub PR comments, `--fix` applies them to the working tree.
+- **`/code-review`** (skill) — reports correctness bugs in the current diff at the requested effort level (e.g. `/code-review high`); `--comment` posts findings as inline GitHub PR comments, `--fix` applies them to the working tree. For a PR, `/code-review <level> <pr#>` runs the multi-agent review; plain `/review <pr>` is a fast single-pass review (the split was restored v2.1.202).
 - **`/simplify`** (skill) — cleanup-only review of the diff (reuse, simplification, efficiency, altitude) that applies its fixes; a quality pass, not bug-hunting — use `/code-review` for bugs.
 - **`/batch <instruction>`** (skill) — decomposes large changes into 5–30 units; spawns one background agent per unit in isolated worktrees; opens PRs.
 - **`/debug`** (skill) — captures debug logs from current point forward; analyzes issues.
@@ -342,7 +344,7 @@ Cross-tool standards:
 
 Things that were research previews or moving fast at the time of writing:
 
-- **Fable 5 is back** (restored 2026-07-01 after the US export-control order was lifted — see the Fable 5 section above). `/model fable` selects it again and `best` resolves to it where the org has access. Rollout was throttled to ≤50% of weekly usage limits through 2026-07-07, then usage credits. The episode is a standing reminder that model availability moves independently of the changelog.
+- **Fable 5 is back** (restored 2026-07-01 after the US export-control order was lifted — see the Fable 5 section above). `/model fable` selects it again and `best` resolves to it where the org has access. Rollout was throttled to ≤50% of weekly usage limits through 2026-07-12, then usage credits. The episode is a standing reminder that model availability moves independently of the changelog.
 - **Agent view (`claude agents`)** is research preview. Surface and command shape may shift.
 - **Forked subagents** remain gated behind `CLAUDE_CODE_FORK_SUBAGENT=1` (v2.1.117+); now work in SDK and `-p` modes as well as interactive. Likely to become default eventually.
 - **Auto mode** is in research preview. Default thresholds and classifier behavior may change. `hard_deny` rules are stable.

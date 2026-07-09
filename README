@@ -3,32 +3,31 @@ COOK | SERVE
 
 ─────────────────────
 
-agent-kitchen is a second-order harness; it is a kitchen for the things that configure coding agents (skills, hooks, rules, CLAUDE.md, workflows).
+agent-kitchen is a second-order harness: it is a kitchen for the things that configure coding agents (skills, hooks, rules, CLAUDE.md, workflows). It runs as dotfiles for the agent in the form of two plugins under a marketplace:
 
-It operates as dotfiles for your agent in the form of two plugins under a marketplace:
 
 - COOK makes the tools, tastes them, dates them, throws out what's gone stale.
 - SERVE is what's survived for me so far. It still tastes better than store-bought.
 
 The kitchen is built on the idea that:
 
-A frontier model in 2026 is very competent at most things, but its default in any domain is the competent average version of the thing. The artifacts here are commitments that drag the model off that median in a chosen direction.
+Every artifact competes with two forces: the unaided frontier model, which absorbs generic craft with each release, and the owner's time, which every artifact charges rent on.
 
-Every artifact competes with two forces: the unaided frontier model, which absorbs generic craft with each release, and the owner's time, which every artifact charges rent on. 
+So durable value comes from what the model cannot have: the owner's taste and intent made operational, local truths of a repo or team, verified facts from after the training cutoff, and failures actually observed in sessions.
 
-So durable value comes from what the model cannot have: the owner's taste and intent made operational, local truths of a repo or team, verified facts from after the training cutoff, and failures actually observed in sessions. Everything else gets absorbed, so deletion is the expected end of every artifact here, not a failure of one.
+Everything else gets absorbed, so deletion is the expected end of every artifact here, not a failure of one.
 
 ─────────────────────
 
 COOK
 
-The loop: HARVEST surfaces the gaps (ideas, miscommunications, failures), FORGE turns them into artifacts, probes check they still earn their place and HARNESS-AUDIT removes what doesn't.
+Cook can operate as a set of skills that can be used on an as-needed bases, or a loop: HARVEST surfaces the gaps (ideas, miscommunications, failures), FORGE turns them into artifacts, probes check they still earn their place and HARNESS-AUDIT removes what doesn't.
 
-- FORGE: one triage ladder routes a behavior to the right surface (skill, hook, path-scoped rule, CLAUDE.md, workflow, subagent, MCP), with a stance that sets the bar each artifact has to clear. judges an artifact by the work it makes the agent produce, not by the artifact's own shape.
+- FORGE: ne triage ladder routes a behavior to the right surface (skill, hook, path-scoped rule, CLAUDE.md, workflow, subagent, MCP), with a stance that sets the bar each artifact has to clear and judges it by the work it makes the agent produce, not by the artifact's own shape.
 
 - HARNESS-AUDIT: inventories everything loaded at session start, counts the per-session token cost, and runs four checks: self-consistency, duplication across scopes, enforcement parity, scope discipline. Built to remove things rather than add them.
 
-- HARVEST: mines session transcripts for the corrections the user had to make twice, dedups them against the standing harness, and hands survivors to the forge as earned-intent evidence. the without-the-skill baseline already ran, in production, in those sessions.
+- HARVEST: mines session transcripts for the corrections the user had to make twice, dedups them against the standing harness, and hands survivors to the forge as earned-intent evidence. The without-the-skill baseline already ran, in production, in those sessions. 
 
 - INGEST: turns resources provided by the user into an artifact by fanning out one reader subagent per source, grounded in verbatim quotes.
 
@@ -36,11 +35,11 @@ The loop: HARVEST surfaces the gaps (ideas, miscommunications, failures), FORGE 
 
 SERVE
 
-My applied skills (what COOK has produced that has survived several seasons of models and audits).
+My applied skills (what COOK has produced that has survived several seasons of models and audits). Everything in Serve should earn its place only by beating the unaided current model on the gap that created it, checked by a runnable probe and not assumed (process skills are exempt: their value is the owner wanting the procedure, which no release absorbs).
 
-- The standing claim: expertise and taste skills in SERVE earn their place by beating the unaided current model on the gap that created them — each carries `evals/probes.md` (the verbatim prompt, the default it diverges from, the pass criterion) so the claim stays checkable, not assumed. **Process skills** (quality-audit, worklog, worklog-minor) are exempt: their value is the owner wanting the procedure; a model release cannot absorb that, and they carry no probe deletion rule.
+- Each such skill keeps the gap that earned it as a runnable fixture in evals/probes.md: the verbatim prompt, what the bare model gets wrong and the pass criterion.
 
-- On each model release the probes replay against the bare model in a clean session. Verdicts land in a per-model table and CHANGELOG.md. When every probe passes unaided, the model has absorbed the skill's job and the skill is deleted.
+- On each model release the probes replay against the bare model in a near-clean session (safe-mode still leaks some account context). Verdicts land in a per-model table and CHANGELOG.md. When every probe passes unaided, the model has absorbed the skill's job and the skill is deleted.
 
 - Absorption is not monotonic: a case one model absorbed can regress on the next model line, so probes never retire while the skill lives.
 

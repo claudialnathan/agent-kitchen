@@ -10,6 +10,7 @@ scratch/
 .eval-runs/
 TODO.md
 claudia/
+HANDOFF-*.md
 
 # Eval / probe RUN OUTPUTS — keep the scripts (gen-probe.sh, grade-probe.js, run-probe*.sh),
 # the manifests (*-batch.txt), and the probes.md specs tracked; do NOT commit produced output.

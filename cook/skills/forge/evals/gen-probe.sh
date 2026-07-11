@@ -162,7 +162,9 @@ $task"
     flags+=(--safe-mode)
   fi
 
-  env -u CLAUDECODE claude "${flags[@]}" \
+  # ANTHROPIC_OAUTH_TOKEN is session-scoped when run from inside a Claude Code
+  # session; inheriting it 401s the nested CLI. Fall back to stored login.
+  env -u CLAUDECODE -u ANTHROPIC_OAUTH_TOKEN claude "${flags[@]}" \
     --append-system-prompt "$system" \
     -p "$user" < /dev/null > "$run_dir/OUTPUT.md" 2> "$run_dir/STDERR.txt" || true
 

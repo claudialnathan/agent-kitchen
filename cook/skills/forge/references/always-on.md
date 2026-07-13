@@ -14,11 +14,20 @@ The always-on surfaces. CLAUDE.md is loaded in full every turn; a rule loads whe
 
 **What's left is small** — five kinds: *intent* (what this place is for, in a paragraph), *spirit* (dispositions the agent wouldn't infer), *durable harness traps* (failures about how the harness reads the repo — rare and worth their tokens), *pointers* (where the rest of the discipline lives, named once), and *framing caveats* ("if a rule contradicts the code, the code is authoritative" — one line that buys the file resilience).
 
+**Orientation is a job, not a leak.** The most useful thing a CLAUDE.md does for a cold agent is orient it: the shape of the system, where the load-bearing pieces live, which non-obvious surfaces exist (the `bin/` script that compiles-and-runs in one step, the config flag to flip for production, the memory limit that only bites on large files). That is the *pointers* kind read at full width — not just "where the discipline lives" but "where the code's expensive-to-discover structure lives." A repo with no map makes every session re-derive the same layout. "Never current state" suppresses the *mirror*, not the *map*; read alone it wrongly deletes orientation, which is why the operative test below matters more than the slogan.
+
+**Point, don't mirror.** Map what is expensive to discover; name the location, never copy the value. The asymmetry is what makes one earn and the other rot:
+
+- **Pointer** — "routing is hard-coded in `handle_request`"; "the tunable constants live at the top of `app.bas`"; "page content in `web/pages/`." Survives the *common* edit (changing a constant's value, adding a page); rots only on a rename, which is rare and a one-word fix. Saves a search every session.
+- **Mirror** — "`MAX_CLIENTS = 8`", "16 pages", the dependency list, the directory tree. Copies a value whose canonical home is elsewhere; wrong on the *common* edit and now actively misleading, at recurring token cost for zero discovery saved.
+
+The dividing test is discovery cost, not "is it about the code": architecture, cross-cutting flows, why-it's-shaped-this-way, and non-obvious locations are cheap to state and dear to find — map them as pointers. Anything a `grep`, `ls`, or manifest answers in one shot is a mirror — point at it or leave it to the code.
+
 **Where the rest goes:**
 
 | Candidate | Goes to |
 | :--- | :--- |
-| File layout, dependencies, build/test commands, lint conventions | The code/configs already say it. Cut |
+| File layout, dependencies, discoverable build/test/lint commands (`npm test`) | The code/configs already say it. Cut — but a `bin/` script whose composed behavior its name doesn't reveal is a pointer, keep that |
 | "Always X" / "Never Y" enforcement | Hook, or `permissions.deny` |
 | Path-narrow conventions | `.claude/rules/<name>.md` with `paths:` |
 | Procedures with steps | Skill |

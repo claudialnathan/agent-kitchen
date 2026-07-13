@@ -1,8 +1,8 @@
 ```
 HACKS, FYIs & NICE-TO-KNOWS █
-CLAUDE CODE v2.1.204 + CLAUDE AGENT PLATFORM
+CLAUDE CODE v2.1.207 + CLAUDE AGENT PLATFORM
 
-UPDATED: 2026-07-08
+UPDATED: 2026-07-13
 SOURCE REPO: anthropics/claude-code/blob/main/CHANGELOG.md
 STATUS: DRAFT
 ```
@@ -88,6 +88,7 @@ A couple lesser-known or new features I like.
 <tr><td>inline MCP data</td><td><code>@server:resource</code> (<code>@github:issue://123</code>) · <code>/mcp__server__prompt</code></td><td>Pull live MCP data inline like an <code>@file</code>; surface server prompts as slash commands.</td></tr>
 <tr><td>plugin CLI + state</td><td><code>bin/</code> at plugin root · <code>${CLAUDE_PLUGIN_DATA}</code></td><td><code>bin/</code> joins the Bash <code>PATH</code> while enabled (ship a CLI your skills call by name). <code>${CLAUDE_PLUGIN_DATA}</code> is the persistent state dir that survives updates (install venvs / <code>node_modules</code> there once).</td></tr>
 <tr><td>commit-SHA versioning</td><td>omit <code>version</code> from <code>plugin.json</code> + marketplace entry</td><td>Git commit SHA becomes the version, so every push is an update. Setting a <code>version</code> pins the install cache; <code>/plugin update</code> reports "already at the latest version" until you bump it.</td></tr>
+<tr><td>plugin option scoping<sup>NEW</sup> <kbd><samp>v2.1.207</samp></kbd></td><td><code>pluginConfigs</code></td><td>Plugin option values now resolve from user settings, <code>--settings</code>, and managed settings only — a project-level <code>.claude/settings.json</code> entry is silently ignored. Don't ship a plugin option default that depends on a repo-committed override.</td></tr>
 </table>
 
 > [!NOTE]
@@ -123,6 +124,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>claude setup-token</code></td><td>Long-lived OAuth token for CI/scripts (Claude subscription).</td></tr>
 <tr><td><code>claude mcp login &lt;name&gt;</code> / <code>logout</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td>Authenticate an MCP server from the CLI without the <code>/mcp</code> menu; <code>--no-browser</code> completes OAuth over SSH via paste-the-URL.</td></tr>
 <tr><td><code>/config key=value</code><sup>NEW</sup> <kbd><samp>v2.1.181</samp></kbd></td><td>Set <em>any</em> setting from the prompt (<code>/config thinking=false</code>) — scriptable in <code>-p</code> and Remote Control, no settings.json edit. <code>/config --help</code> lists the keys.</td></tr>
+<tr><td><code>/doctor</code> (= <code>/checkup</code>)<sup>NEW</sup> <kbd><samp>v2.1.205+</samp></kbd></td><td>Went from diagnostics-only to a full checkup that <em>fixes</em> issues too (v2.1.205); now proposes trimming checked-in <code>CLAUDE.md</code> content Claude could already derive from the codebase (v2.1.206) and flags an externally managed launcher script the auto-updater can't safely overwrite (v2.1.207).</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>Environment variables</h4></kbd></td></tr>
 <tr><th><samp>VAR</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>CLAUDE_CODE_EFFORT_LEVEL</code></td><td>The <strong>only</strong> way to make <code>max</code> effort persist across sessions (the setting rejects <code>max</code>).</td></tr>
@@ -199,6 +201,9 @@ The events and fields nobody reads down to.
 
 > [!WARNING]  
 > Only exit code <code>2</code> blocks. A hook that exits <code>1</code> does <strong>not</strong> block the action (stderr shows, turn continues). A <code>PreToolUse</code> <code>deny</code> beats <code>bypassPermissions</code>/<code>--dangerously-skip-permissions</code>: the way to enforce un-bypassable org policy.
+
+> [!WARNING]
+> <code>${user_config.*}</code> is now rejected in shell-form hook, monitor, and MCP <code>headersHelper</code> commands<sup>NEW</sup> <kbd><samp>v2.1.207</samp></kbd> — a shell-injection fix. Use the exec <code>args</code> form or <code>$CLAUDE_PLUGIN_OPTION_&lt;KEY&gt;</code> in hooks; monitors and <code>headersHelper</code> read the option's value inside the script instead.
 
 <sub><a href="https://code.claude.com/docs/en/hooks">src: code.claude.com/docs/en/hooks</a></sub>
 
@@ -447,6 +452,6 @@ lap's configuration.
 
 ```
 EVERY FLAG, FIELD, AND VERSION ABOVE: COPIED FROM A DOC, NOT RECALLED.
-RE-CHECKED: 2026-07-08 · AGAINST: v2.1.204 · AUTHORITATIVE: docs changelog
+RE-CHECKED: 2026-07-13 · AGAINST: v2.1.207 · AUTHORITATIVE: docs changelog
 ON DRIFT: FIX IT HERE, RE-PIN THE DATE.
 ```

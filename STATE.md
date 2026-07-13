@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 8 July 2026 | Version: v2.1.204
+Last updated: 13 July 2026 | Version: v2.1.207
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
 
@@ -48,7 +48,7 @@ Features that changed how skills get built, in rough order of impact:
 
 ### Sonnet 5 (new default on Pro-tier plans, v2.1.197)
 
-- **`claude-sonnet-5`** — launched 30 June 2026. The default model in Claude Code for **Pro, Team Standard, and Enterprise subscription seats**. Opus 4.8 stays the default for **Max, Team Premium, Enterprise pay-as-you-go, and the Anthropic API**; the `sonnet` alias resolves to Sonnet 5 on the API. Requires v2.1.197+.
+- **`claude-sonnet-5`** — launched 30 June 2026. The default model in Claude Code for **Pro, Team Standard, and Enterprise subscription seats**. Opus 4.8 stays the default for **Max, Team Premium, Enterprise pay-as-you-go, Bedrock, Vertex, Claude Platform on AWS, and the Anthropic API** (the Bedrock/Vertex/AWS default was confirmed explicitly in v2.1.207); the `sonnet` alias resolves to Sonnet 5 on the API. Requires v2.1.197+.
 - **1M context is native and unconditional** — no 200K variant, no `[1m]` suffix, no usage credits on any plan (unlike Opus's plan-gated 1M). Sessions auto-compact at ~967K tokens by default; `CLAUDE_CODE_AUTO_COMPACT_WINDOW` changes the threshold, `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` caps it back to 200K.
 - **New tokenizer inflates token counts ~30%** for the same text vs Sonnet 4.6. Re-measure anything you budget in tokens — `max_tokens` limits, context-window text capacity, per-request cost. Counts carried over from older models are wrong.
 - Effort levels `low`–`max`, default `high`. Adaptive thinking is on by default; manual extended thinking (`budget_tokens`) and non-default sampling params (`temperature`/`top_p`/`top_k`) now return HTTP 400 — the same constraint Opus 4.8 already had.
@@ -90,12 +90,13 @@ Features that changed how skills get built, in rough order of impact:
 
 - Permission-mode `auto`: a classifier reviews tool calls, blocks risky ones, lets routine work proceed without prompts.
 - Available as `--permission-mode auto` or via `/permissions`.
-- On Bedrock, Vertex, and Foundry (Opus 4.7 and 4.8), it's opt-in via `CLAUDE_CODE_ENABLE_AUTO_MODE=1`.
+- On Bedrock, Vertex, and Foundry, auto mode is now on by default (the `CLAUDE_CODE_ENABLE_AUTO_MODE` opt-in flag was retired, v2.1.207); disable it there with the `disableAutoMode` setting.
+- **`autoMode` settings now read only from `~/.claude/settings.json`** (v2.1.207) — a repo-resident `.claude/settings.local.json` can no longer configure auto mode for other contributors who open the repo.
 - New hook: `PermissionDenied` fires on classifier denials; `retry: true` lets the model try a different approach.
 - No longer gated: the `--enable-auto-mode` flag was removed, and the first-use opt-in consent prompt is gone too (v2.1.152).
 - `settings.autoMode.hard_deny` defines classifier rules that block unconditionally regardless of user intent or allow exceptions — useful as a policy-grade backstop.
 - `autoMode.classifyAllShell` (v2.1.193) routes **every** Bash/PowerShell command through the classifier, not just arbitrary-code-execution patterns — tighter, at the cost of more classifier calls. Denial reasons now land in the transcript, the denial toast, and `/permissions` recent denials.
-- **Destructive-command guards** (v2.1.183) — independent of `hard_deny`, auto mode now blocks unrequested `git reset --hard` / `git checkout -- .` / `git clean -fd` / `git stash drop`, `git commit --amend` on a commit the agent didn't make this session, and `terraform`/`pulumi`/`cdk destroy` unless you named the stack.
+- **Destructive-command guards** (v2.1.183) — independent of `hard_deny`, auto mode now blocks unrequested `git reset --hard` / `git checkout -- .` / `git clean -fd` / `git stash drop`, `git commit --amend` on a commit the agent didn't make this session, `terraform`/`pulumi`/`cdk destroy` unless you named the stack, and tampering with session transcript files (v2.1.205); it also now asks first before running `rm -rf` on a variable it can't resolve from context (v2.1.205), rather than blocking outright.
 
 ### Forked subagents (`/fork`, w17)
 
@@ -153,6 +154,7 @@ The hook surface has accumulated several useful fields:
 
 - **`mcp_tool` handler type** — hook handler can call an already-connected MCP server tool directly, no subprocess. Useful for validation that needs external state.
 - **`args: string[]` exec form** — spawns the command directly without a shell, so path placeholders never need quoting.
+- **`${user_config.*}` is rejected in shell-form plugin commands** (v2.1.207, a shell-injection fix) — applies to hooks, monitors, and MCP `headersHelper`. Use the exec `args` form or `$CLAUDE_PLUGIN_OPTION_<KEY>` in hooks; monitors and `headersHelper` read the option's value inside the script instead.
 - **`continueOnBlock` for PostToolUse** — feeds the hook's rejection reason back to Claude and continues the turn instead of aborting.
 - **`additionalContext` from `Stop` / `SubagentStop`** — these hooks can return `hookSpecificOutput.additionalContext` to hand Claude feedback and keep the turn going, instead of registering as a hook error.
 - **`terminalSequence` in hook output** — emit desktop notifications, window titles, and bells without a controlling terminal.
@@ -194,6 +196,7 @@ The hook surface has accumulated several useful fields:
 - **`/btw <question>`** — side question without polluting conversation context.
 - **`/fewer-permission-prompts`** — scans transcripts for common allowable Bash/MCP calls, builds an allowlist.
 - **Native binaries** replacing JavaScript on macOS/Linux (v2.1.113); same install command.
+- **Plugin option values (`pluginConfigs`) now resolve from user scope only** (v2.1.207) — user settings, `--settings`, and managed settings; project-level `.claude/settings.json` entries are ignored, so a repo can no longer override another contributor's plugin options.
 - **`PreCompact` hooks can block compaction** (exit 2 or `decision: "block"`).
 - **`UserPromptSubmit` hooks can set session title** via `hookSpecificOutput.sessionTitle`.
 - **`defer` permission decision** in `PreToolUse` hooks — `-p` sessions pause at the tool call and exit with `deferred_tool_use` payload, resumable with `--resume`.
@@ -248,6 +251,7 @@ These exist in stock Claude Code; building parallel skills competes for descript
 - **`/dataviz`** (skill, v2.1.198) — chart and dashboard design guidance with a runnable color-palette validator.
 - **`/fewer-permission-prompts`** (skill) — transcript-driven allowlist generator.
 - **`/init`** — generates starter CLAUDE.md from codebase analysis. `CLAUDE_CODE_NEW_INIT=1` enables an interactive multi-phase flow that also walks through skills, hooks, memory.
+- **`/doctor`** (= `/checkup`) — a full setup checkup that now diagnoses *and fixes* issues (v2.1.205), not just reports them. A v2.1.206 check proposes trimming checked-in CLAUDE.md content Claude could already derive from the codebase; v2.1.207 adds detection of an externally managed launcher script the auto-updater can't safely overwrite.
 - **`/skills`** — list/manage skills with cycling visibility states.
 - **Subagent management** — the `/agents` wizard was **removed** (v2.1.198); create or manage subagents by asking Claude, or edit `.claude/agents/` directly.
 - **`claude agents`** (CLI) — unified session list across running, blocked, and done sessions.

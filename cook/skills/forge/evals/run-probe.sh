@@ -78,7 +78,9 @@ git -c user.name=fixture -c user.email=f@local commit -qm "pre-run" --no-verify 
 START=$(date +%s)
 set +e
 # Each probe is its own billed CLI turn — do not inherit nested-session env.
-env -u CLAUDECODE claude "${FLAGS[@]}" -p "$PROMPT" > "$RUN/OUTPUT.md" 2> "$RUN/STDERR.txt"
+# ANTHROPIC_OAUTH_TOKEN is session-scoped when run from inside a Claude Code
+# session; inheriting it 401s the nested CLI. Fall back to stored login.
+env -u CLAUDECODE -u ANTHROPIC_OAUTH_TOKEN claude "${FLAGS[@]}" -p "$PROMPT" > "$RUN/OUTPUT.md" 2> "$RUN/STDERR.txt"
 CODE=$?
 set -e
 END=$(date +%s)

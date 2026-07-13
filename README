@@ -11,6 +11,8 @@ agent-kitchen is a second-order harness: it is a kitchen for the things that con
 
 The kitchen is built on the idea that:
 
+A frontier model in 2026 is very competent at most things, but its default in any domain is the competent average version of the thing. The artifacts here are commitments that drag the model off that median in a chosen direction.
+
 Every artifact competes with two forces: the unaided frontier model, which absorbs generic craft with each release, and the owner's time, which every artifact charges rent on.
 
 So durable value comes from what the model cannot have: the owner's taste and intent made operational, local truths of a repo or team, verified facts from after the training cutoff, and failures actually observed in sessions.
@@ -23,7 +25,7 @@ COOK
 
 Cook can operate as a set of skills that can be used on an as-needed bases, or a loop: HARVEST surfaces the gaps (ideas, miscommunications, failures), FORGE turns them into artifacts, probes check they still earn their place and HARNESS-AUDIT removes what doesn't.
 
-- FORGE: ne triage ladder routes a behavior to the right surface (skill, hook, path-scoped rule, CLAUDE.md, workflow, subagent, MCP), with a stance that sets the bar each artifact has to clear and judges it by the work it makes the agent produce, not by the artifact's own shape.
+- FORGE: one triage ladder routes a behavior to the right surface (skill, hook, path-scoped rule, CLAUDE.md, workflow, subagent, MCP), with a stance that sets the bar each artifact has to clear and judges it by the work it makes the agent produce, not by the artifact's own shape.
 
 - HARNESS-AUDIT: inventories everything loaded at session start, counts the per-session token cost, and runs four checks: self-consistency, duplication across scopes, enforcement parity, scope discipline. Built to remove things rather than add them.
 

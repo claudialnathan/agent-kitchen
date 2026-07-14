@@ -1,9 +1,0 @@
-{
-  "name": "cook",
-  "description": "The meta layer that designs Claude Code artifacts: forge (skills, hooks, rules, CLAUDE.md, workflows), ingest (ground a design in sources first), harvest (mine session transcripts for the failures that earn artifacts), and harness-audit (audit the whole setup). The reusable design layer of the kitchen.",
-  "author": {
-    "name": "Claudia Nathan"
-  },
-  "license": "MIT",
-  "keywords": ["claude-code", "skills", "meta-skills", "forge"]
-}

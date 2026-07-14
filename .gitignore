@@ -18,5 +18,5 @@ HANDOFF-*.md
 #  truth is the probes.md verdict table + CHANGELOG, per the essay's own evidence model.)
 **/evals/runs/
 **/evals/baselines/
-cook/skills/forge/evals/publish-readiness-*.md
-cook/skills/forge/evals/*owner-grade*.md
+skills/forge/evals/publish-readiness-*.md
+skills/forge/evals/*owner-grade*.md

@@ -2,10 +2,9 @@
 # bin/sync-cross-tool — link artifacts from this repo into the right cross-tool
 # locations.
 #
-# Skills live under two source roots after the cook/serve split:
-#   cook/skills/<name>/    — meta-forges
-#   serve/skills/<name>/   — applied skills
-# Both roots are walked and synced flat (one level deep) into
+# The kitchen's skills live under one source root:
+#   skills/<name>/    — forge, harness-audit, harvest, ingest
+# The root is walked and synced flat (one level deep) into
 # ~/.cursor/skills and ~/.codex/skills. Each SKILL.md may declare
 # `harness-targets:` in its frontmatter (e.g. `harness-targets: [claude]` for
 # claude-only). Default when absent is `[claude, cursor, codex]`. Claude
@@ -24,7 +23,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SKILLS_DIRS=("$REPO_ROOT/cook/skills" "$REPO_ROOT/serve/skills")
+SKILLS_DIRS=("$REPO_ROOT/skills")
 RULES_DIR="$REPO_ROOT/rules"
 
 DRY_RUN=0
@@ -74,7 +73,7 @@ sync_one_tool() {
   local wanted_list=""
 
   # First pass: ensure each desired link exists and points at this repo.
-  # Walk both source roots (cook/skills, serve/skills) and link them flat.
+  # Walk the skills/ source root and link its entries flat.
   local src_root skill_dir
   for src_root in "${SKILLS_DIRS[@]}"; do
     [[ -d "$src_root" ]] || continue

@@ -4,20 +4,25 @@
     "name": "Claudia Nathan",
     "url": "https://github.com/claudialnathan"
   },
+  "description": "The agent-kitchen forge and the applied skills it produces.",
   "plugins": [
     {
-      "name": "cook",
-      "source": "./cook",
-      "description": "The meta layer that designs Claude Code artifacts: forge (skills, hooks, rules, CLAUDE.md, workflows), ingest, harvest (mine transcripts for the failures that earn artifacts), and harness-audit. The reusable design layer.",
+      "name": "agent-kitchen",
+      "source": "./",
+      "description": "The kitchen that designs Claude Code artifacts: forge (skills, hooks, rules, CLAUDE.md, workflows), ingest, harvest (mine transcripts for the failures that earn artifacts), and harness-audit. The reusable design layer.",
       "license": "MIT",
       "keywords": ["claude-code", "skills", "meta-skills", "forge"]
     },
     {
-      "name": "serve",
-      "source": "./serve",
-      "description": "Applied skills: shadcn-tailwind, design-engineer, speed-daemon, quality-audit, saltintesta, flavored-md, zoom-out, changelog. Stack-specific discipline served on top of cook.",
+      "name": "skills",
+      "source": { "source": "github", "repo": "claudialnathan/skills" },
+      "description": "Applied skills: shadcn-tailwind, design-engineer, speed-daemon, quality-audit, saltintesta, flavored-md, zoom-out, changelog. Each earned against a named model and checked by a runnable probe.",
       "license": "MIT",
       "keywords": ["claude-code", "skills", "applied"]
     }
-  ]
+  ],
+  "renames": {
+    "cook": "agent-kitchen",
+    "serve": "skills"
+  }
 }

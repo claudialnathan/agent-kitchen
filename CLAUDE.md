@@ -4,7 +4,7 @@ This file holds intent and durable traps about how the harness reads this place.
 
 ## What the kitchen optimizes for
 
-Cook's artifacts compete with two forces only: the unaided frontier model, which improves every release and absorbs generic craft, and the owner's time. An artifact is how the owner transmits intent the model can't infer — a raw idea or something read worth operationalizing, an output that missed what was meant and got refined, a post-cutoff fact the model lacks, or a task the model got wrong. Failure is one means, not the main one; a new idea and a corrected miscommunication are the everyday means. Durable value comes from what the model cannot have: the owner's taste and intent made operational, local truths of a repo or team, verified post-cutoff currency. The standing claim this repo holds itself to: **each expertise or taste skill in serve is built to be provable — it earns its place only by beating the unaided current model on the gap that created it, checked by a runnable probe (`evals/probes.md`), not assumed.** Deletion is the expected end of every such artifact, not a failure of one. Process skills (changelog, quality-audit) are exempt — their value is the owner wanting the procedure, which no release absorbs, so they carry no probe and no deletion rule. Publication upkeep (STATE.md, HACKS.md) serves those documents' own readers — real work, but not the kitchen's product.
+The kitchen's artifacts compete with two forces only: the unaided frontier model, which improves every release and absorbs generic craft, and the owner's time. An artifact is how the owner transmits intent the model can't infer — a raw idea or something read worth operationalizing, an output that missed what was meant and got refined, a post-cutoff fact the model lacks, or a task the model got wrong. Failure is one means, not the main one; a new idea and a corrected miscommunication are the everyday means. Durable value comes from what the model cannot have: the owner's taste and intent made operational, local truths of a repo or team, verified post-cutoff currency. The standing claim the kitchen holds its output to: **each expertise or taste skill it produces — kept in the separate `skills` repo (github.com/claudialnathan/skills) — earns its place only by beating the unaided current model on the gap that created it, checked by a runnable probe (`evals/probes.md`), not assumed.** Deletion is the expected end of every such artifact, not a failure of one. Process skills (changelog and quality-audit in the skills repo; the kitchen's own forge, harvest, ingest, harness-audit) are exempt — their value is the owner wanting the procedure, which no release absorbs, so they carry no probe and no deletion rule. Publication upkeep (STATE.md, HACKS.md) serves those documents' own readers — real work, but not the kitchen's product.
 
 ## New artifacts are feedback for the forge
 
@@ -34,7 +34,7 @@ Without the pin, audits have no trigger; without the changelog, pins bloat into 
 
 ## Trajectory and governance
 
-The work here is small and evidence-driven: a meta layer and applied skills, added when discipline accumulates.
+The work here is small and evidence-driven: the meta layer (this repo) plus the applied skills it produces (the `skills` repo), added when discipline accumulates.
 
 Two gates before adding a new meta or applied skill:
 
@@ -51,7 +51,7 @@ This applies to any file inside a skill directory, not just `SKILL.md`. The full
 
 ## Publishing footgun: keep the plugins versionless (commit-SHA versioning)
 
-The `cook` and `serve` plugins carry **no `version` field** — not in `.claude-plugin/plugin.json`, not in the `.claude-plugin/marketplace.json` entries. That puts Claude Code in commit-SHA versioning: every pushed commit is a new version, so a marketplace install picks up skill changes on the next `/plugin update` with no manual step. **Do not add a `version` field.** **Why:** the `claudia` marketplace is a git-URL source whose per-install cache is keyed by the resolved version; the moment a `version` string exists it pins that cache, `/plugin update` reports "already at the latest version," and pushed changes silently never reach other repos (a frozen `0.1.0` hid `quality-audit` for weeks). `bin/preship-check` fails if a `version` field reappears. Propagation after a change is just commit → push → `/plugin marketplace update claudia` → `/plugin update`.
+The `agent-kitchen` plugin (this repo) and the `skills` plugin (its own repo) carry **no `version` field** — not in either `.claude-plugin/plugin.json`, not in the `claudia` marketplace entries. The `claudia` marketplace catalog lives here in `.claude-plugin/marketplace.json` and lists both plugins: `agent-kitchen` from `"./"`, `skills` from its github source. That puts Claude Code in commit-SHA versioning: every pushed commit is a new version, so a marketplace install picks up changes on the next `/plugin update` with no manual step. **Do not add a `version` field.** **Why:** the per-install cache is keyed by the resolved version; the moment a `version` string exists it pins that cache, `/plugin update` reports "already at the latest version," and pushed changes silently never reach other repos (a frozen `0.1.0` hid `quality-audit` for weeks). `bin/preship-check` fails if a `version` field reappears. Propagation after a change: commit → push (in whichever repo changed) → `/plugin marketplace update claudia` → `/plugin update`. The `skills` plugin is an external `github` source, so a rename or first fetch under the new name needs one `/plugin install skills@claudia`.
 
 ## Other general rules
 
@@ -61,4 +61,4 @@ The forge family (forge, harness-audit, harvest, ingest) never writes, stages, o
 
 ## Dates
 
-Use absolute YYYY-MM-DD in skills, references, and memory. Relative phrases ("last month", "recently") rot fast. For artifacts tied to Claude Code behavior — STATE.md, model-pinned skills/hooks/rules — also record the Claude Code version from `code.claude.com/docs/en/changelog`, e.g. `2026-05-14, v2.1.141`. The version scopes which features and fixes were live when the artifact was earned.
+Use absolute YYYY-MM-DD in skills, references, and memory. Relative phrases ("last month", "recently") rot fast. For artifacts tied to Claude Code behavior — STATE.md, model-pinned skills, hooks, and rules — also record the Claude Code version from `code.claude.com/docs/en/changelog`, e.g. `2026-05-14, v2.1.141`. The version scopes which features and fixes were live when the artifact was earned.

@@ -10,8 +10,8 @@ fail=0
 
 # 1. Loader-trigger byte sequences (CLAUDE.md "Authoring footgun"; full discussion in the forge skill).
 echo "Loader-trigger sequences (must be empty):"
-m1=$(grep -rln $'\x60\x60\x60!' cook/skills/ serve/skills/ 2>/dev/null || true)
-m2=$(grep -rln $'!\x60' cook/skills/ serve/skills/ 2>/dev/null || true)
+m1=$(grep -rln $'\x60\x60\x60!' skills/ 2>/dev/null || true)
+m2=$(grep -rln $'!\x60' skills/ 2>/dev/null || true)
 if [ -n "$m1$m2" ]; then
   echo "  FAIL"
   [ -n "$m1" ] && { echo "    triple-backtick + bang in:"; printf '%s\n' "$m1" | sed 's/^/      /'; }
@@ -25,7 +25,7 @@ fi
 echo
 echo "Required frontmatter (name, description):"
 fm_fail=0
-for d in cook/skills/*/ serve/skills/*/; do
+for d in skills/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   if ! awk '/^name:/{n=1} /^description:/{de=1} END{exit !(n && de)}' "$md"; then
@@ -41,7 +41,7 @@ done
 #    not the full frontmatter (which can hold paths, hooks, harness-targets, etc.).
 echo
 echo "Description + when_to_use chars (1,536 budget):"
-for d in cook/skills/*/ serve/skills/*/; do
+for d in skills/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   combined=$(awk '
@@ -78,7 +78,7 @@ done
 echo
 echo "Reference orphans (in references/ but not pointed at by SKILL.md):"
 ref_fail=0
-for d in cook/skills/*/ serve/skills/*/; do
+for d in skills/*/; do
   [ -d "$d/references" ] || continue
   for ref in "$d/references"/*.md; do
     [ -f "$ref" ] || continue
@@ -95,7 +95,7 @@ done
 echo
 echo "Dangling references (mentioned in SKILL.md but missing on disk):"
 dangle_fail=0
-for d in cook/skills/*/ serve/skills/*/; do
+for d in skills/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   for ref in $(grep -oE 'references/[a-zA-Z0-9_.-]+\.md' "$md" | sort -u); do
@@ -115,7 +115,7 @@ done
 echo
 echo "Plugin SHA-versioning (no version field):"
 ver_fail=0
-for f in cook/.claude-plugin/plugin.json serve/.claude-plugin/plugin.json .claude-plugin/marketplace.json; do
+for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json; do
   [ -f "$f" ] || continue
   if grep -Eq '"version"[[:space:]]*:' "$f"; then
     echo "  FAIL: $f has a \"version\" field — remove it (commit-SHA versioning; a bump re-breaks auto-propagation)"
@@ -134,7 +134,7 @@ done
 #    judgement of "non-trivial" stays with the author.
 echo
 echo "Model-version pins (advisory; history belongs in CHANGELOG.md):"
-for d in cook/skills/*/ serve/skills/*/; do
+for d in skills/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
   pin=$(grep -m1 -E '^<!--[[:space:]]*Earned against:.*-->[[:space:]]*$' "$md" 2>/dev/null \
@@ -164,7 +164,7 @@ if [ ! -d "$usk" ]; then
   echo "  (no ~/.claude/skills; skipping)"
 else
   coll=0
-  for d in cook/skills/*/ serve/skills/*/; do
+  for d in skills/*/; do
     [ -f "$d/SKILL.md" ] || continue
     name=$(basename "$d")
     entry="$usk/$name"
@@ -181,22 +181,22 @@ else
   [ "$coll" -eq 0 ] && echo "  OK"
 fi
 
-# 9. Dangling plugin cross-references (advisory). A skill body that names another kitchen skill as
-#    cook:<name> / serve:<name> which no longer exists points readers and the loader at nothing
-#    (the trap that hid /changelog behind a phantom reference). Only the namespaced form is checked:
-#    a bare /name collides with bundled commands (/code-review, /init, /simplify) and can't be told
-#    apart from a phantom without a brittle allowlist, so bare-form stays an author judgment call.
+# 9. Dangling self-plugin cross-references (advisory). A skill body that names another skill in
+#    THIS plugin as agent-kitchen:<name> which no longer exists points readers and the loader at
+#    nothing (the trap that hid /changelog behind a phantom reference). Only same-plugin
+#    (agent-kitchen:) refs are checked — a skills:<name> ref points at the sibling skills repo and
+#    can't be verified from here. A bare /name collides with bundled commands (/code-review, /init)
+#    and stays an author judgment call.
 echo
-echo "Dangling plugin cross-references (advisory; cook:/serve: form):"
+echo "Dangling self-plugin cross-references (advisory; agent-kitchen: form):"
 xref=0
-for d in cook/skills/*/ serve/skills/*/; do
+for d in skills/*/; do
   md="$d/SKILL.md"
   [ -f "$md" ] || continue
-  for ref in $(grep -oE '(cook|serve):[a-z0-9][a-z0-9-]*' "$md" 2>/dev/null | sort -u); do
-    plugin=${ref%%:*}
+  for ref in $(grep -oE 'agent-kitchen:[a-z0-9][a-z0-9-]*' "$md" 2>/dev/null | sort -u); do
     rname=${ref#*:}
-    if [ ! -f "$plugin/skills/$rname/SKILL.md" ]; then
-      echo "  warn: $(basename "$d") references $ref but $plugin/skills/$rname/SKILL.md is missing"
+    if [ ! -f "skills/$rname/SKILL.md" ]; then
+      echo "  warn: $(basename "$d") references $ref but skills/$rname/SKILL.md is missing"
       xref=1
     fi
   done

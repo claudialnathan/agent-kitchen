@@ -152,6 +152,57 @@ for d in cook/skills/*/ serve/skills/*/; do
   fi
 done
 
+# 8. Machine-scope shadow collisions (advisory; machine-local). CLAUDE.md: a skill name here that
+#    collides with a real dir (or a symlink from elsewhere) at ~/.claude/skills/<name> is SHADOWED —
+#    personal scope overrides plugin scope, so pushed changes never win in other repos. Same silent
+#    propagation break as a pinned "version" field, but machine-local, so it only warns and never
+#    fails the commit (CI and other contributors won't have the shadow). Reads ~/.claude, never writes.
+echo
+echo "Machine-scope shadow collisions (advisory; ~/.claude/skills):"
+usk="$HOME/.claude/skills"
+if [ ! -d "$usk" ]; then
+  echo "  (no ~/.claude/skills; skipping)"
+else
+  coll=0
+  for d in cook/skills/*/ serve/skills/*/; do
+    [ -f "$d/SKILL.md" ] || continue
+    name=$(basename "$d")
+    entry="$usk/$name"
+    [ -e "$entry" ] || [ -L "$entry" ] || continue
+    # a symlink pointing back into THIS repo is the skill itself, not a foreign shadow
+    if [ -L "$entry" ]; then
+      case "$(readlink "$entry")" in
+        "$PWD"/*) continue ;;
+      esac
+    fi
+    echo "  warn: $name is also at ~/.claude/skills/$name — personal scope shadows the plugin; pushed changes won't win in other repos"
+    coll=1
+  done
+  [ "$coll" -eq 0 ] && echo "  OK"
+fi
+
+# 9. Dangling plugin cross-references (advisory). A skill body that names another kitchen skill as
+#    cook:<name> / serve:<name> which no longer exists points readers and the loader at nothing
+#    (the trap that hid /changelog behind a phantom reference). Only the namespaced form is checked:
+#    a bare /name collides with bundled commands (/code-review, /init, /simplify) and can't be told
+#    apart from a phantom without a brittle allowlist, so bare-form stays an author judgment call.
+echo
+echo "Dangling plugin cross-references (advisory; cook:/serve: form):"
+xref=0
+for d in cook/skills/*/ serve/skills/*/; do
+  md="$d/SKILL.md"
+  [ -f "$md" ] || continue
+  for ref in $(grep -oE '(cook|serve):[a-z0-9][a-z0-9-]*' "$md" 2>/dev/null | sort -u); do
+    plugin=${ref%%:*}
+    rname=${ref#*:}
+    if [ ! -f "$plugin/skills/$rname/SKILL.md" ]; then
+      echo "  warn: $(basename "$d") references $ref but $plugin/skills/$rname/SKILL.md is missing"
+      xref=1
+    fi
+  done
+done
+[ "$xref" -eq 0 ] && echo "  OK"
+
 echo
 if [ "$fail" -ne 0 ]; then
   echo "FAILED — see above." >&2

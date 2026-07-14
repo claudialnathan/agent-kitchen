@@ -4,12 +4,11 @@ AGENT-KITCHEN █
 
 agent-kitchen is a second-order harness: a kitchen for the things that configure
 coding agents (skills, hooks, rules, CLAUDE.md, workflows). It runs as dotfiles for
-the agent — a plugin under the `claudia` marketplace.
+the agent.
 
 The kitchen makes the tools, tastes them, dates them, throws out what's gone stale.
 The applied skills it produces — the ones that survive — live in a separate repo
-(github.com/claudialnathan/skills) and are served through the same marketplace as the
-`skills` plugin.
+(github.com/claudialnathan/skills).
 
 The kitchen is built on the idea that:
 

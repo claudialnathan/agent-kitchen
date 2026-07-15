@@ -2,9 +2,7 @@ AGENT-KITCHEN █
 
 ─────────────────────
 
-agent-kitchen is a second-order harness: a kitchen for the things that configure
-coding agents (skills, hooks, rules, CLAUDE.md, workflows). It runs as dotfiles for
-the agent.
+agent-kitchen is a second-order harness: a kitchen for the things that configure coding agents (skills, hooks, rules, CLAUDE.md, workflows). It runs as dotfiles for the agent.
 
 The kitchen makes the tools, tastes them, dates them, throws out what's gone stale.
 The applied skills it produces — the ones that survive — live in a separate repo
@@ -12,29 +10,22 @@ The applied skills it produces — the ones that survive — live in a separate 
 
 The kitchen is built on the idea that:
 
-A frontier model in 2026 is very competent at most things, but its default in any
-domain is the competent average version of the thing. The artifacts here are
+A frontier model in 2026 is very competent at most things, but its default in any domain is the competent average version of the thing. The artifacts here are
 commitments that drag the model off that median in a chosen direction.
 
 Every artifact competes with two forces: the unaided frontier model, which absorbs
-generic craft with each release, and the owner's time, which every artifact charges
-rent on.
+generic craft with each release, and the owner's time, which every artifact charges rent on.
 
 So durable value comes from what the model cannot have: the owner's taste and intent
-made operational, local truths of a repo or team, verified facts from after the
-training cutoff, and failures actually observed in sessions.
+made operational, local truths of a repo or team, verified facts from after the training cutoff, and failures actually observed in sessions.
 
-Everything else gets absorbed, so deletion is the expected end of every artifact here,
-not a failure of one.
+Everything else gets absorbed, so deletion is the expected end of every artifact here, not a failure of one.
 
 ─────────────────────
 
 THE LOOP
 
-The kitchen can operate as a set of skills used as needed, or as a loop: HARVEST
-surfaces the gaps (ideas, miscommunications, failures), FORGE turns them into
-artifacts, probes check they still earn their place, and HARNESS-AUDIT removes what
-doesn't.
+The kitchen can operate as a set of skills used as needed, or as a loop: HARVEST surfaces the gaps (ideas, miscommunications, failures), FORGE turns them into artifacts, probes check they still earn their place, and HARNESS-AUDIT removes what doesn't.
 
 - FORGE: one triage ladder routes a behavior to the right surface (skill, hook,
   path-scoped rule, CLAUDE.md, workflow, subagent, MCP), with a stance that sets the

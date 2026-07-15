@@ -89,6 +89,23 @@ The kind constrains the form; it doesn't decide worth (that's additive-vs-transf
 - **Article-as-speculation** — encoding the interesting-but-unproven; the most expensive kind of skill, paying rent until something forces removal.
 - **Conversation residue** — the artifact is not the conversation. No session narration, no addressing the reader, no quoting requests.
 
+## Skills invoking skills; harness-capability clauses
+
+- A skill invocation is prompt injection: the rendered SKILL.md enters the conversation as one message and persists for the session. Custom slash commands and skills are one surface — both create `/name` and work the same way.
+- On compaction, the most recent invocation of each skill is re-attached: first 5,000 tokens per skill, 25,000-token shared budget, most-recently-invoked filled first.
+
+- By default the model can invoke any skill lacking `disable-model-invocation: true` through the Skill tool, including bundled skills (`/loop`, `/batch`, `/debug`, `/code-review`). Fixed-logic built-ins such as `/compact` aren't reachable this way.
+- `user-invocable: false` hides the `/` menu entry only; it does not block Skill-tool access.
+
+- A skill body may therefore direct invoking another skill when that's the honest mechanism — e.g. a manifest-driven idempotent procedure telling the agent to drive it with `/loop` until nothing is pending.
+- Verify chainability where the skill will actually run: the target must be model-invocable in that environment. Bundled skills can be disabled wholesale via `disableBundledSkills`, and model-invocable listings vary by environment.
+
+**Portability form — the capability clause:** name the intent, name the Claude Code surface as the worked example, and give the degraded path in the same clause ("if this harness cannot spawn parallel agents, run the passes sequentially"). Do not enumerate other tools' equivalents; that list rots fastest of all.
+
+**Considerations, not prohibitions:** chained skill bodies stack standing context for the rest of the session; a skill that starts a loop or schedule commits future tokens, so its description must say so (invocation is then the consent); a chain into a `disable-model-invocation` target fails silently.
+
+Canonical source on conflict: `code.claude.com/docs/en/skills`.
+
 ## Eval
 
 The loop is eval-first: run the task in a fresh session **without** the skill and document exactly what goes wrong — that gap is the spec. Write the minimal instruction that closes it; re-test on two or three *real* prompts (the wording you'd actually type), and read the transcript for the steered-vs-triggered distinction. Three opt-in harnesses back this when stakes are high — all cost real tokens, confirm before firing. For *does the body steer toward expert work*: `evals/depth-eval.js`, a blind 3-lens A/B panel (~0.3–1.1M tokens/domain) (blind, because a model scores its own output higher unblinded). For *does it trigger*, two fidelities: `evals/trigger-eval.js` is the cheap text proxy — a judge scores a description's discriminating power over a labeled query set (should-fire vs near-miss), and can A/B `description` against `description + when_to_use` to size cross-tool loss; `evals/invocation-eval.js` is the live ground truth — it installs the real skill and drives an actual `claude -p` per query to watch whether the model invokes it unprompted (run with `node`, not the Workflow tool — it shells out to the CLI). Prefer the live run when a verdict must hold: the proxy can score full recall while the real model, handed a matching prompt, just does the task inline — only the live run sees that. **Probe replay batches** use `bin/run-probes` (sequential by default, `--confirm` required) — never parallelize a full `evals/probes.md` manifest.

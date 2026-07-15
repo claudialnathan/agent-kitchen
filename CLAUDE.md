@@ -55,6 +55,8 @@ The `agent-kitchen` plugin (this repo) and the `skills` plugin (its own repo) ca
 
 ## Other general rules
 
+Commit messages follow typical conventional-commit practice: a type prefix (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, etc.), terse subject, detail pushed to the body/PR description — not a `claude/`-style prefix or branch-name-as-subject. Match the style already in `git log`.
+
 When a skill name in this repo collides with one at `~/.claude/skills/<name>/`, flag it and ask the user how to proceed.
 
 The forge family (forge, harness-audit, harvest, ingest) never writes, stages, or offers to apply machine-scope config — anything under `~/.claude/`, user or enterprise settings, global plugins — even during an audit and even when the fix is one obvious line. Machine-scope findings are reported for the owner to action; the family's write scope is the current repo. A hard boundary, not a default to weigh. (The skills carry this rule themselves so it travels when the plugin is installed elsewhere; this line governs kitchen sessions and any future family skill.)

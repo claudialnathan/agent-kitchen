@@ -117,8 +117,9 @@ sync_one_tool() {
     done
   done
 
-  # Second pass: remove orphan symlinks pointing into either source root for
-  # skills no longer desired (deleted, renamed, or retagged claude-only).
+  # Second pass: remove orphan symlinks pointing anywhere into this repo for
+  # skills no longer desired (deleted, renamed — including a renamed source
+  # root — or retagged claude-only). Links into other repos are never touched.
   local entry
   for entry in "$dest"/*; do
     [[ -L "$entry" ]] || continue
@@ -127,11 +128,7 @@ sync_one_tool() {
       continue
     fi
     local cur; cur=$(readlink "$entry")
-    local owned=0 src
-    for src in "${SKILLS_DIRS[@]}"; do
-      if [[ "$cur" == "$src/"* ]]; then owned=1; break; fi
-    done
-    if (( owned )); then
+    if [[ "$cur" == "$REPO_ROOT/"* ]]; then
       if (( DRY_RUN )); then
         echo "  - $name (would unlink: was -> $cur)"
       else
@@ -211,7 +208,7 @@ sync_rules() {
       continue
     fi
     local cur; cur=$(readlink "$entry")
-    if [[ "$cur" == "$RULES_DIR/"* ]]; then
+    if [[ "$cur" == "$REPO_ROOT/"* ]]; then
       if (( DRY_RUN )); then
         echo "  - $name (would unlink: was -> $cur)"
       else

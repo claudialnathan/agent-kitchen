@@ -51,14 +51,19 @@ if echo "$CMD" | grep -Eq '(^|[[:space:];&|()])parallel[[:space:]]'; then
   block "GNU parallel invocation"
 fi
 
+# No-token management subcommands (plugin/mcp/agents/config/doctor) are not
+# fan-out; neutralize them so rules 3-4 only see token-billing invocations.
+SCAN=$(echo "$CMD" | sed -E 's/claude[[:space:]]+(plugin|mcp|agents|config|doctor)([[:space:]]|$)/claude-admin\2/g')
+
 # `claude` invoked as a command word (not the .claude dir or a claude-* path segment)
-if echo "$CMD" | grep -Eq '(^|[[:space:];&|()]|env[[:space:]][^|;&]*)claude[[:space:]]'; then
-  # 3. a claude command combined with any fan-out primitive
-  if echo "$CMD" | grep -Eq '(xargs|(^|[[:space:]])for[[:space:]]|(^|[[:space:]])while[[:space:]]|&[[:space:]]*$|&[[:space:]]+claude)'; then
+if echo "$SCAN" | grep -Eq '(^|[[:space:];&|()]|env[[:space:]][^|;&]*)claude[[:space:]]'; then
+  # 3. a claude command combined with any fan-out primitive; a single `&`
+  # backgrounds (fan-out), `&&` merely chains — don't match the latter
+  if echo "$SCAN" | grep -Eq '(xargs|(^|[[:space:]])for[[:space:]]|(^|[[:space:]])while[[:space:]]|(^|[^&])&[[:space:]]*$|(^|[^&])&[[:space:]]+claude)'; then
     block "a \`claude\` command combined with a loop / background / xargs fan-out"
   fi
   # 4. more than one claude command word in a single line (hand-rolled batch)
-  n=$(echo "$CMD" | grep -Eo '(^|[[:space:];&|()])claude[[:space:]]' | wc -l | tr -d ' ')
+  n=$(echo "$SCAN" | grep -Eo '(^|[[:space:];&|()])claude[[:space:]]' | wc -l | tr -d ' ')
   if [ "${n:-0}" -ge 2 ]; then
     block "multiple \`claude\` commands in one Bash call"
   fi

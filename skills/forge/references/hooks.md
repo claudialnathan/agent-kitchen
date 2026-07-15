@@ -136,6 +136,7 @@ Fires only while the skill is active; the script blocks `INSERT|UPDATE|DELETE|DR
 - Side effects in PreToolUse (it should *check*; side effects go in PostToolUse or a real tool call).
 - A 200-line inline script — extract to a file, keep the config thin.
 - Over-blocking (cry-wolf): strictness mismatched to false-positive rate; the user disables the hook and the guarantee is gone.
+- Substring-blind command regexes — shell text is not tokens: `&&` contains `& ` (an ordinary chain matches a backgrounding pattern), a no-token subcommand (`claude plugin`) contains the guarded command word, and quoted strings or heredocs match like live syntax. Before shipping a blocking pattern, run it against the benign neighbors of every hostile case: chained vs backgrounded, subcommand vs flag, fixture text that merely quotes the pattern.
 
 ## Debugging
 

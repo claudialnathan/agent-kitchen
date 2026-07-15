@@ -2,7 +2,9 @@ Icon
 guides/
 CLAUDE.local.md
 working/
-.claude/skills/
+.claude/skills/*
+!.claude/skills/state-bump/
+!.claude/skills/state-bump/**
 .claude/ingest/
 .claude/hooks/doc-drift-gate.sh
 scratch/

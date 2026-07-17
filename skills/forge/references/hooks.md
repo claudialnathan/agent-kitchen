@@ -112,20 +112,7 @@ fi
 exit 0
 ```
 
-Deterministic check ⇒ `command`; hard guarantee ⇒ exit 2; stderr written as teaching, not denial; matcher covers all three edit tools.
-
-Skill-scoped variant — a read-only `db-reader`:
-
-```yaml
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "${CLAUDE_SKILL_DIR}/scripts/check-readonly-sql.sh"
-```
-
-Fires only while the skill is active; the script blocks `INSERT|UPDATE|DELETE|DROP` with exit 2.
+Deterministic check ⇒ `command`; hard guarantee ⇒ exit 2; stderr written as teaching, not denial; matcher covers all three edit tools. A skill-scoped variant works the same with the config in skill frontmatter `hooks:` and `${CLAUDE_SKILL_DIR}` paths — see Placement.
 
 ## Failure modes
 

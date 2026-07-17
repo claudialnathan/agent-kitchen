@@ -15,6 +15,8 @@ Without this redirection, the next forge step runs against priors and silently p
 
 **The brief is the handoff artifact, not the kitchen sink.** Source material is read in subagents and never enters the main thread except as excerpted quotes. The synthesis is bounded.
 
+**Essence over shape.** Distill what the material *says, intends, and means* — never its structure, format, or voice. Meaning is read twice: against AI context primitives (what does this imply for how skills, hooks, rules, CLAUDE.md, and agent context actually behave?) and against what is known of the owner's harness and intent. A source can be anything — an article, a paper, someone else's skill. A skill used as a source is excerpted like any document; its ideas are reworked into the owner's artifacts, never cross-wired as a dependency.
+
 ## How it works (three phases)
 
 ### Phase 1 — Per-source subagents
@@ -38,7 +40,8 @@ When the per-source agents return, hold their excerpts in the main thread and as
 3. **Points of agreement** — claims that ≥ 2 sources support, each with the citing excerpts inlined as quotes (not paraphrased).
 4. **Points of contention** — claims sources disagree on, both sides quoted.
 5. **The rough edge** — 2–4 sentences on what these sources collectively reveal that you wouldn't know from training priors. This section is load-bearing. If you cannot fill it, the sources may not have added anything, and the brief should say so explicitly rather than padding.
-6. **Open questions** — claims no source addressed that the next forge will still need to make.
+6. **What it means** — the essence read against context primitives and the owner's standing harness: what the material is saying and intending (not its shape), which standing artifacts it makes stale, and the change it argues for.
+7. **Open questions** — claims no source addressed that the next forge will still need to make.
 
 Bound the brief: **agreement + contention together stay under ~2,000 tokens.** If you're approaching that, cut weaker quotes; don't expand the brief.
 
@@ -57,6 +60,12 @@ Run the forge's triage ladder against the brief:
 - **No clear rough edge; Claude's priors already cover this adequately** → say so and stop. Don't manufacture an artifact for a non-failure.
 
 When the user confirms, invoke `/forge` and pass the brief path plus the recommended surface. The forge then runs its design pipeline against the grounded synthesis instead of against priors.
+
+## Freshness and the critical lens
+
+- **Supplied sources outrank the standing harness.** When the owner hands material over, presume the existing skills — the owner's own first, and anything else installed — are stale relative to it. The brief challenges standing artifacts with the new material; a local skill disagreeing with a source is evidence about the skill, not against the source.
+- **No source is taken at face value — but the lens is not local.** The critical read comes from freshly retrieved knowledge of how Claude and Claude Code currently work, not from repo context: STATE.md, existing skills, and already-loaded session context are perishable inputs, never the baseline. When a claim concerns current harness behavior, fetch the canonical doc at that moment (`code.claude.com/docs/en/skills` and its siblings; `code.claude.com/docs/llms.txt` indexes them) and judge against what it says today.
+- **Disagreement is always allowed, and earned the same way.** Push back on a source — or on the owner's framing — only with freshly retrieved evidence, cited in the brief. "The repo says otherwise" is not a rebuttal; a live canonical doc or primary source is.
 
 ## Per-source agent prompt template
 

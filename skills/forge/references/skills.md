@@ -9,7 +9,7 @@ Verified facts about how the loader, the listing, and the lifecycle actually beh
 - Cross-tool: the open agentskills.io spec caps `description` at 1,024 chars and **ignores `when_to_use`** — Cursor and Codex see only the description. The spec, cross-tool consumers, and `bin/preship-check` all require an explicit `name:`.
 - Cheap diagnostic: ask a fresh session "when would you use the `<skill>` skill?" — it quotes the description back, and the gap tells you what to add.
 - Add a *negative* trigger only when the skill demonstrably over-fires.
-- Quantify when it matters: `evals/trigger-eval.js` scores a description's trigger accuracy over a labeled query set (should-fire vs near-miss) and A/Bs `description` alone against `description + when_to_use` — the gap is the cross-tool loss. First run: a well-formed description hit full recall *and* full specificity with zero lift from `when_to_use`. That's a proxy (a judge guessing); `evals/invocation-eval.js` drives a live `claude -p` for a real fire/no-fire verdict when the proxy isn't enough.
+- Quantify when it matters: `evals/trigger-eval.js` (text proxy) and `evals/invocation-eval.js` (live ground truth) — see Eval below.
 
 ## Kinds
 

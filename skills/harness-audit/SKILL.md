@@ -1,20 +1,20 @@
 ---
 name: harness-audit
 description: |
-  Audits a Claude Code setup end-to-end: what loads every session, what it costs, and whether the harness's own claims hold. Inventories the standing surfaces (CLAUDE.md chain, personal/project/plugin skills, MCP instruction blocks, agent rosters, hooks, settings at every scope), quantifies their per-session token cost, runs four checks — self-consistency, duplication across scopes, enforcement parity, scope discipline — and reads the CLAUDE.md chain as intent (code outranks the doc; no restated stack, deps, or layout). Output is a quantified triage that stays in-repo: findings at machine scope (anything under ~/.claude, user or enterprise settings, global plugins) are reported for the owner to action, never edited. Use to review, slim, or sanity-check a whole Claude Code setup — including 'why is my context so big' or 'what loads every session' — after major harness changes (a new plugin fleet, a new machine, a model release) or when sessions feel slow from turn one; for a single artifact, the relevant forge owns the audit.
+  Audits a Claude Code setup end-to-end: what loads every session, what it costs, and whether the harness's own claims hold. Inventories the standing surfaces (CLAUDE.md chain, personal/project/plugin skills, MCP instruction blocks, agent rosters, hooks, settings at every scope), quantifies their per-session token cost, runs four checks (self-consistency, duplication across scopes, enforcement parity, scope discipline) and reads the CLAUDE.md chain as intent (code outranks the doc; no restated stack, deps, or layout). Output is a quantified triage that stays in-repo: findings at machine scope (anything under ~/.claude, user or enterprise settings, global plugins) are reported for the owner to action, never edited. Use to review, slim, or sanity-check a whole Claude Code setup (including 'why is my context so big' or 'what loads every session') after major harness changes (a new plugin fleet, a new machine, a model release) or when sessions feel slow from turn one; for a single artifact, the relevant forge owns the audit.
 ---
 
-<!-- Earned against: Opus 4.8, 2026-06-10, v2.1.170 — history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.8, 2026-06-10, v2.1.170; history: CHANGELOG.md -->
 
 ## The attention this skill redirects
 
 From "read the config files and comment" to "measure what every session pays before any work starts, then check the harness's claims against its own behavior."
 
-The default failure is a vibes review: opening CLAUDE.md, calling it well-written, and missing that the setup burns five figures of tokens per session on descriptions, instructions, and rosters nobody chose deliberately. The second failure is trusting the harness's documentation of itself — files that say "this is not loaded" while being loaded, checklists that say "always run X" with nothing enforcing X.
+The default failure is a vibes review: opening CLAUDE.md, calling it well-written, and missing that the setup burns five figures of tokens per session on descriptions, instructions, and rosters nobody chose deliberately. The second failure is trusting the harness's documentation of itself: files that say "this is not loaded" while being loaded, checklists that say "always run X" with nothing enforcing X.
 
-The third failure is this skill's own trap: treating cost as the verdict. Tokens are what's easy to count; what a surface lets the owner produce is what decides, and an audit that only counts always lands on cut — the cheapest harness is the empty one. A surface the owner reaches for is already earning its cost, and that she uses it is the evidence it clears the bar, not a number to override. Report what each surface costs so the owner spends deliberately; never strip toward zero.
+The third failure is this skill's own trap: treating cost as the verdict. Tokens are what's easy to count; what a surface lets the owner produce is what decides, and an audit that only counts always lands on cut, because the cheapest harness is the empty one. A surface the owner reaches for is already earning its cost, and that she uses it is the evidence it clears the bar, not a number to override. Report what each surface costs so the owner spends deliberately; never strip toward zero.
 
-## Step 1 — Inventory the standing surfaces
+## Step 1: Inventory the standing surfaces
 
 List everything that enters context at session start, with its scope and owner:
 
@@ -26,7 +26,7 @@ List everything that enters context at session start, with its scope and owner:
 
 The session you are in is a specimen: the listings injected into your own context are the ground truth of what loads.
 
-## Step 2 — Quantify before judging
+## Step 2: Quantify before judging
 
 Numbers first; opinions after. The unit that matters is tokens-per-session-forever, and prefix size also costs prompt-cache build time on every cache miss.
 
@@ -48,46 +48,46 @@ EOF
 ```
 
 - Instruction files: `wc -l` on every always-loaded file. The repo's own cost model applies (CLAUDE.md sweet spot under 200 lines; loaded local files count too).
-- Ask the user to run `/context` for the authoritative split — your estimates bound it, the command confirms it.
+- Ask the user to run `/context` for the authoritative split. Your estimates bound it; the command confirms it.
 
-## Step 3 — The four checks
+## Step 3: The four checks
 
 1. **Self-consistency.** Diff what the harness's documentation claims against what the harness does. Classic finds: a loaded file that says it is not loaded; a dateline pinned to a version several releases back; a "this is enforced" line with no enforcement.
 2. **Duplication across scopes.** The same artifact listed twice pays twice: a project symlink and a user-scope plugin copy of the same skill; two plugins shipping the same command under different names; a personal skill shadowing a project one (personal wins silently).
-3. **Enforcement parity.** Every "always", "never", and "run X before Y" sentence in the instruction files should map to a hook, a CI gate, a permission rule (`permissions.deny`, now matching tool parameters too — `Agent(model:opus)`, v2.1.178), a managed setting (a "we standardize on model X" line is enforced only by `availableModels`/`enforceAvailableModels`, not prose), or a conscious decision to stay manual. A promise with no mechanism is a request, not a guarantee. Parity starts one step earlier: a guardrail has to be a fact of the repo before its mechanism matters. `git status` and `git diff` every instruction file and hook in the chain — a guardrail that exists only in the working tree (`git log -S"<its key phrase>"` returns nothing) is one checkout away from not existing and has reached no teammate, other machine, or plugin install. The classic find: a prior session writes the fix for an incident into CLAUDE.md and never commits it, so the audit reads standing policy where git holds nothing. And tier what stays prose-only: an order the model demonstrably read and still skipped — the owner had to re-issue it in session — has already failed *as prose*, because prose is re-weighed against everything else in context every session; it leads the hook/gate candidates rather than settling as a conscious stay-manual.
+3. **Enforcement parity.** Every "always", "never", and "run X before Y" sentence in the instruction files should map to a hook, a CI gate, a permission rule (`permissions.deny`, now matching tool parameters too, e.g. `Agent(model:opus)`, v2.1.178), a managed setting (a "we standardize on model X" line is enforced only by `availableModels`/`enforceAvailableModels`, not prose), or a conscious decision to stay manual. A promise with no mechanism is a request, not a guarantee. Parity starts one step earlier: a guardrail has to be a fact of the repo before its mechanism matters. `git status` and `git diff` every instruction file and hook in the chain, because a guardrail that exists only in the working tree (`git log -S"<its key phrase>"` returns nothing) is one checkout away from not existing and has reached no teammate, other machine, or plugin install. The classic find: a prior session writes the fix for an incident into CLAUDE.md and never commits it, so the audit reads standing policy where git holds nothing. And tier what stays prose-only: an order the model demonstrably read and still skipped (the owner had to re-issue it in session) has already failed *as prose*, because prose is re-weighed against everything else in context every session; it leads the hook/gate candidates rather than settling as a conscious stay-manual.
 4. **Scope discipline.** Each artifact should live at the narrowest scope that serves it. Personal-scope skills used in one domain belong in a toggleable plugin or a project; product plugins needed in some repos should be per-project `enabledPlugins` entries, not global; a fleet of client-work skills in `~/.claude/skills/` taxes every repo on the machine.
 
 ## The CLAUDE.md chain, read as intent
 
-CLAUDE.md is the always-on spine — the most-paid surface and the one that rots fastest, because it sits next to the code it describes. Give each file in the chain a closer read than the cost pass, against the job it alone can do: transmit what the code can't tell you. Flag, in the file:
+CLAUDE.md is the always-on spine, the most-paid surface and the one that rots fastest, because it sits next to the code it describes. Give each file in the chain a closer read than the cost pass, against the job it alone can do: transmit what the code can't tell you. Flag, in the file:
 
-- **No code-authority clause.** The file should state that when it and the code disagree, the code wins — and that a contradiction means *this file is stale, flag it*, not that the agent should obey the doc. This is the single highest-leverage line a CLAUDE.md can carry: without it, every sentence that has quietly gone stale is still read as current instruction.
-- **Restated current state.** Stack, dependencies, scripts, file layout, "we use X" where X already lives in a manifest or the source — every such line pays tokens to go stale on the next commit. What survives a refactor is intent, spirit, durable traps, and pointers. Grep the file's version numbers and dependency names against the actual manifests; each match is a line the code already owns and the doc should drop.
-- **Frozen facts that should be discovered.** A value that lives at runtime — a token file, a config, a schema, a vendored doc set — belongs behind a read-first instruction ("read `globals.css` for the theme before writing classNames"; "read the docs in `node_modules/…` before coding"), not pasted as today's snapshot. The discovery survives every project the snapshot dies in.
-- **Bare directives.** A rule the model can't generalize from — "Y before Z", no reason, no condition — underperforms a condition-shaped, reasoned one ("when X genuinely needs Y, do Z, because …"). The model generalizes from a why where it can't from a bare MUST.
-- **Unverified mechanisms.** An intent voice does not protect a wrong mechanism inside it: check each concrete claim — a path, a script name, a flag — against the filesystem it names.
+- **No code-authority clause.** The file should state that when it and the code disagree, the code wins, and that a contradiction means *this file is stale, flag it*, not that the agent should obey the doc. This is the single highest-leverage line a CLAUDE.md can carry: without it, every sentence that has quietly gone stale is still read as current instruction.
+- **Restated current state.** Any line restating stack, dependencies, scripts, file layout, or "we use X" where X already lives in a manifest or the source pays tokens to go stale on the next commit. What survives a refactor is intent, spirit, durable traps, and pointers. Grep the file's version numbers and dependency names against the actual manifests; each match is a line the code already owns and the doc should drop.
+- **Frozen facts that should be discovered.** A value that lives at runtime (a token file, a config, a schema, a vendored doc set) belongs behind a read-first instruction ("read `globals.css` for the theme before writing classNames"; "read the docs in `node_modules/…` before coding"), not pasted as today's snapshot. The discovery survives every project the snapshot dies in.
+- **Bare directives.** A rule the model can't generalize from ("Y before Z", no reason, no condition) underperforms a condition-shaped, reasoned one ("when X genuinely needs Y, do Z, because …"). The model generalizes from a why where it can't from a bare MUST.
+- **Unverified mechanisms.** An intent voice does not protect a wrong mechanism inside it: check each concrete claim (a path, a script name, a flag) against the filesystem it names.
 - **Over the ceilings.** Past ~14 top-level rules compliance drops sharply; worked examples cost ~3× a rule and induce overfitting. Count them; a file over the line buys less compliance than it thinks.
 
-Finding and quantifying these gaps is this skill's job; authoring the fixes — voice, the Why pattern, the goes-elsewhere table — is the forge's `CLAUDE.md and rules` remit.
+Finding and quantifying these gaps is this skill's job; authoring the fixes (voice, the Why pattern, the goes-elsewhere table) is the forge's `CLAUDE.md and rules` remit.
 
-## Step 4 — Triage
+## Step 4: Triage
 
-Forge writes only inside the current repository. Everything at **machine scope** — anything under `~/.claude/` (personal skills, user `CLAUDE.md`/`settings.json`, `skillOverrides`, user-scope hooks), enterprise or managed settings, global `enabledPlugins`, and anything that changes another repo — is **inventory-and-report only**. Never edit it, never stage an edit, never ask "shall I apply this?"; the audit's job at machine scope ends at the observation the owner acts on herself. This holds even when the finding is obviously correct and the fix is one line — the owner owns her machine. It is a hard boundary, not a default to weigh.
+Forge writes only inside the current repository. Everything at **machine scope** is **inventory-and-report only**: anything under `~/.claude/` (personal skills, user `CLAUDE.md`/`settings.json`, `skillOverrides`, user-scope hooks), enterprise or managed settings, global `enabledPlugins`, and anything that changes another repo. Never edit it, never stage an edit, never ask "shall I apply this?"; the audit's job at machine scope ends at the observation the owner acts on herself. This holds even when the finding is obviously correct and the fix is one line, because the owner owns her machine. It is a hard boundary, not a default to weigh.
 
-A cost is not yet a verdict. Before any finding recommends removing or disabling a capability — a skill, plugin, MCP server, or hook — weigh whether the owner uses it; a used surface is reported at its cost, never cut, and a disable becomes a recommendation only where she confirms she does not reach for it. Removing a capability is never **Applied**, whatever its scope: an unrequested disable is the harm the audit exists to prevent, not a saving it delivers.
+A cost is not yet a verdict. Before any finding recommends removing or disabling a capability (a skill, plugin, MCP server, or hook), weigh whether the owner uses it; a used surface is reported at its cost, never cut, and a disable becomes a recommendation only where she confirms she does not reach for it. Removing a capability is never **Applied**, whatever its scope: an unrequested disable is the harm the audit exists to prevent, not a saving it delivers.
 
 Every finding is quantified and lands in one bucket:
 
-- **Applied** — current-repo, reversible, and capability-preserving: content moves (splitting a loaded file), reorganizing project-local settings in *this* repo's `.claude/`. Never a disable or a deletion. Apply directly; note the reversal where the change lives.
-- **Proposed** — current-repo behavior-config the auto-mode classifier gates: this repo's hooks, `settings.local.json`, project-scope plugin toggles. Present exact file contents, ask, apply on an explicit yes. The classifier denies harness self-modification without explicit intent — surface the change and ask; never route around a denial.
-- **Reported** — every machine-scope and cross-repo finding. State the exact edit the owner can make herself (file, change, token saving) and stop. No staged file, no apply prompt, no question that reads as an offer to apply.
-- **Held** — fails the bar: would not change what the user or agent actually does.
+- **Applied** is for what is current-repo, reversible, and capability-preserving: content moves (splitting a loaded file), reorganizing project-local settings in *this* repo's `.claude/`. Never a disable or a deletion. Apply directly; note the reversal where the change lives.
+- **Proposed** is for current-repo behavior-config the auto-mode classifier gates: this repo's hooks, `settings.local.json`, project-scope plugin toggles. Present exact file contents, ask, apply on an explicit yes. The classifier denies harness self-modification without explicit intent, so surface the change and ask; never route around a denial.
+- **Reported** is for every machine-scope and cross-repo finding. State the exact edit the owner can make herself (file, change, token saving) and stop. No staged file, no apply prompt, no question that reads as an offer to apply.
+- **Held** is for what fails the bar: would not change what the user or agent actually does.
 
 ## Anti-patterns
 
 - **Vibes without counts.** "Your CLAUDE.md looks clean" is not an audit.
-- **Recommending a cut you never use-tested.** Flagging a skill, plugin, or server for removal on token cost alone, without weighing whether the owner reaches for it. The description budget is real and the *unchosen* marginal artifact taxes every turn — but a used one out-earns its cost by being used; report its cost, do not charge it as waste.
+- **Recommending a cut you never use-tested.** Flagging a skill, plugin, or server for removal on token cost alone, without weighing whether the owner reaches for it. The description budget is real and the *unchosen* marginal artifact taxes every turn, but a used one out-earns its cost by being used; report its cost, do not charge it as waste.
 - **Bulk-disabling without a reversal note.** Every disable gets a one-line "flip this back by..." where the change lives.
 - **Auditing only the visible skill list.** MCP instruction blocks and agent rosters are quieter and often bigger.
-- **Drifting into skill-body content review.** Whether a *skill's* guidance is expert-grade is the forge's job; this skill audits the setup — including the always-on CLAUDE.md chain that frames it — not the quality of individual artifact bodies.
+- **Drifting into skill-body content review.** Whether a *skill's* guidance is expert-grade is the forge's job; this skill audits the setup (including the always-on CLAUDE.md chain that frames it), not the quality of individual artifact bodies.
 - **Offering to apply machine-scope fixes.** The tell is a question like "which of these should I prepare exact changes for?" aimed at `~/.claude/`, user settings, or global plugins. Report them; do not stage or offer them.

@@ -7,11 +7,8 @@ working/
 !.claude/skills/state-bump/**
 .claude/ingest/
 .claude/hooks/doc-drift-gate.sh
-scratch/
 .claude/settings.local.json
 .eval-runs/
-TODO.md
-claudia/
 HANDOFF-*.md
 
 **/evals/runs/

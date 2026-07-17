@@ -2,26 +2,26 @@
 
 Last updated: 13 July 2026 | Version: v2.1.207
 
-A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. Not a tutorial — a factual reference for builders working against these surfaces. Filtered to what changes how you build, configure, and ship.
+A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. It is a factual reference for builders working against these surfaces, not a tutorial. Filtered to what changes how you build, configure, and ship.
 
-If you've been away for a few months, read this first; the surface has shifted faster than the mental models. For verification against current docs, see the **URLs to keep handy** section below — `code.claude.com/docs/en/changelog` is authoritative for per-version changes.
+If you've been away for a few months, read this first; the surface has shifted faster than the mental models. For verification against current docs, see the **URLs to keep handy** section below. For per-version changes, `code.claude.com/docs/en/changelog` is authoritative.
 
 ## The six surfaces of Claude Code, and how they coexist
 
 There are six places to put behavior, and they don't substitute for each other:
 
-1. **CLAUDE.md** — facts loaded every session, in full, always-on.
-2. **`.claude/rules/*.md`** with `paths:` frontmatter — facts scoped to file globs; loaded when matching files are opened.
-3. **Skills** (`.claude/skills/<name>/SKILL.md`) — knowledge or workflows; description always loaded, body when invoked.
-4. **Subagents** (`.claude/agents/<name>.md`) — isolated context for side tasks.
-5. **Hooks** (in settings.json or skill frontmatter) — deterministic actions on lifecycle events.
-6. **MCP servers** — connections to external systems.
+1. **CLAUDE.md**: facts loaded every session, in full, always-on.
+2. **`.claude/rules/*.md`** with `paths:` frontmatter: facts scoped to file globs; loaded when matching files are opened.
+3. **Skills** (`.claude/skills/<name>/SKILL.md`): knowledge or workflows; description always loaded, body when invoked.
+4. **Subagents** (`.claude/agents/<name>.md`): isolated context for side tasks.
+5. **Hooks** (in settings.json or skill frontmatter): deterministic actions on lifecycle events.
+6. **MCP servers**: connections to external systems.
 
 **Plugins** are the packaging layer for everything except CLAUDE.md and rules.
 
 The key shift from earlier in 2025: **custom slash commands have been merged into skills**. A file at `.claude/commands/foo.md` and a skill at `.claude/skills/foo/SKILL.md` both create `/foo`. Skills are the canonical surface; commands files keep working but aren't the recommended path.
 
-Cross-reference: FLUE (`flueframework.com`) frames the agent stack as four layers — Model / Harness / Sandbox / Filesystem. The six-surface taxonomy above is scoped to authoring inside Claude Code (the surfaces _are_ what you author against); FLUE's framing is more useful when designing runtime-deployed autonomous agents.
+Cross-reference: FLUE (`flueframework.com`) frames the agent stack as four layers: Model / Harness / Sandbox / Filesystem. The six-surface taxonomy above is scoped to authoring inside Claude Code (the surfaces _are_ what you author against); FLUE's framing is more useful when designing runtime-deployed autonomous agents.
 
 ## The cost model nobody tells you about up front
 
@@ -48,37 +48,37 @@ Features that changed how skills get built, in rough order of impact:
 
 ### Sonnet 5 (new default on Pro-tier plans, v2.1.197)
 
-- **`claude-sonnet-5`** — launched 30 June 2026. The default model in Claude Code for **Pro, Team Standard, and Enterprise subscription seats**. Opus 4.8 stays the default for **Max, Team Premium, Enterprise pay-as-you-go, Bedrock, Vertex, Claude Platform on AWS, and the Anthropic API** (the Bedrock/Vertex/AWS default was confirmed explicitly in v2.1.207); the `sonnet` alias resolves to Sonnet 5 on the API. Requires v2.1.197+.
-- **1M context is native and unconditional** — no 200K variant, no `[1m]` suffix, no usage credits on any plan (unlike Opus's plan-gated 1M). Sessions auto-compact at ~967K tokens by default; `CLAUDE_CODE_AUTO_COMPACT_WINDOW` changes the threshold, `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` caps it back to 200K.
-- **New tokenizer inflates token counts ~30%** for the same text vs Sonnet 4.6. Re-measure anything you budget in tokens — `max_tokens` limits, context-window text capacity, per-request cost. Counts carried over from older models are wrong.
-- Effort levels `low`–`max`, default `high`. Adaptive thinking is on by default; manual extended thinking (`budget_tokens`) and non-default sampling params (`temperature`/`top_p`/`top_k`) now return HTTP 400 — the same constraint Opus 4.8 already had.
-- **First Sonnet-tier model with real-time cybersecurity safeguards.** Flagged requests refuse as a *successful* HTTP 200 with `stop_reason: "refusal"`, not an API error. Unlike Fable 5, there's no automatic Opus fallback documented — a flagged request just refuses.
+- **`claude-sonnet-5`**: launched 30 June 2026. The default model in Claude Code for **Pro, Team Standard, and Enterprise subscription seats**. Opus 4.8 stays the default for **Max, Team Premium, Enterprise pay-as-you-go, Bedrock, Vertex, Claude Platform on AWS, and the Anthropic API** (the Bedrock/Vertex/AWS default was confirmed explicitly in v2.1.207); the `sonnet` alias resolves to Sonnet 5 on the API. Requires v2.1.197+.
+- **1M context is native and unconditional**: no 200K variant, no `[1m]` suffix, no usage credits on any plan (unlike Opus's plan-gated 1M). Sessions auto-compact at ~967K tokens by default; `CLAUDE_CODE_AUTO_COMPACT_WINDOW` changes the threshold, `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` caps it back to 200K.
+- **New tokenizer inflates token counts ~30%** for the same text vs Sonnet 4.6. Re-measure anything you budget in tokens: `max_tokens` limits, context-window text capacity, per-request cost. Counts carried over from older models are wrong.
+- Effort levels `low`–`max`, default `high`. Adaptive thinking is on by default; manual extended thinking (`budget_tokens`) and non-default sampling params (`temperature`/`top_p`/`top_k`) now return HTTP 400, the same constraint Opus 4.8 already had.
+- **First Sonnet-tier model with real-time cybersecurity safeguards.** Flagged requests refuse as a *successful* HTTP 200 with `stop_reason: "refusal"`, not an API error. Unlike Fable 5, there's no automatic Opus fallback documented, so a flagged request just refuses.
 - Pricing $3/$15 per Mtok; **introductory $2/$10 through 31 August 2026**.
 
-### Fable 5 (Mythos-class, v2.1.170) — restored 2026-07-01
+### Fable 5 (Mythos-class, v2.1.170): restored 2026-07-01
 
-**Back online.** A US Commerce export-control order (2026-06-12) — triggered by a jailbreak that turned Fable 5 toward finding software vulnerabilities — forced Fable 5 and Mythos 5 offline globally (API, AWS, Foundry) for 19 days. Commerce lifted the order 2026-06-30 once Anthropic agreed to proactively detect security risks, co-develop future-release protocols, and report malicious activity; both models resumed worldwide 2026-07-01. The lesson stands: **model availability moves independently of the changelog** — neither the suspension nor the restoration appeared there, so check status out of band on every bump.
+**Back online.** A US Commerce export-control order (2026-06-12), triggered by a jailbreak that turned Fable 5 toward finding software vulnerabilities, forced Fable 5 and Mythos 5 offline globally (API, AWS, Foundry) for 19 days. Commerce lifted the order 2026-06-30 once Anthropic agreed to proactively detect security risks, co-develop future-release protocols, and report malicious activity; both models resumed worldwide 2026-07-01. The lesson stands: **model availability moves independently of the changelog**. Neither the suspension nor the restoration appeared there, so check status out of band on every bump.
 
-- **`claude-fable-5`** — the first Mythos-class model released for general use, built for tasks larger than a single sitting. Required v2.1.170+.
+- **`claude-fable-5`**: the first Mythos-class model released for general use, built for tasks larger than a single sitting. Required v2.1.170+.
 - **Not the default on any plan.** Opt in with `/model fable` (persists via user settings). New aliases: `fable`, and `best` (Fable 5 where the org has access, otherwise latest Opus).
-- Effort levels `low`–`max`, default `high`. Adaptive reasoning is always on; thinking cannot be disabled — `Option+T`, `alwaysThinkingEnabled`, and `MAX_THINKING_TOKENS=0` have no effect.
+- Effort levels `low`–`max`, default `high`. Adaptive reasoning is always on; thinking cannot be disabled. `Option+T`, `alwaysThinkingEnabled`, and `MAX_THINKING_TOKENS=0` have no effect.
 - **Classifier fallback**: requests flagged for cybersecurity or biology re-run on the default Opus model, and the session stays there until `/model fable`. Can trigger on the first request from workspace context alone (CLAUDE.md, git status, directory names); `claude --safe-mode` isolates whether customizations are the trigger, and a `/config` toggle pauses to ask instead of switching. `-p` and SDK runs get a refusal instead. Offensive-security, CTF, and biology work reroutes frequently by design.
 - 1M context window always on via the Anthropic API; the model ID is `claude-fable-5` (a `[1m]` suffix is redundant and stripped automatically). Not available under zero data retention.
 - API pricing $10/$50 per Mtok in/out. The June 9–22 subscription-inclusion window was cut short by the suspension; on restoration (2026-07-01) rollout was throttled to ≤50% of weekly usage limits through 2026-07-12, then via usage credits.
 - Prompting shifts: describe outcomes rather than steps, hand it ambiguous problems, size up tasks you'd normally split; verification reminders are usually unnecessary.
 - New levers: `ANTHROPIC_DEFAULT_FABLE_MODEL` (alias target; also what enables fallback on Bedrock/Vertex/Foundry), `DISABLE_PROMPT_CACHING_FABLE`.
-- **Mythos 5** is the same model without cybersecurity safeguards, restricted to vetted partners — not a Claude Code surface.
+- **Mythos 5** is the same model without cybersecurity safeguards, restricted to vetted partners, and not a Claude Code surface.
 
 ### Dynamic workflows (`/workflows`, v2.1.154)
 
-- Ask Claude to create a workflow and it orchestrates work across tens to hundreds of agents in the background — for tasks too large for one context (large migrations, audits, broad sweeps).
+- Ask Claude to create a workflow and it orchestrates work across tens to hundreds of agents in the background for tasks too large for one context (large migrations, audits, broad sweeps).
 - `/workflows` shows your runs.
-- Type `ultracode` in a prompt to fire one off — renamed from the bare word `workflow`, which no longer triggers a run (asking in your own words still does). The keyword highlights violet in the input; a `/config` setting disables it.
-- `/effort ultracode` makes workflows the default — Claude authors and runs one for every substantive task, not just on the keyword. Offered only where the model supports `xhigh`.
-- A **Dynamic workflow size** setting (`/config`, v2.1.202) steers how large Claude generally makes workflows (small/medium/large agent counts) — advisory guidance, not an enforced cap.
+- Type `ultracode` in a prompt to fire one off. It was renamed from the bare word `workflow`, which no longer triggers a run (asking in your own words still does). The keyword highlights violet in the input; a `/config` setting disables it.
+- `/effort ultracode` makes workflows the default, so Claude authors and runs one for every substantive task, not just on the keyword. Offered only where the model supports `xhigh`.
+- A **Dynamic workflow size** setting (`/config`, v2.1.202) steers how large Claude generally makes workflows (small/medium/large agent counts). It is advisory guidance, not an enforced cap.
 - The heaviest fan-out option, alongside agent teams and `/batch`; the model decomposes and pipelines the work itself.
 - **It's an authorable artifact, not just a prompt.** A workflow is a JavaScript orchestration script (`agent()` / `parallel()` / `pipeline()` / `phase()`); the runtime runs it in the background while agents work in fresh contexts. Sandbox: no filesystem, no `Date.now()`/`Math.random()` in the script; ~16 concurrent agents, 1,000 per run. Save a run as a reusable `/command` in `.claude/workflows/<name>.js` (input via the global `args`).
-- **Why the surface exists:** it replaces the model's plan-and-execute-in-one-drifting-context default with deterministic control flow — countering *agentic laziness* (declaring a 50-item task done at 35), *self-preferential bias* (preferring its own results when it self-grades — hence adversarial verification in a separate agent), and *goal drift* after compaction.
+- **Why the surface exists:** it replaces the model's plan-and-execute-in-one-drifting-context default with deterministic control flow, countering *agentic laziness* (declaring a 50-item task done at 35), *self-preferential bias* (preferring its own results when it self-grades, hence adversarial verification in a separate agent), and *goal drift* after compaction.
 
 ### Custom commands merged into skills
 
@@ -91,12 +91,12 @@ Features that changed how skills get built, in rough order of impact:
 - Permission-mode `auto`: a classifier reviews tool calls, blocks risky ones, lets routine work proceed without prompts.
 - Available as `--permission-mode auto` or via `/permissions`.
 - On Bedrock, Vertex, and Foundry, auto mode is now on by default (the `CLAUDE_CODE_ENABLE_AUTO_MODE` opt-in flag was retired, v2.1.207); disable it there with the `disableAutoMode` setting.
-- **`autoMode` settings now read only from `~/.claude/settings.json`** (v2.1.207) — a repo-resident `.claude/settings.local.json` can no longer configure auto mode for other contributors who open the repo.
+- **`autoMode` settings now read only from `~/.claude/settings.json`** (v2.1.207), which means a repo-resident `.claude/settings.local.json` can no longer configure auto mode for other contributors who open the repo.
 - New hook: `PermissionDenied` fires on classifier denials; `retry: true` lets the model try a different approach.
 - No longer gated: the `--enable-auto-mode` flag was removed, and the first-use opt-in consent prompt is gone too (v2.1.152).
-- `settings.autoMode.hard_deny` defines classifier rules that block unconditionally regardless of user intent or allow exceptions — useful as a policy-grade backstop.
-- `autoMode.classifyAllShell` (v2.1.193) routes **every** Bash/PowerShell command through the classifier, not just arbitrary-code-execution patterns — tighter, at the cost of more classifier calls. Denial reasons now land in the transcript, the denial toast, and `/permissions` recent denials.
-- **Destructive-command guards** (v2.1.183) — independent of `hard_deny`, auto mode now blocks unrequested `git reset --hard` / `git checkout -- .` / `git clean -fd` / `git stash drop`, `git commit --amend` on a commit the agent didn't make this session, `terraform`/`pulumi`/`cdk destroy` unless you named the stack, and tampering with session transcript files (v2.1.205); it also now asks first before running `rm -rf` on a variable it can't resolve from context (v2.1.205), rather than blocking outright.
+- `settings.autoMode.hard_deny` defines classifier rules that block unconditionally regardless of user intent or allow exceptions, which makes it useful as a policy-grade backstop.
+- `autoMode.classifyAllShell` (v2.1.193) routes **every** Bash/PowerShell command through the classifier, not just arbitrary-code-execution patterns. This is tighter, at the cost of more classifier calls. Denial reasons now land in the transcript, the denial toast, and `/permissions` recent denials.
+- **Destructive-command guards** (v2.1.183): independent of `hard_deny`, auto mode now blocks unrequested `git reset --hard` / `git checkout -- .` / `git clean -fd` / `git stash drop`, `git commit --amend` on a commit the agent didn't make this session, `terraform`/`pulumi`/`cdk destroy` unless you named the stack, and tampering with session transcript files (v2.1.205); it also now asks first before running `rm -rf` on a variable it can't resolve from context (v2.1.205), rather than blocking outright.
 
 ### Forked subagents (`/fork`, w17)
 
@@ -126,16 +126,16 @@ Features that changed how skills get built, in rough order of impact:
 
 ### Opus 4.8 (default on Max/API tiers, v2.1.154)
 
-- Opus 4.8 (`claude-opus-4-8`) is the default model on Max, Team Premium, Enterprise pay-as-you-go, and the Anthropic API (Sonnet 5 is the default on Pro-tier — see above); it defaults to **high** effort, with `/effort xhigh` reserved for the hardest tasks.
+- Opus 4.8 (`claude-opus-4-8`) is the default model on Max, Team Premium, Enterprise pay-as-you-go, and the Anthropic API (Sonnet 5 is the default on Pro-tier; see above); it defaults to **high** effort, with `/effort xhigh` reserved for the hardest tasks.
 - Effort levels: `low`, `medium`, `high`, `xhigh`, `max`. `/effort` opens an interactive slider when called without args (slider labels are now "Faster"/"Smarter").
-- The **lean system prompt** shipped as the default with Opus 4.8 (v2.1.154); older models kept the full prompt. Which side newer lines (Sonnet 5, Fable 5) land on is undocumented — `/context` shows the session's actual system-prompt size when it matters.
+- The **lean system prompt** shipped as the default with Opus 4.8 (v2.1.154); older models kept the full prompt. Which side newer lines (Sonnet 5, Fable 5) land on is undocumented. `/context` shows the session's actual system-prompt size when it matters.
 - 1M context window included for Max/Team/Enterprise on Opus.
 - Fast mode on Opus 4.8 runs at 2× the standard rate for ~2.5× the speed. `CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE` is deprecated (removed 2026-06-01); for fast mode on 4.6, switch with `/model claude-opus-4-6[1m]` then `/fast on`.
 - Opus 4.7 (`claude-opus-4-7`) is still selectable via `/model`; it introduced the effort-level scale and always-on adaptive reasoning.
 
 ### Agent view (`claude agents`, research preview)
 
-- `claude agents` opens a unified list of every Claude Code session — running, blocked on you, or done.
+- `claude agents` opens a unified list of every Claude Code session: running, blocked on you, or done.
 - New top-level CLI surface for managing parallel/background work, agent teams, and previously-backgrounded sessions.
 - `claude agents --cwd <path>` scopes the list to a directory; `claude agents --json` (v2.1.145) emits live sessions as JSON for scripting (status bars, tmux-resurrect, session pickers).
 - **Pinned sessions** (`Ctrl+T` inside `claude agents`, v2.1.147) stay alive when idle, restart in place to apply Claude Code updates, and are shed under memory pressure only after non-pinned sessions.
@@ -152,17 +152,17 @@ Features that changed how skills get built, in rough order of impact:
 
 The hook surface has accumulated several useful fields:
 
-- **`mcp_tool` handler type** — hook handler can call an already-connected MCP server tool directly, no subprocess. Useful for validation that needs external state.
-- **`args: string[]` exec form** — spawns the command directly without a shell, so path placeholders never need quoting.
-- **`${user_config.*}` is rejected in shell-form plugin commands** (v2.1.207, a shell-injection fix) — applies to hooks, monitors, and MCP `headersHelper`. Use the exec `args` form or `$CLAUDE_PLUGIN_OPTION_<KEY>` in hooks; monitors and `headersHelper` read the option's value inside the script instead.
-- **`continueOnBlock` for PostToolUse** — feeds the hook's rejection reason back to Claude and continues the turn instead of aborting.
-- **`additionalContext` from `Stop` / `SubagentStop`** — these hooks can return `hookSpecificOutput.additionalContext` to hand Claude feedback and keep the turn going, instead of registering as a hook error.
-- **`terminalSequence` in hook output** — emit desktop notifications, window titles, and bells without a controlling terminal.
-- **`MessageDisplay` hook event** — transform or hide assistant message text as it's displayed (v2.1.152).
-- **Effort context** — hooks receive `effort.level` in their JSON input and `$CLAUDE_EFFORT` in their environment; Bash commands also get `$CLAUDE_EFFORT`.
+- **`mcp_tool` handler type**: hook handler can call an already-connected MCP server tool directly, no subprocess. Useful for validation that needs external state.
+- **`args: string[]` exec form**: spawns the command directly without a shell, so path placeholders never need quoting.
+- **`${user_config.*}` is rejected in shell-form plugin commands** (v2.1.207, a shell-injection fix): applies to hooks, monitors, and MCP `headersHelper`. Use the exec `args` form or `$CLAUDE_PLUGIN_OPTION_<KEY>` in hooks; monitors and `headersHelper` read the option's value inside the script instead.
+- **`continueOnBlock` for PostToolUse**: feeds the hook's rejection reason back to Claude and continues the turn instead of aborting.
+- **`additionalContext` from `Stop` / `SubagentStop`**: these hooks can return `hookSpecificOutput.additionalContext` to hand Claude feedback and keep the turn going, instead of registering as a hook error.
+- **`terminalSequence` in hook output**: emit desktop notifications, window titles, and bells without a controlling terminal.
+- **`MessageDisplay` hook event**: transform or hide assistant message text as it's displayed (v2.1.152).
+- **Effort context**: hooks receive `effort.level` in their JSON input and `$CLAUDE_EFFORT` in their environment; Bash commands also get `$CLAUDE_EFFORT`.
 - **MCP servers receive `CLAUDE_PROJECT_DIR`** in their environment, matching hooks. Plugin configs can reference `${CLAUDE_PROJECT_DIR}` in commands.
-- **`agent_needs_input` / `agent_completed` Notification events** (v2.1.198) — background `claude agents` sessions fire the `Notification` hook when they block on input or finish, so unattended fleets can wire up push/desktop alerts.
-- **Hyphenated matchers now exact-match** (v2.1.195) — a matcher like `code-reviewer` or `mcp__brave-search` used to substring-match; it no longer does. To match all tools from a hyphenated MCP server, write `mcp__brave-search__.*`. Comma-separated matchers (`"Bash,PowerShell"`) also fire correctly now (v2.1.191).
+- **`agent_needs_input` / `agent_completed` Notification events** (v2.1.198): background `claude agents` sessions fire the `Notification` hook when they block on input or finish, so unattended fleets can wire up push/desktop alerts.
+- **Hyphenated matchers now exact-match** (v2.1.195): a matcher like `code-reviewer` or `mcp__brave-search` used to substring-match; it no longer does. To match all tools from a hyphenated MCP server, write `mcp__brave-search__.*`. Comma-separated matchers (`"Bash,PowerShell"`) also fire correctly now (v2.1.191).
 
 ### Plugin executables on PATH (w14)
 
@@ -176,55 +176,55 @@ The hook surface has accumulated several useful fields:
 
 ### Other small but useful
 
-- **`/recap`** — one-line session summary on demand; also auto-fires when returning to a session after a long idle gap.
-- **`/scroll-speed`** — tune mouse wheel scroll speed with a live preview.
-- **`claude project purge [path]`** — delete all Claude Code state for a project (transcripts, tasks, file history, config entry); supports `--dry-run` and `--all`.
-- **`--plugin-url <url>`** — fetch a plugin `.zip` archive from a URL for the current session.
-- **`--safe-mode`** (v2.1.169) — start with customizations (skills, hooks, plugins, settings) disabled, for troubleshooting; the clean-room for telling whether a problem is your config or stock behavior.
-- **`/cd <path>`** (v2.1.169) — move the session to a new working directory without breaking the prompt cache.
-- **`worktree.baseRef` setting** (`fresh` | `head`) — choose whether worktree-creation tools (`--worktree`, `EnterWorktree`, agent isolation) branch from `origin/<default>` or local `HEAD`.
-- **`alwaysLoad` MCP server config option** — when `true`, all tools from that server skip tool-search deferral and stay always-available.
-- **MCP elicitation** — MCP servers can request structured input mid-task via an interactive dialog (form fields or browser URL); intercepted via the `Elicitation` and `ElicitationResult` hooks.
-- **PostToolUse `updatedToolOutput`** — hooks can replace tool output for all tools (previously MCP-only).
+- **`/recap`**: one-line session summary on demand; also auto-fires when returning to a session after a long idle gap.
+- **`/scroll-speed`**: tune mouse wheel scroll speed with a live preview.
+- **`claude project purge [path]`**: delete all Claude Code state for a project (transcripts, tasks, file history, config entry); supports `--dry-run` and `--all`.
+- **`--plugin-url <url>`**: fetch a plugin `.zip` archive from a URL for the current session.
+- **`--safe-mode`** (v2.1.169): start with customizations (skills, hooks, plugins, settings) disabled, for troubleshooting; the clean-room for telling whether a problem is your config or stock behavior.
+- **`/cd <path>`** (v2.1.169): move the session to a new working directory without breaking the prompt cache.
+- **`worktree.baseRef` setting** (`fresh` | `head`): choose whether worktree-creation tools (`--worktree`, `EnterWorktree`, agent isolation) branch from `origin/<default>` or local `HEAD`.
+- **`alwaysLoad` MCP server config option**: when `true`, all tools from that server skip tool-search deferral and stay always-available.
+- **MCP elicitation**: MCP servers can request structured input mid-task via an interactive dialog (form fields or browser URL); intercepted via the `Elicitation` and `ElicitationResult` hooks.
+- **PostToolUse `updatedToolOutput`**: hooks can replace tool output for all tools (previously MCP-only).
 - **Skills can reference `${CLAUDE_EFFORT}`** in their content; `${CLAUDE_SKILL_DIR}` and `${CLAUDE_SESSION_ID}` also available.
-- **PowerShell tool** on Windows — opt-in preview via `CLAUDE_CODE_USE_POWERSHELL_TOOL`; permissions match Bash semantics. Default-enabled for Bedrock, Vertex, and Foundry users on Windows since v2.1.147 (opt out with `CLAUDE_CODE_USE_POWERSHELL_TOOL=0`).
+- **PowerShell tool** on Windows: opt-in preview via `CLAUDE_CODE_USE_POWERSHELL_TOOL`; permissions match Bash semantics. Default-enabled for Bedrock, Vertex, and Foundry users on Windows since v2.1.147 (opt out with `CLAUDE_CODE_USE_POWERSHELL_TOOL=0`).
 - **Custom themes** (`/theme`, `~/.claude/themes/`, plugin themes).
-- **`/team-onboarding`** — generates a teammate ramp-up guide from local usage history.
-- **`allowAllClaudeAiMcps`** managed setting (v2.1.149, enterprise) — loads claude.ai cloud MCP connectors alongside `managed-mcp.json` instead of requiring per-server allowlisting.
-- **GFM task list rendering** — markdown output renders `- [ ] todo` / `- [x] done` as checkboxes (v2.1.149).
+- **`/team-onboarding`**: generates a teammate ramp-up guide from local usage history.
+- **`allowAllClaudeAiMcps`** managed setting (v2.1.149, enterprise): loads claude.ai cloud MCP connectors alongside `managed-mcp.json` instead of requiring per-server allowlisting.
+- **GFM task list rendering**: markdown output renders `- [ ] todo` / `- [x] done` as checkboxes (v2.1.149).
 - **`/loop` self-paces** when no interval is given; `/proactive` is an alias.
-- **`/btw <question>`** — side question without polluting conversation context.
-- **`/fewer-permission-prompts`** — scans transcripts for common allowable Bash/MCP calls, builds an allowlist.
+- **`/btw <question>`**: side question without polluting conversation context.
+- **`/fewer-permission-prompts`**: scans transcripts for common allowable Bash/MCP calls, builds an allowlist.
 - **Native binaries** replacing JavaScript on macOS/Linux (v2.1.113); same install command.
-- **Plugin option values (`pluginConfigs`) now resolve from user scope only** (v2.1.207) — user settings, `--settings`, and managed settings; project-level `.claude/settings.json` entries are ignored, so a repo can no longer override another contributor's plugin options.
+- **Plugin option values (`pluginConfigs`) now resolve from user scope only** (v2.1.207): user settings, `--settings`, and managed settings; project-level `.claude/settings.json` entries are ignored, so a repo can no longer override another contributor's plugin options.
 - **`PreCompact` hooks can block compaction** (exit 2 or `decision: "block"`).
 - **`UserPromptSubmit` hooks can set session title** via `hookSpecificOutput.sessionTitle`.
-- **`defer` permission decision** in `PreToolUse` hooks — `-p` sessions pause at the tool call and exit with `deferred_tool_use` payload, resumable with `--resume`.
+- **`defer` permission decision** in `PreToolUse` hooks: `-p` sessions pause at the tool call and exit with `deferred_tool_use` payload, resumable with `--resume`.
 - **Vim visual mode** (v/V) in the prompt input.
-- **Computer use** in CLI (research preview) — Claude can drive native apps and verify changes via GUI.
-- **`disallowed-tools` frontmatter** (skills and slash commands) — removes named tools from the model while the skill is active; the inverse of `allowed-tools` (v2.1.152).
-- **`/reload-skills`** — re-scans skill directories without a restart; `SessionStart` hooks can return `reloadSkills: true` to surface skills they install mid-session.
-- **Plugin `defaultEnabled: false`** — a plugin can ship disabled by default (set in `plugin.json` or the marketplace entry); enable with `/plugin` or `claude plugin enable`. Dependencies of enabled plugins still auto-enable.
-- **`claude agents` shell sessions** — `! <command>` (or `claude --bg --exec '<command>'`) runs a shell command as an attachable, detachable background session.
-- **Plugins auto-load from `.claude/skills/`** — drop a plugin there and it loads with no marketplace; `claude plugin init <name>` scaffolds one, and `/plugin list` (`--enabled` / `--disabled`) shows what's installed.
-- **`acceptEdits` guards code-execution writes** — it now prompts before writing files that can run code on open: shell startup files (`.zshenv`, `.zlogin`), `~/.config/git/`, and build configs (`.npmrc`, `.yarnrc*`, `bunfig.toml`, `.bazelrc`, `.pre-commit-config.yaml`, `.devcontainer/`).
-- **`requiredMinimumVersion` / `requiredMaximumVersion`** managed settings — Claude Code refuses to start outside the allowed version range and points to an approved build.
-- **`fallbackModel` setting** (v2.1.166) — up to three fallback models, tried in order when the primary is unavailable; the settings-file form of the `--fallback-model` flag.
-- **Nested subagents** (v2.1.172) — a subagent can now spawn its own subagents, so a delegated task that splits into parallel subtasks (a reviewer dispatching a verifier per finding) keeps that fan-out off the main thread; only the top-level summary returns. A background subagent stops receiving the `Agent` tool at depth 5; foreground chains hit the same depth-5 cap (v2.1.181) on top of self-limiting by each blocking its parent. Fixed, not configurable. A lighter-weight alternative to a workflow script when the orchestration is a single delegated task, not a standing pipeline.
-- **`availableModels` allowlist + `enforceAvailableModels`** (managed settings; `enforceAvailableModels` added v2.1.175) — restrict which models a deployment may use; with `enforceAvailableModels` on, the allowlist also constrains the resolved Default model (a Default that would resolve to a blocked model falls back to the first allowed one) and user/project settings can't widen a managed list. `ANTHROPIC_DEFAULT_*_MODEL` env vars and `/fast` can no longer slip a blocked model past it (v2.1.177). The model-governance analog to `requiredMinimumVersion`.
-- **`Tool(param:value)` permission rules** (v2.1.178) — permission rules can now match a tool call's input parameters, with `*` wildcards: e.g. `Agent(model:opus)` blocks Opus subagents. Parameter-level policy in `permissions.deny`/`allow`, where you'd previously have needed a `PreToolUse` hook.
-- **Nested `.claude/` directories resolve by proximity** (v2.1.178) — a skill in a nested `.claude/skills/` loads when you work on files beneath it (dir-qualified `<dir>:<name>` on a name clash, so both survive), and the agent / workflow / output-style in the closest `.claude/` wins a name collision. Monorepo subprojects can carry their own harness.
-- **`/config key=value`** (v2.1.181) — set any setting straight from the prompt (e.g. `/config thinking=false`); works in interactive, `-p`, and Remote Control. `/config --help` lists the shorthand keys.
-- **`!` bash output now gets a response** (v2.1.186) — a `! <command>` run prompts Claude to react to the output, not just load it into context; `respondToBashCommands: false` restores the old context-only behavior.
-- **`claude mcp login <name>` / `claude mcp logout <name>`** (v2.1.186) — authenticate an MCP server from the CLI without opening `/mcp`; `--no-browser` redirects the flow over SSH.
-- **MCP `roots/list` includes the session's extra working dirs** (v2.1.203) — additional (`--add-dir`) roots now appear alongside the primary cwd, with a `notifications/roots/list_changed` when the set changes; a workspace-aware MCP server can drop its own dir-discovery heuristics.
-- **Skill frontmatter keys are case-style-insensitive** (v2.1.186) — `display-name`, `default-enabled`, `fallback`, and `metadata.*` accept kebab-case, snake_case, or camelCase; malformed YAML frontmatter now loads the body with empty metadata instead of failing silently.
-- **`sandbox.credentials` setting** (v2.1.187) — blocks sandboxed commands from reading credential files and secret environment variables.
-- **Subagents run in the background by default** (GA, v2.1.198) — Claude keeps working while a delegated subagent runs and is notified on completion, instead of blocking the turn. Background agents launched from `claude agents` now also commit, push, and open a draft PR when they finish code work in a worktree.
-- **Stacked slash-skill invocations load all leading skills** (v2.1.199) — `/skill-a /skill-b do XYZ` now loads every leading skill (up to 5), not just the first; useful for composing a stance from several skills in one prompt.
+- **Computer use** in CLI (research preview): Claude can drive native apps and verify changes via GUI.
+- **`disallowed-tools` frontmatter** (skills and slash commands): removes named tools from the model while the skill is active; the inverse of `allowed-tools` (v2.1.152).
+- **`/reload-skills`**: re-scans skill directories without a restart; `SessionStart` hooks can return `reloadSkills: true` to surface skills they install mid-session.
+- **Plugin `defaultEnabled: false`**: a plugin can ship disabled by default (set in `plugin.json` or the marketplace entry); enable with `/plugin` or `claude plugin enable`. Dependencies of enabled plugins still auto-enable.
+- **`claude agents` shell sessions**: `! <command>` (or `claude --bg --exec '<command>'`) runs a shell command as an attachable, detachable background session.
+- **Plugins auto-load from `.claude/skills/`**: drop a plugin there and it loads with no marketplace; `claude plugin init <name>` scaffolds one, and `/plugin list` (`--enabled` / `--disabled`) shows what's installed.
+- **`acceptEdits` guards code-execution writes**: it now prompts before writing files that can run code on open: shell startup files (`.zshenv`, `.zlogin`), `~/.config/git/`, and build configs (`.npmrc`, `.yarnrc*`, `bunfig.toml`, `.bazelrc`, `.pre-commit-config.yaml`, `.devcontainer/`).
+- **`requiredMinimumVersion` / `requiredMaximumVersion`** managed settings: Claude Code refuses to start outside the allowed version range and points to an approved build.
+- **`fallbackModel` setting** (v2.1.166): up to three fallback models, tried in order when the primary is unavailable; the settings-file form of the `--fallback-model` flag.
+- **Nested subagents** (v2.1.172): a subagent can now spawn its own subagents, so a delegated task that splits into parallel subtasks (a reviewer dispatching a verifier per finding) keeps that fan-out off the main thread; only the top-level summary returns. A background subagent stops receiving the `Agent` tool at depth 5; foreground chains hit the same depth-5 cap (v2.1.181) on top of self-limiting by each blocking its parent. Fixed, not configurable. A lighter-weight alternative to a workflow script when the orchestration is a single delegated task, not a standing pipeline.
+- **`availableModels` allowlist + `enforceAvailableModels`** (managed settings; `enforceAvailableModels` added v2.1.175): restrict which models a deployment may use; with `enforceAvailableModels` on, the allowlist also constrains the resolved Default model (a Default that would resolve to a blocked model falls back to the first allowed one) and user/project settings can't widen a managed list. `ANTHROPIC_DEFAULT_*_MODEL` env vars and `/fast` can no longer slip a blocked model past it (v2.1.177). The model-governance analog to `requiredMinimumVersion`.
+- **`Tool(param:value)` permission rules** (v2.1.178): permission rules can now match a tool call's input parameters, with `*` wildcards: e.g. `Agent(model:opus)` blocks Opus subagents. Parameter-level policy in `permissions.deny`/`allow`, where you'd previously have needed a `PreToolUse` hook.
+- **Nested `.claude/` directories resolve by proximity** (v2.1.178): a skill in a nested `.claude/skills/` loads when you work on files beneath it (dir-qualified `<dir>:<name>` on a name clash, so both survive), and the agent / workflow / output-style in the closest `.claude/` wins a name collision. Monorepo subprojects can carry their own harness.
+- **`/config key=value`** (v2.1.181): set any setting straight from the prompt (e.g. `/config thinking=false`); works in interactive, `-p`, and Remote Control. `/config --help` lists the shorthand keys.
+- **`!` bash output now gets a response** (v2.1.186): a `! <command>` run prompts Claude to react to the output, not just load it into context; `respondToBashCommands: false` restores the old context-only behavior.
+- **`claude mcp login <name>` / `claude mcp logout <name>`** (v2.1.186): authenticate an MCP server from the CLI without opening `/mcp`; `--no-browser` redirects the flow over SSH.
+- **MCP `roots/list` includes the session's extra working dirs** (v2.1.203): additional (`--add-dir`) roots now appear alongside the primary cwd, with a `notifications/roots/list_changed` when the set changes; a workspace-aware MCP server can drop its own dir-discovery heuristics.
+- **Skill frontmatter keys are case-style-insensitive** (v2.1.186): `display-name`, `default-enabled`, `fallback`, and `metadata.*` accept kebab-case, snake_case, or camelCase; malformed YAML frontmatter now loads the body with empty metadata instead of failing silently.
+- **`sandbox.credentials` setting** (v2.1.187): blocks sandboxed commands from reading credential files and secret environment variables.
+- **Subagents run in the background by default** (GA, v2.1.198): Claude keeps working while a delegated subagent runs and is notified on completion, instead of blocking the turn. Background agents launched from `claude agents` now also commit, push, and open a draft PR when they finish code work in a worktree.
+- **Stacked slash-skill invocations load all leading skills** (v2.1.199): `/skill-a /skill-b do XYZ` now loads every leading skill (up to 5), not just the first; useful for composing a stance from several skills in one prompt.
 - **`"default"` permission mode is now labelled "Manual"** (v2.1.200) across the CLI, `--help`, VS Code, and JetBrains. `--permission-mode manual` and `"defaultMode": "manual"` are accepted alongside the old `default`; both still work.
-- **Organization default models** (v2.1.196, Enterprise) — admins set a Claude Code default in the claude.ai console, org-wide or per role; it shows as "Org default" / "Role default" in `/model`. A starting point, not a restriction — any explicit model selection overrides it. The soft-default analog to the hard `availableModels` allowlist.
-- **`claude_code.assistant_response` OTEL log event** (v2.1.193) carries the model's response text. Redacted unless `OTEL_LOG_ASSISTANT_RESPONSES=1`; but when that var is *unset* it follows `OTEL_LOG_USER_PROMPTS` — so a deployment already logging prompts starts logging responses on upgrade. Set `OTEL_LOG_ASSISTANT_RESPONSES=0` to keep prompts-only.
+- **Organization default models** (v2.1.196, Enterprise): admins set a Claude Code default in the claude.ai console, org-wide or per role; it shows as "Org default" / "Role default" in `/model`. A starting point, not a restriction, since any explicit model selection overrides it. The soft-default analog to the hard `availableModels` allowlist.
+- **`claude_code.assistant_response` OTEL log event** (v2.1.193) carries the model's response text. Redacted unless `OTEL_LOG_ASSISTANT_RESPONSES=1`; but when that var is *unset* it follows `OTEL_LOG_USER_PROMPTS`, so a deployment already logging prompts starts logging responses on upgrade. Set `OTEL_LOG_ASSISTANT_RESPONSES=0` to keep prompts-only.
 
 ## Constraints worth designing around
 
@@ -242,28 +242,28 @@ The hook surface has accumulated several useful fields:
 
 These exist in stock Claude Code; building parallel skills competes for description budget:
 
-- **`/code-review`** (skill) — reports correctness bugs in the current diff at the requested effort level (e.g. `/code-review high`); `--comment` posts findings as inline GitHub PR comments, `--fix` applies them to the working tree. For a PR, `/code-review <level> <pr#>` runs the multi-agent review; plain `/review <pr>` is a fast single-pass review (the split was restored v2.1.202).
-- **`/simplify`** (skill) — cleanup-only review of the diff (reuse, simplification, efficiency, altitude) that applies its fixes; a quality pass, not bug-hunting — use `/code-review` for bugs.
-- **`/batch <instruction>`** (skill) — decomposes large changes into 5–30 units; spawns one background agent per unit in isolated worktrees; opens PRs.
-- **`/debug`** (skill) — captures debug logs from current point forward; analyzes issues.
-- **`/loop`** (skill) — recurring or self-paced prompt execution.
-- **`/claude-api`** (skill) — Claude API reference + migration helper for Anthropic SDK code.
-- **`/dataviz`** (skill, v2.1.198) — chart and dashboard design guidance with a runnable color-palette validator.
-- **`/fewer-permission-prompts`** (skill) — transcript-driven allowlist generator.
-- **`/init`** — generates starter CLAUDE.md from codebase analysis. `CLAUDE_CODE_NEW_INIT=1` enables an interactive multi-phase flow that also walks through skills, hooks, memory.
-- **`/doctor`** (= `/checkup`) — a full setup checkup that now diagnoses *and fixes* issues (v2.1.205), not just reports them. A v2.1.206 check proposes trimming checked-in CLAUDE.md content Claude could already derive from the codebase; v2.1.207 adds detection of an externally managed launcher script the auto-updater can't safely overwrite.
-- **`/skills`** — list/manage skills with cycling visibility states.
-- **Subagent management** — the `/agents` wizard was **removed** (v2.1.198); create or manage subagents by asking Claude, or edit `.claude/agents/` directly.
-- **`claude agents`** (CLI) — unified session list across running, blocked, and done sessions.
-- **`/goal`** (skill) — set a completion condition; Claude keeps working across turns until met.
-- **`/team-onboarding`** — package a local Claude Code setup as a teammate ramp-up guide.
-- **`/recap`** — one-line session summary on demand.
-- **`/usage`** (= `/cost` = `/stats`) — usage breakdown showing what's driving limits. As of v2.1.149, splits the per-category breakdown across skills, subagents, plugins, and per-MCP-server cost.
-- **`/btw`** — side question without polluting context.
-- **`/fork`** / **`/branch`** — branch the conversation (or spawn a forked subagent if `CLAUDE_CODE_FORK_SUBAGENT=1`).
-- **`/rewind`** (= `/checkpoint` = `/undo`) — restore prior conversation/code state.
+- **`/code-review`** (skill): reports correctness bugs in the current diff at the requested effort level (e.g. `/code-review high`); `--comment` posts findings as inline GitHub PR comments, `--fix` applies them to the working tree. For a PR, `/code-review <level> <pr#>` runs the multi-agent review; plain `/review <pr>` is a fast single-pass review (the split was restored v2.1.202).
+- **`/simplify`** (skill): cleanup-only review of the diff (reuse, simplification, efficiency, altitude) that applies its fixes; a quality pass, not bug-hunting, so use `/code-review` for bugs.
+- **`/batch <instruction>`** (skill): decomposes large changes into 5–30 units; spawns one background agent per unit in isolated worktrees; opens PRs.
+- **`/debug`** (skill): captures debug logs from current point forward; analyzes issues.
+- **`/loop`** (skill): recurring or self-paced prompt execution.
+- **`/claude-api`** (skill): Claude API reference + migration helper for Anthropic SDK code.
+- **`/dataviz`** (skill, v2.1.198): chart and dashboard design guidance with a runnable color-palette validator.
+- **`/fewer-permission-prompts`** (skill): transcript-driven allowlist generator.
+- **`/init`**: generates starter CLAUDE.md from codebase analysis. `CLAUDE_CODE_NEW_INIT=1` enables an interactive multi-phase flow that also walks through skills, hooks, memory.
+- **`/doctor`** (= `/checkup`): a full setup checkup that now diagnoses *and fixes* issues (v2.1.205), not just reports them. A v2.1.206 check proposes trimming checked-in CLAUDE.md content Claude could already derive from the codebase; v2.1.207 adds detection of an externally managed launcher script the auto-updater can't safely overwrite.
+- **`/skills`**: list/manage skills with cycling visibility states.
+- **Subagent management**: the `/agents` wizard was **removed** (v2.1.198); create or manage subagents by asking Claude, or edit `.claude/agents/` directly.
+- **`claude agents`** (CLI): unified session list across running, blocked, and done sessions.
+- **`/goal`** (skill): set a completion condition; Claude keeps working across turns until met.
+- **`/team-onboarding`**: package a local Claude Code setup as a teammate ramp-up guide.
+- **`/recap`**: one-line session summary on demand.
+- **`/usage`** (= `/cost` = `/stats`): usage breakdown showing what's driving limits. As of v2.1.149, splits the per-category breakdown across skills, subagents, plugins, and per-MCP-server cost.
+- **`/btw`**: side question without polluting context.
+- **`/fork`** / **`/branch`**: branch the conversation (or spawn a forked subagent if `CLAUDE_CODE_FORK_SUBAGENT=1`).
+- **`/rewind`** (= `/checkpoint` = `/undo`): restore prior conversation/code state.
 
-The full list is at `https://code.claude.com/docs/en/commands` — worth re-checking on each visit.
+The full list is at `https://code.claude.com/docs/en/commands` and is worth re-checking on each visit.
 
 ## The broader coding-agent landscape
 
@@ -294,21 +294,21 @@ Plain Markdown at repo root that tells any AI coding agent how to work on the pr
 
 - **Native support (early 2026):** Claude Code, OpenAI Codex CLI, Cursor, Aider, Devin, GitHub Copilot, Gemini CLI, Windsurf, Amazon Q, Jules, VS Code.
 - **Relation to CLAUDE.md:** AGENTS.md is the cross-tool format; CLAUDE.md is Claude-Code-specific. Many repos keep both or symlink one to the other. Coexistence is the de facto pattern.
-- **Governance:** Donated to the **Agentic AI Foundation (AAIF)** — a Linux Foundation directed fund formed December 9, 2025. De facto industry convention, not an ISO/IETF standard.
+- **Governance:** Donated to the **Agentic AI Foundation (AAIF)**, a Linux Foundation directed fund formed December 9, 2025. De facto industry convention, not an ISO/IETF standard.
 - **Spec & adoption:** `agents.md` (60,000+ open-source projects as of early 2026).
 
 ### MCP (Model Context Protocol)
 
 The cross-vendor protocol for connecting LLMs to tools, resources, and prompts. Current spec dated **2025-11-25**.
 
-- **Vendor support:** Anthropic, OpenAI, Google, Microsoft, AWS — every major LLM vendor.
+- **Vendor support:** every major LLM vendor (Anthropic, OpenAI, Google, Microsoft, AWS).
 - **Client support:** Claude Code, Cursor, Codex CLI, Windsurf, Continue, Cline, Goose, others.
 - **Governance:** Donated by Anthropic to AAIF on December 9, 2025.
-- **Recent additions:** **MCP Apps** (formerly mcp-ui, formalized as SEP-1865, early 2026) — standardizes interactive UI delivery (React dashboards, forms) from MCP servers. Streamable HTTP transport is mainstream for remote MCP servers. 2026 roadmap priorities are enterprise concerns: auth/SSO, audit, gateway behavior, registry/discovery.
+- **Recent additions:** **MCP Apps** (formerly mcp-ui, formalized as SEP-1865, early 2026) standardizes interactive UI delivery (React dashboards, forms) from MCP servers. Streamable HTTP transport is mainstream for remote MCP servers. 2026 roadmap priorities are enterprise concerns: auth/SSO, audit, gateway behavior, registry/discovery.
 
 ### Agent Skills (open standard)
 
-Announced by Anthropic on **December 18, 2025**: SKILL.md (YAML frontmatter + Markdown body), directory layout, progressive disclosure — published as an open standard.
+Announced by Anthropic on **December 18, 2025**: SKILL.md (YAML frontmatter + Markdown body), directory layout, progressive disclosure, all published as an open standard.
 
 - **Reported support:** 16+ tools including Claude Code, Cursor, Codex CLI, Gemini CLI, Junie, Copilot, VS Code, OpenHands, OpenCode, Amp, Goose, Firebender, Letta.
 - **Reality check:** Adoption depth varies. "Supports SKILL.md" ranges from a native loader (Claude Code) to "you can drop one in your repo and tell the agent to read it." Skills authored against the Claude Code feature set (hooks, `allowed-tools`, `disable-model-invocation`) won't necessarily port verbatim.
@@ -317,38 +317,38 @@ Announced by Anthropic on **December 18, 2025**: SKILL.md (YAML frontmatter + Ma
 
 A repo configured for multi-agent use typically has:
 
-1. **Always-on instructions** — CLAUDE.md, AGENTS.md, `.cursorrules`, or equivalent.
-2. **On-demand skills** — `skills/<name>/SKILL.md` (or `.claude/skills/`, `~/.cursor/skills/`, `~/.codex/skills/`).
-3. **MCP servers** — declared in tool-specific config (`.mcp.json`, `~/.cursor/mcp.json`, etc.).
-4. **Editor-specific rules** — `.claude/rules/`, `.cursorrules`, others. Not yet cross-tool.
-5. **Repo conventions** — AGENTS.md, plus per-tool overrides where they exist.
+1. **Always-on instructions**: CLAUDE.md, AGENTS.md, `.cursorrules`, or equivalent.
+2. **On-demand skills**: `skills/<name>/SKILL.md` (or `.claude/skills/`, `~/.cursor/skills/`, `~/.codex/skills/`).
+3. **MCP servers**: declared in tool-specific config (`.mcp.json`, `~/.cursor/mcp.json`, etc.).
+4. **Editor-specific rules**: `.claude/rules/`, `.cursorrules`, others. Not yet cross-tool.
+5. **Repo conventions**: AGENTS.md, plus per-tool overrides where they exist.
 
 ## URLs to keep handy
 
 Claude Code:
 
-- `https://code.claude.com/docs/llms.txt` — full URL index of all docs (stable entry point).
-- `https://code.claude.com/docs/en/skills` — canonical skills reference; check for new frontmatter fields.
-- `https://code.claude.com/docs/en/sub-agents` — subagent spec, fork mode, agent teams.
-- `https://code.claude.com/docs/en/hooks` — every event, every matcher, every input field.
-- `https://code.claude.com/docs/en/features-overview` — meta-mental-model; "build your setup over time" and surface comparison tabs.
-- `https://code.claude.com/docs/en/whats-new/index` — weekly digests.
-- `https://code.claude.com/docs/en/changelog` — full per-version changes.
-- `https://code.claude.com/docs/en/commands` — bundled commands and skills.
+- `https://code.claude.com/docs/llms.txt`: full URL index of all docs (stable entry point).
+- `https://code.claude.com/docs/en/skills`: canonical skills reference; check for new frontmatter fields.
+- `https://code.claude.com/docs/en/sub-agents`: subagent spec, fork mode, agent teams.
+- `https://code.claude.com/docs/en/hooks`: every event, every matcher, every input field.
+- `https://code.claude.com/docs/en/features-overview`: meta-mental-model; "build your setup over time" and surface comparison tabs.
+- `https://code.claude.com/docs/en/whats-new/index`: weekly digests.
+- `https://code.claude.com/docs/en/changelog`: full per-version changes.
+- `https://code.claude.com/docs/en/commands`: bundled commands and skills.
 
 Cross-tool standards:
 
-- `https://agents.md` — AGENTS.md spec and adoption list.
-- `https://modelcontextprotocol.io/specification/2025-11-25` — MCP spec.
-- `https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/` — MCP 2026 roadmap.
-- `https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills` — Agent Skills standard announcement.
-- `https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation` — AAIF formation.
+- `https://agents.md`: AGENTS.md spec and adoption list.
+- `https://modelcontextprotocol.io/specification/2025-11-25`: MCP spec.
+- `https://blog.modelcontextprotocol.io/posts/2026-mcp-roadmap/`: MCP 2026 roadmap.
+- `https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills`: Agent Skills standard announcement.
+- `https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation`: AAIF formation.
 
 ## In flux as of early July 2026
 
 Things that were research previews or moving fast at the time of writing:
 
-- **Fable 5 is back** (restored 2026-07-01 after the US export-control order was lifted — see the Fable 5 section above). `/model fable` selects it again and `best` resolves to it where the org has access. Rollout was throttled to ≤50% of weekly usage limits through 2026-07-12, then usage credits. The episode is a standing reminder that model availability moves independently of the changelog.
+- **Fable 5 is back** (restored 2026-07-01 after the US export-control order was lifted; see the Fable 5 section above). `/model fable` selects it again and `best` resolves to it where the org has access. Rollout was throttled to ≤50% of weekly usage limits through 2026-07-12, then usage credits. The episode is a standing reminder that model availability moves independently of the changelog.
 - **Agent view (`claude agents`)** is research preview. Surface and command shape may shift.
 - **Forked subagents** remain gated behind `CLAUDE_CODE_FORK_SUBAGENT=1` (v2.1.117+); now work in SDK and `-p` modes as well as interactive. Likely to become default eventually.
 - **Auto mode** is in research preview. Default thresholds and classifier behavior may change. `hard_deny` rules are stable.
@@ -359,7 +359,7 @@ Things that were research previews or moving fast at the time of writing:
 - **PowerShell tool** on Windows is an opt-in preview (`CLAUDE_CODE_USE_POWERSHELL_TOOL`).
 - **The native binary migration** means npm now pulls platform-specific binaries via optional deps. Could affect CI installs in unusual environments.
 - **Agent Skills cross-tool support** is announced broadly but unevenly implemented. A skill authored against Claude Code's full feature set won't always work the same elsewhere.
-- **MCP enterprise features** (auth/SSO, audit, gateway, registry) are the 2026 roadmap focus — expect movement throughout the year.
+- **MCP enterprise features** (auth/SSO, audit, gateway, registry) are the 2026 roadmap focus, so expect movement throughout the year.
 
 ---
 

@@ -12,7 +12,7 @@ STATUS: DRAFT
 
 | <samp>#</samp>                                  | <samp>SECTION</samp>                    | <samp><a href="#13-the-wheel">WHEEL</a> PHASE</samp> |
 | :----------------------------------- | :--------------------------- | :------------------------------------- |
-| [01](#01-standouts)                  | STANDOUTS                    | `—`                                    |
+| [01](#01-standouts)                  | STANDOUTS                    | `–`                                    |
 | [02](#02-memory-and-context)         | MEMORY AND CONTEXT           | `configure` ·`maintain`                |
 | [03](#03-skills-plugins-mcp)         | SKILLS, PLUGINS, MCP         | `configure`                            |
 | [04](#04-cli-env-settings-keys)      | CLI, ENV, SETTINGS, KEYS     | `configure` · `plan`                   |
@@ -23,7 +23,7 @@ STATUS: DRAFT
 | [09](#09-platform-and-agent-sdk)     | PLATFORM AND AGENT SDK       | `beyond the CLI`                       |
 | [10](#10-the-anthropic-playbook)     | THE ANTHROPIC PLAYBOOK       | `plan` · `review`                      |
 | [11](#11-stale-advice)               | STALE ADVICE                 | `maintain`                             |
-| [12](#12-easter-eggs)                | EASTER EGGS                  | `—`                                    |
+| [12](#12-easter-eggs)                | EASTER EGGS                  | `–`                                    |
 | [13](#13-the-wheel)            | THE WHEEL              | `⓪ → ⑥ → ⓪`                            |
 
 ---
@@ -88,7 +88,7 @@ A couple lesser-known or new features I like.
 <tr><td>inline MCP data</td><td><code>@server:resource</code> (<code>@github:issue://123</code>) · <code>/mcp__server__prompt</code></td><td>Pull live MCP data inline like an <code>@file</code>; surface server prompts as slash commands.</td></tr>
 <tr><td>plugin CLI + state</td><td><code>bin/</code> at plugin root · <code>${CLAUDE_PLUGIN_DATA}</code></td><td><code>bin/</code> joins the Bash <code>PATH</code> while enabled (ship a CLI your skills call by name). <code>${CLAUDE_PLUGIN_DATA}</code> is the persistent state dir that survives updates (install venvs / <code>node_modules</code> there once).</td></tr>
 <tr><td>commit-SHA versioning</td><td>omit <code>version</code> from <code>plugin.json</code> + marketplace entry</td><td>Git commit SHA becomes the version, so every push is an update. Setting a <code>version</code> pins the install cache; <code>/plugin update</code> reports "already at the latest version" until you bump it.</td></tr>
-<tr><td>plugin option scoping<sup>NEW</sup> <kbd><samp>v2.1.207</samp></kbd></td><td><code>pluginConfigs</code></td><td>Plugin option values now resolve from user settings, <code>--settings</code>, and managed settings only — a project-level <code>.claude/settings.json</code> entry is silently ignored. Don't ship a plugin option default that depends on a repo-committed override.</td></tr>
+<tr><td>plugin option scoping<sup>NEW</sup> <kbd><samp>v2.1.207</samp></kbd></td><td><code>pluginConfigs</code></td><td>Plugin option values now resolve from user settings, <code>--settings</code>, and managed settings only, so a project-level <code>.claude/settings.json</code> entry is silently ignored. Don't ship a plugin option default that depends on a repo-committed override.</td></tr>
 </table>
 
 > [!NOTE]
@@ -123,14 +123,14 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>claude project purge [path]</code></td><td>Wipe one project's local footprint (transcripts, memory, tasks); <code>--dry-run</code>, <code>--all</code>.</td></tr>
 <tr><td><code>claude setup-token</code></td><td>Long-lived OAuth token for CI/scripts (Claude subscription).</td></tr>
 <tr><td><code>claude mcp login &lt;name&gt;</code> / <code>logout</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td>Authenticate an MCP server from the CLI without the <code>/mcp</code> menu; <code>--no-browser</code> completes OAuth over SSH via paste-the-URL.</td></tr>
-<tr><td><code>/config key=value</code><sup>NEW</sup> <kbd><samp>v2.1.181</samp></kbd></td><td>Set <em>any</em> setting from the prompt (<code>/config thinking=false</code>) — scriptable in <code>-p</code> and Remote Control, no settings.json edit. <code>/config --help</code> lists the keys.</td></tr>
+<tr><td><code>/config key=value</code><sup>NEW</sup> <kbd><samp>v2.1.181</samp></kbd></td><td>Set <em>any</em> setting from the prompt (<code>/config thinking=false</code>). Scriptable in <code>-p</code> and Remote Control, no settings.json edit. <code>/config --help</code> lists the keys.</td></tr>
 <tr><td><code>/doctor</code> (= <code>/checkup</code>)<sup>NEW</sup> <kbd><samp>v2.1.205+</samp></kbd></td><td>Went from diagnostics-only to a full checkup that <em>fixes</em> issues too (v2.1.205); now proposes trimming checked-in <code>CLAUDE.md</code> content Claude could already derive from the codebase (v2.1.206) and flags an externally managed launcher script the auto-updater can't safely overwrite (v2.1.207).</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>Environment variables</h4></kbd></td></tr>
 <tr><th><samp>VAR</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>CLAUDE_CODE_EFFORT_LEVEL</code></td><td>The <strong>only</strong> way to make <code>max</code> effort persist across sessions (the setting rejects <code>max</code>).</td></tr>
 <tr><td><code>BASH_DEFAULT_TIMEOUT_MS</code></td><td>Long bash commands <strong>auto-background</strong> past this instead of being killed.</td></tr>
 <tr><td><code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE</code></td><td>Trigger auto-compaction earlier than the ~95% default (e.g. <code>50</code>).</td></tr>
-<tr><td><code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code></td><td>Absolute-token auto-compact threshold for 1M-window sessions (Sonnet 5 default ~967K) — the token-count companion to the percent override above.</td></tr>
+<tr><td><code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code></td><td>Absolute-token auto-compact threshold for 1M-window sessions (Sonnet 5 default ~967K). The token-count companion to the percent override above.</td></tr>
 <tr><td><code>CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY</code></td><td>Crank parallel read-only tools/subagents above the default <code>10</code>.</td></tr>
 <tr><td><code>CLAUDE_CODE_ATTRIBUTION_HEADER=0</code></td><td>Drop the attribution block for a smaller, more cacheable system prompt.</td></tr>
 <tr><td><code>CLAUDE_CODE_TASK_LIST_ID=my-project</code></td><td>Share one task list across sessions on the same project.</td></tr>
@@ -139,7 +139,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>MAX_THINKING_TOKENS=0</code></td><td>Disable extended thinking regardless of effort (big cost lever on simple tasks). No-op on Fable 5: thinking can't be turned off there.</td></tr>
 <tr><td><code>ENABLE_TOOL_SEARCH=auto:5</code></td><td>Threshold-load only MCP tools fitting in 5% of context; defer the rest.</td></tr>
 <tr><td><code>CLAUDE_CODE_RETRY_WATCHDOG</code><sup>NEW</sup> <kbd><samp>v2.1.199</samp></kbd></td><td>Raises the default retry count for non-capacity transient errors to 300 and <em>lifts</em> the former cap of 15 on <code>CLAUDE_CODE_MAX_RETRIES</code>: the supported lever for unattended sessions that must not give up.</td></tr>
-<tr><td><code>CLAUDE_ENABLE_STREAM_WATCHDOG=0</code><sup>NEW</sup> <kbd><samp>v2.1.196</samp></kbd></td><td>Opt out of the idle-stream watchdog, now on by default for <em>all</em> providers — it aborts and retries a response stream that emits no events for 5 min.</td></tr>
+<tr><td><code>CLAUDE_ENABLE_STREAM_WATCHDOG=0</code><sup>NEW</sup> <kbd><samp>v2.1.196</samp></kbd></td><td>Opt out of the idle-stream watchdog, which is now on by default for <em>all</em> providers and aborts and retries a response stream that emits no events for 5 min.</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>settings.json keys</h4></kbd></td></tr>
 <tr><th><samp>KEY</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>skillOverrides</code></td><td>Set a skill to <code>"name-only"</code> (keep listed, drop description budget) or <code>"off"</code>, without editing its file; great for noisy third-party skills.</td></tr>
@@ -152,8 +152,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>availableModels</code> + <code>enforceAvailableModels</code><sup>NEW</sup> <kbd><samp>v2.1.175</samp></kbd></td><td>(Managed) allowlist which models a fleet may use; <code>enforceAvailableModels</code> extends the allowlist to the resolved <em>Default</em> model and stops user/project settings widening it; <code>ANTHROPIC_DEFAULT_*_MODEL</code> and <code>/fast</code> can't bypass it (v2.1.177). The model analog of the version-band pin above.</td></tr>
 <tr><td><code>fallbackModel</code><sup>NEW</sup> <kbd><samp>v2.1.166</samp></kbd></td><td>Up to three fallbacks tried in order when the primary is overloaded/unavailable; the settings form of <code>--fallback-model</code>.</td></tr>
 <tr><td><code>disableBundledSkills</code><sup>NEW</sup> <kbd><samp>v2.1.169</samp></kbd></td><td>Hide <em>all</em> bundled skills, workflows, and built-in slash commands from the model in one key: reclaim their description budget.</td></tr>
-<tr><td><code>Tool(param:value)</code> perm rules<sup>NEW</sup> <kbd><samp>v2.1.178</samp></kbd></td><td>Permission rules match a tool call's <em>input params</em> (with <code>*</code>): e.g. <code>Agent(model:opus)</code> blocks Opus subagents — param-level <code>deny</code>/<code>allow</code> without a <code>PreToolUse</code> hook.</td></tr>
-<tr><td><code>sandbox.credentials</code><sup>NEW</sup> <kbd><samp>v2.1.187</samp></kbd></td><td>Block sandboxed commands from reading credential files and secret env vars — defense-in-depth for untrusted shell.</td></tr>
+<tr><td><code>Tool(param:value)</code> perm rules<sup>NEW</sup> <kbd><samp>v2.1.178</samp></kbd></td><td>Permission rules match a tool call's <em>input params</em> (with <code>*</code>): e.g. <code>Agent(model:opus)</code> blocks Opus subagents. Param-level <code>deny</code>/<code>allow</code> without a <code>PreToolUse</code> hook.</td></tr>
+<tr><td><code>sandbox.credentials</code><sup>NEW</sup> <kbd><samp>v2.1.187</samp></kbd></td><td>Block sandboxed commands from reading credential files and secret env vars. Defense-in-depth for untrusted shell.</td></tr>
 <tr><td><code>respondToBashCommands: false</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td>Revert the new default where a <code>!</code> bash run makes Claude react to the output; keeps <code>!</code> output as context only.</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>Interactive shortcuts & TUI</h4></kbd></td></tr>
 <tr><th><samp>KEYS</samp></th><th><samp>FUNCTION</samp></th></tr>
@@ -169,11 +169,11 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 </table>
 
 > [!NOTE]
-> **Fable 5 + Mythos 5 restored 2026-07-01** — a 19-day US export-control suspension (from 2026-06-12) was lifted 2026-06-30; both are back globally (API/AWS/Foundry), rollout throttled to ≤50% of weekly usage limits through 2026-07-12, then usage credits. Neither the suspension nor the restoration hit the CC changelog: model availability moves independently of it, so check it out of band on every bump.
+> **Fable 5 + Mythos 5 restored 2026-07-01**: a 19-day US export-control suspension (from 2026-06-12) was lifted 2026-06-30; both are back globally (API/AWS/Foundry), rollout throttled to ≤50% of weekly usage limits through 2026-07-12, then usage credits. Neither the suspension nor the restoration hit the CC changelog: model availability moves independently of it, so check it out of band on every bump.
 
-Fable 5 (<code>/model fable</code>,<sup>NEW</sup> <kbd><samp>v2.1.170</samp></kbd>) reroutes classifier-flagged requests (cybersecurity/biology) to Opus mid-session — and can trip on <em>workspace context</em> alone (CLAUDE.md, git status, directory names) before you type anything. <code>claude --safe-mode</code> isolates whether your config is the trigger; <code>/config</code> → "switch models when a message is flagged" off = pause-and-ask instead of silent switch.
+Fable 5 (<code>/model fable</code>,<sup>NEW</sup> <kbd><samp>v2.1.170</samp></kbd>) reroutes classifier-flagged requests (cybersecurity/biology) to Opus mid-session, and it can trip on <em>workspace context</em> alone (CLAUDE.md, git status, directory names) before you type anything. <code>claude --safe-mode</code> isolates whether your config is the trigger; <code>/config</code> → "switch models when a message is flagged" off = pause-and-ask instead of silent switch.
 
-<code>/model best</code> resolves to Fable 5 where the org has access, else latest Opus — safe to write into shared settings for mixed-access teams.
+<code>/model best</code> resolves to Fable 5 where the org has access, else latest Opus, so it's safe to write into shared settings for mixed-access teams.
 
 <sub><a href="https://code.claude.com/docs/en/cli-reference">src: code.claude.com/docs/en/cli-reference</a> · <kbd>/env-vars</kbd> <kbd>/settings</kbd> <kbd>/interactive-mode</kbd> <kbd>/fullscreen</kbd> <kbd>/model-config</kbd></sub>
 
@@ -203,7 +203,7 @@ The events and fields nobody reads down to.
 > Only exit code <code>2</code> blocks. A hook that exits <code>1</code> does <strong>not</strong> block the action (stderr shows, turn continues). A <code>PreToolUse</code> <code>deny</code> beats <code>bypassPermissions</code>/<code>--dangerously-skip-permissions</code>: the way to enforce un-bypassable org policy.
 
 > [!WARNING]
-> <code>${user_config.*}</code> is now rejected in shell-form hook, monitor, and MCP <code>headersHelper</code> commands<sup>NEW</sup> <kbd><samp>v2.1.207</samp></kbd> — a shell-injection fix. Use the exec <code>args</code> form or <code>$CLAUDE_PLUGIN_OPTION_&lt;KEY&gt;</code> in hooks; monitors and <code>headersHelper</code> read the option's value inside the script instead.
+> <code>${user_config.*}</code> is now rejected in shell-form hook, monitor, and MCP <code>headersHelper</code> commands<sup>NEW</sup> <kbd><samp>v2.1.207</samp></kbd> as a shell-injection fix. Use the exec <code>args</code> form or <code>$CLAUDE_PLUGIN_OPTION_&lt;KEY&gt;</code> in hooks; monitors and <code>headersHelper</code> read the option's value inside the script instead.
 
 <sub><a href="https://code.claude.com/docs/en/hooks">src: code.claude.com/docs/en/hooks</a></sub>
 
@@ -226,7 +226,7 @@ The cache matches on the request **prefix**, exactly, so a change anywhere early
 
 Pick model and effort at the top of a session; save <code>/compact</code> for natural task breaks. Every mid-task model/effort/fast-mode flip is a full uncached turn. Prefer <code>/rewind</code> (reuses a warm prefix) over <code>/compact</code> (builds a new one) to abandon a bad path.
 
-<code>/cd &lt;path&gt;</code><sup>NEW</sup> <kbd><samp>v2.1.169</samp></kbd> moves the session to another working directory <em>without</em> breaking the prompt cache — beats restarting in the right repo.
+<code>/cd &lt;path&gt;</code><sup>NEW</sup> <kbd><samp>v2.1.169</samp></kbd> moves the session to another working directory <em>without</em> breaking the prompt cache, which beats restarting in the right repo.
 
 On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROMPT_CACHING_1H</code>; that's the API-key/Bedrock/Vertex lever). Watch <code>cache_read_input_tokens</code> vs <code>cache_creation_input_tokens</code>: high read-ratio means caching works; persistently high <em>creation</em> means something keeps changing your prefix.
 
@@ -246,7 +246,7 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 </table>
 
 - For human sign-off <em>between</em> stages, skip one big workflow or an agent team: workflows forbid mid-run input (only permission prompts pause), and in-process teammates don't survive <code>/resume</code>. Chain separate steps, or use agent view's per-session peek/reply.
-- Two "agents" surfaces, easy to confuse: <code>claude agents</code> (background sessions) ≠ agent <em>teams</em> (<code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code>, ~7× tokens). The <code>/agents</code> wizard was <strong>removed</strong> (v2.1.198) — create/manage subagents by asking Claude or editing <code>.claude/agents/</code>. Dynamic workflows (<code>ultracode</code>) are the heaviest fan-out; see <a href="./STATE.md">STATE.md</a>. The workflow JS API isn't in the public docs, so don't assume function names.
+- Two "agents" surfaces, easy to confuse: <code>claude agents</code> (background sessions) ≠ agent <em>teams</em> (<code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code>, ~7× tokens). The <code>/agents</code> wizard was <strong>removed</strong> (v2.1.198), so create/manage subagents by asking Claude or editing <code>.claude/agents/</code>. Dynamic workflows (<code>ultracode</code>) are the heaviest fan-out; see <a href="./STATE.md">STATE.md</a>. The workflow JS API isn't in the public docs, so don't assume function names.
 
 <sub><a href="https://code.claude.com/docs/en/sub-agents">src: code.claude.com/docs/en/sub-agents</a> · <kbd>/goal</kbd> <kbd>/agent-view</kbd> <kbd>/workflows</kbd></sub>
 
@@ -273,9 +273,9 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 <tr><td><code>cwd</code></td><td>Absolute dir; wins over <code>repo</code> if both are passed.</td></tr>
 </table>
 
-- Channels: gate senders on <code>message.from.id</code>, not <code>message.chat.id</code> — in a group chat, anyone in an allowlisted room could otherwise inject into your session.
+- Channels: gate senders on <code>message.from.id</code>, not <code>message.chat.id</code>, because in a group chat anyone in an allowlisted room could otherwise inject into your session.
 - Remote Control won't connect? You're probably on an inference-only token; it needs a full <code>claude auth login</code>, not <code>setup-token</code>.
-- GitHub strips <code>claude-cli://</code> links (renders the label only) — put the URL in a code block so people can copy it.
+- Because GitHub strips <code>claude-cli://</code> links (renders the label only), put the URL in a code block so people can copy it.
 - Channels + the permission relay beats <code>--dangerously-skip-permissions</code> for unattended runs: a long-running agent that still asks before risky calls, except the ask lands on your phone and the first verdict (terminal or remote) wins.
 - Deep link + Skill is the runbook pattern: store the long prompt as a <code>/skill</code> and let <code>q</code> just name it. Short URLs, and you dodge the 5,000-char limit.
 
@@ -304,8 +304,8 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 </table>
 
 - The three context levers only pay off <em>together</em>: compaction summarises in place, context editing drops the oldest tool results, the memory tool persists facts across the summary boundary so nothing load-bearing is lost. Every clear/edit is a prompt-cache decision (the guards <code>clear_at_least</code>, <code>defer_loading</code> mutate only when token savings beat a cache rebuild).
-- Dreams <code>instructions</code> is a synthesis <em>steer</em> ("focus on architecture decisions, preserve user prefs"), not a line editor — imperative "change X to Y" does nothing; use the Memory Stores API for targeted edits. While <code>running</code>, stream the dream's own <code>session_id</code> to watch what it reads and writes live.
-- Compaction footgun: with tools defined, the model may call a tool instead of writing the summary — add "respond with text only, do not call any tools" to <code>instructions</code>.
+- Dreams <code>instructions</code> is a synthesis <em>steer</em> ("focus on architecture decisions, preserve user prefs"), not a line editor. Imperative "change X to Y" does nothing; use the Memory Stores API for targeted edits. While <code>running</code>, stream the dream's own <code>session_id</code> to watch what it reads and writes live.
+- Compaction footgun: with tools defined, the model may call a tool instead of writing the summary, so add "respond with text only, do not call any tools" to <code>instructions</code>.
 
 <sub><a href="https://platform.claude.com/docs/en/managed-agents/dreams">src: platform.claude.com/docs/en/managed-agents/dreams</a> · <kbd>/memory</kbd> <kbd>/agents-and-tools/tool-use/memory-tool</kbd> <kbd>/build-with-claude/context-editing</kbd> <kbd>/compaction</kbd></sub>
 
@@ -320,7 +320,7 @@ Power-moves Anthropic's team documents, not folklore.
 <tr><td><code>ultrathink</code> is the recognised thinking-budget keyword today. The ladder (<code>think</code> &lt; <code>think hard</code> &lt; <code>think harder</code> &lt; <code>ultrathink</code>, more budget each step) is from the original best-practices post; only <code>ultrathink</code> parses as a keyword now. Separate from <code>ultracode</code> (= <code>xhigh</code> effort + dynamic workflows).</td><td>best-practices post · model-config docs</td></tr>
 <tr><td>Explore → plan → code → commit. Read the relevant files <em>before</em> writing code; separating research and planning from coding "avoids solving the wrong problem."</td><td>best-practices</td></tr>
 <tr><td>Press <code>#</code> to fold an instruction into CLAUDE.md, and after correcting Claude, ask it to update CLAUDE.md so it won't repeat the mistake. They also run CLAUDE.md through the prompt improver and add <code>IMPORTANT</code>/<code>YOU MUST</code>.</td><td>Boris Cherny / team</td></tr>
-<tr><td>One Claude writes, a second (fresh context) reviews — unbiased toward code it just wrote. Run 3–5 sessions at once, one per task, most started in Plan mode (<code>Shift+Tab</code> twice).</td><td>Boris Cherny / team</td></tr>
+<tr><td>One Claude writes and a second (fresh context) reviews, which keeps the reviewer unbiased toward code it just wrote. Run 3–5 sessions at once, one per task, most started in Plan mode (<code>Shift+Tab</code> twice).</td><td>Boris Cherny / team</td></tr>
 <tr><td>Guardrails in hooks, not prompts. "Never edit <code>.env</code>" in CLAUDE.md is a request; a <code>PreToolUse</code> hook is enforcement. Keep CLAUDE.md under ~200 lines; move reference to skills or <code>.claude/rules/</code>.</td><td>best-practices / team</td></tr>
 </table>
 
@@ -387,7 +387,7 @@ lap's configuration.
 │  cloud plan ...... /ultraplan  (draft in cloud → review → pull back)       │
 │  persistent goal . /goal <condition the transcript can prove>              │
 │  dials ........... /model best · /effort low→max (ultracode = workflows)   │
-│  cache rule ...... pick model + effort NOW — every mid-task flip           │
+│  cache rule ...... pick model + effort NOW; every mid-task flip            │
 │                    recomputes the whole prefix (§06)                       │
 └─────────────────────────────────────┬──────────────────────────────────────┘
                                       ▼
@@ -406,7 +406,7 @@ lap's configuration.
 ├────────────────────────────────────────────────────────────────────────────┤
 │  provable done ... /goal "npm test exits 0 and git status clean"           │
 │  enforced done ... Stop hook ("type": "agent") runs the tests before       │
-│                    Claude may stop — exit 2 is the only code that blocks   │
+│                    Claude may stop; exit 2 is the only code that blocks    │
 │  structured out .. --json-schema  (machine-checkable -p output)            │
 └─────────────────────────────────────┬──────────────────────────────────────┘
    fail → back to ②                   ▼ pass
@@ -414,10 +414,10 @@ lap's configuration.
 │ ④ REVIEW                                        "second pair of eyes"  §10 │
 ├────────────────────────────────────────────────────────────────────────────┤
 │  bug hunt ........ /code-review [effort]  (--comment posts · --fix edits)  │
-│  cleanup only .... /simplify  (reuse / altitude — NOT bug-hunting)         │
+│  cleanup only .... /simplify  (reuse / altitude, NOT bug-hunting)          │
 │  multi-agent ..... /ultrareview  (parallel reviewers + adversarial pass)   │
 │  fresh eyes ...... a second Claude, fresh context, reviews the first's     │
-│                    work — unbiased toward code it just wrote               │
+│                    work, unbiased toward code it just wrote                │
 └─────────────────────────────────────┬──────────────────────────────────────┘
                                       ▼
 ┌────────────────────────────────────────────────────────────────────────────┐
@@ -443,7 +443,7 @@ lap's configuration.
 └─────────────────────────────────────────────────────────────────────┬──────┘
                                                                       │
    ⓪ CONFIGURE ◀── feedback: corrections, memories, new skills & hooks ┘
-   become next session's configuration — the loop closes
+   become next session's configuration and the loop closes
 </code></pre>
 
 

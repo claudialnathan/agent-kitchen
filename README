@@ -5,8 +5,6 @@ AGENT-KITCHEN █
 agent-kitchen is a second-order harness: a kitchen for the things that configure coding agents (skills, hooks, rules, CLAUDE.md, workflows). It runs as dotfiles for the agent.
 
 The kitchen makes the tools, tastes them, dates them, throws out what's gone stale.
-The applied skills it produces — the ones that survive — live in a separate repo
-(github.com/claudialnathan/skills).
 
 The kitchen is built on the idea that:
 
@@ -43,19 +41,6 @@ The kitchen can operate as a set of skills used as needed, or as a loop: HARVEST
 
 - INGEST: turns resources provided by the user into an artifact by fanning out one
   reader subagent per source, grounded in verbatim quotes.
-
-─────────────────────
-
-THE SKILLS IT PRODUCES
-
-The applied skills — shadcn-tailwind, design-engineer, speed-daemon, quality-audit,
-saltintesta, flavored-md, zoom-out, changelog — live in the `skills` repo
-(github.com/claudialnathan/skills). Each expertise or taste skill earns its place only
-by beating the unaided current model on the gap that created it, checked by a runnable
-probe, and is deleted when a model absorbs its job. Process skills are exempt — their
-value is the owner wanting the procedure, which no release absorbs.
-
-─────────────────────
 
 STATE.md + HACKS.md are a verified snapshot of Claude Code's surfaces and lesser-known
 features, re-checked against the live changelog on each release.

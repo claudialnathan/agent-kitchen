@@ -20,12 +20,27 @@ The kitchen can operate as a set of skills used as needed, or as a loop:
 `harvest` and `ingest` feed `forge`; probes and live use check the artifacts;
 `harness-audit` removes what doesn't earn its place; sessions feed the next harvest.
 
-```mermaid
-flowchart LR
-  harvest["harvest<br/>session corrections"] --> forge["forge<br/>design artifacts"]
-  ingest["ingest<br/>source briefs"] --> forge
-  forge --> audit["harness-audit<br/>measure & prune"]
-  audit -->|"leaner harness → sessions"| harvest
+```
+        ┌──── leaner harness → sessions ────┐
+        ▼                                   │
+┌───────────────┐   ┌───────────────┐       │
+│ harvest       │   │ ingest        │       │
+│ session       │   │ source        │       │
+│ corrections   │   │ briefs        │       │
+└───────┬───────┘   └───────┬───────┘       │
+        └─────────┬─────────┘               │
+                  ▼                         │
+          ┌───────────────┐                 │
+          │ forge         │                 │
+          │ design        │                 │
+          │ artifacts     │                 │
+          └───────┬───────┘                 │
+                  ▼                         │
+          ┌───────────────┐                 │
+          │ harness-audit │                 │
+          │ measure &     │                 │
+          │ prune         │─────────────────┘
+          └───────────────┘
 ```
 
 | Surface                 | Role                                                                                                                                                                                                                                                                                                                                                     |

@@ -4,8 +4,8 @@ agent-kitchen is a second-order harness: a kitchen for the things that configure
 
 The kitchen is built on the idea that:
 
-- A frontier model in 2026 is broadly capable, but in any given domain its default is the competent-average version. The artifacts here are
-  commitments that drag it off that median in a chosen direction.
+- A frontier model in 2026 is very competent at most things, but its default in any domain is the competent average version of the thing.
+  The artifacts here are commitments that drag the model off that median in a chosen direction.
 - Every artifact competes with two forces: the unaided frontier model, which absorbs
   generic craft with each release, and the owner's time, which every artifact charges rent on.
 - So durable value comes from what the model cannot have: the owner's taste and intent
@@ -47,7 +47,6 @@ this repo:
 ```bash
 /plugin marketplace add claudialnathan/agent-kitchen
 /plugin install agent-kitchen@claudia   # the kitchen: forge, harness-audit, harvest, ingest
-/plugin install skills@claudia          # the applied skills (from the skills repo)
 ```
 
 Commit-SHA versioning (no version field), so a pushed commit reaches other repos on the

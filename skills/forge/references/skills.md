@@ -67,6 +67,7 @@ The kind constrains the form; it doesn't decide worth (that's additive-vs-transf
 - Live change detection: description edits take effect in-session; a *new* top-level skills directory needs a restart.
 - **Subagents differ:** the `skills:` field on an agent definition preloads the *full body* into its system prompt; subagents don't inherit the parent conversation's skills. A `context: fork` skill is different again, because its body becomes the fork's prompt.
 - Write the body as **standing instructions** ("when running tests, prefer single-file runs"), not one-time steps ("first check Node is installed"), because turn-8 Claude should still be steered, not stepped through a spent recipe. Bodies past ~500 lines hurt more than they help; push reference material to sibling files.
+- **Task-skill bodies read in four movements:** the task named; the context gate — each input the work depends on (arguments, files, config, connections, facts only the user holds) verified present before acting, with a question rather than a guess when one is missing, and expected args declared via `argument-hint`/`arguments` so the gap surfaces at invocation; the work; the output checked against the skill's objective before delivery. Knowledge kinds are declarative and carry no gate.
 
 ## Naming and placement
 

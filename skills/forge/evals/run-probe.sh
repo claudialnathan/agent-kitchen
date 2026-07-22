@@ -78,8 +78,9 @@ git -c user.name=fixture -c user.email=f@local commit -qm "pre-run" --no-verify 
 START=$(date +%s)
 set +e
 # Each probe is its own billed CLI turn — do not inherit nested-session env.
-# ANTHROPIC_OAUTH_TOKEN is session-scoped when run from inside a Claude Code
-# session; inheriting it 401s the nested CLI. Fall back to stored login.
+# ANTHROPIC_OAUTH_TOKEN: undocumented env credential; where a setup carries it,
+# the nested CLI 401s instead of using stored login (observed 2026-07-11).
+# Unsetting is a no-op when absent.
 env -u CLAUDECODE -u ANTHROPIC_OAUTH_TOKEN claude "${FLAGS[@]}" -p "$PROMPT" > "$RUN/OUTPUT.md" 2> "$RUN/STDERR.txt"
 CODE=$?
 set -e

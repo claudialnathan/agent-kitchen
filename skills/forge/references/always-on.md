@@ -36,19 +36,19 @@ The dividing test is discovery cost, not "is it about the code": architecture, c
 
 The CLAUDE.md ↔ local-notes boundary is **functional, not topical**: a behavioral precondition the agent must satisfy during normal work belongs in CLAUDE.md even when it's "publish-flow" (the agent never opens the playbook mid-task); the playbook detail (commands, diagnostics) stays in the unloaded file. Tell: *would an agent doing ordinary work step on this if it weren't in context?*
 
-**Voice.** Intent, not rulebook. "We treat new artifacts as feedback for the forge" frames a disposition; "ALWAYS propose improvements" performs enforcement the file can't deliver, and all-caps almost always means the content wants to be a hook. Where a rule isn't its own reason, give the Why inline (rules-with-reasons outperform unreasoned rules by ~7× on misalignment):
+**Voice.** Intent, not rulebook. "We treat new artifacts as feedback for the forge" frames a disposition; "ALWAYS propose improvements" performs enforcement the file can't deliver, and all-caps usually means the content wants to be a hook. Where a rule isn't its own reason, give the Why inline (rules-with-reasons markedly outperform unreasoned rules):
 
 ```
 - Integration tests hit a real database, not mocks. **Why:** a mock/prod divergence masked a broken migration. **How to apply:** tests/integration/; mocks fine in tests/unit/.
 ```
 
-**Ceilings (measured, 2026-05; source in CHANGELOG.md):** past **14 top-level rules** compliance drops sharply (76% → 52%); **examples cost ~3×** a rule and induce overfitting (use one only when prose can't name the edge case); identity prompts and adverbs ("be careful", "act senior") hover ~30%, so replace with concrete imperatives. Hold under ~200 lines; a 40-line file with five reasoned rules often outperforms a 200-line one because what's there is read. Phrase capability-agnostically: "match the codebase's enforced style" survives a missing eslint; "always run eslint" fails silently.
+**Short files are read; long ones are skimmed.** Compliance dilutes as rules accumulate; worked examples are expensive and induce overfitting (reach for one when prose can't name the edge case); identity prompts and adverbs ("be careful", "act senior") deliver little, so prefer concrete imperatives. A short file of reasoned rules often outperforms a long one because what's there is read — size is judgment, not a threshold. Phrase capability-agnostically: "match the codebase's enforced style" survives a missing eslint; "always run eslint" fails silently.
 
 **The three jobs**, sharing the same triage:
 
 - **Bootstrap**: run `/init`, then run every line of its output through the filters (most depicts current state and gets cut); write what's left in intent voice.
 - **Audit**: the common job. Read everything in scope (all CLAUDE.mds, local file, AGENTS.md, rules, auto-memory index, plus the sources entries make claims about). Verdict per line: keep / move / cut / rewrite. Show the table before editing. Most CLAUDE.mds shrink by half.
-- **Tune**: land one durable session insight. Bar: the correction landed twice, or the failure cost something concrete. Once is noise.
+- **Tune**: land one durable session insight. Recurrence or concrete cost is the strongest evidence; a one-off still earns its line when the owner says it matters.
 
 **When AGENTS.md is primary** (multi-tool repos): AGENTS.md holds the agent-agnostic content; CLAUDE.md opens with `@AGENTS.md` plus a Claude-only addendum (skill triggers, hook config, plan-mode preferences). The `@AGENTS.md` import loads mechanically at session start; a prose "read AGENTS.md first" instruction is the weaker bridge because it depends on the model choosing to act on it. Tool-specific content doesn't belong in AGENTS.md either.
 
@@ -64,7 +64,7 @@ The CLAUDE.md ↔ local-notes boundary is **functional, not topical**: a behavio
 
 `.claude/rules/<name>.md`, frontmatter is just `paths:`. Outside the glob the rule sleeps (no description budget, no body cost), which makes it the cheapest extension surface *when the scope is genuinely narrow*.
 
-A rule is right when all four hold: the content is facts about a slice (not a procedure); the slice is identifiable by paths; it applies without manual invocation; it would bloat CLAUDE.md but doesn't deserve a skill. The bar: **three corrections** on the same convention, and the convention **verified against the slice**. Open three or four matching files; if they don't already follow it, the rule is wishful and the agent will mirror whichever it last read.
+A rule is right when all four hold: the content is facts about a slice (not a procedure); the slice is identifiable by paths; it applies without manual invocation; it would bloat CLAUDE.md but doesn't deserve a skill. The evidence: **recurring corrections** on the same convention, and the convention **verified against the slice**. Open three or four matching files; if they don't already follow it, the rule is wishful and the agent will mirror whichever it last read.
 
 - **Rule vs path-scoped skill:** identical auto-loading; the skill is also invocable (`/<name>`) and can bundle references. Pure passive conventions → rule; "pull the full reference in on demand" → skill.
 - **Rule vs hook:** rules add context; hooks run checks that can block. "Know X when editing Y" → rule. "Prevent Z" → hook.

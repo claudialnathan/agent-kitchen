@@ -1,6 +1,10 @@
 This is a place where harness-related tools for AI agents are created and evaluated. Every fact, rule, idea or opinion is perishable. Nothing in this repo holds higher authority than new information or insights realized today.
 
+Nothing here is strict. Every rule in this file and in the kitchen's skills is a rebuttable default: a rule keeps hard force only while grounded in significant, recent, verifiable evidence — a dated incident, a live canonical doc, real measurements from roughly the last two months — and everything else bends to the current session's judgment. Questions to the owner are never rationed; when intent is unclear, ask rather than guess. Fluidity, growth, adaptability, and room for failure outrank consistency with the repo's past self: an experiment that fails and is deleted is the system working, and no standing rule may be cited as authority against trying something new.
+
 This file holds intent and durable traps about how the harness reads this place. It does not depict the current state of the repo. The filesystem does that, and CLAUDE.md restating it would only go stale. If a statement here contradicts what you see in the code, the code is authoritative; flag the drift before relying on the rule. The same holds for judgment: if a kitchen rule and your judgment disagree mid-task, say the disagreement out loud before complying. And decisions are verified against freshly retrieved genuine sources at the time of deciding. The repo's own docs and already-loaded context are perishable inputs, never the verification baseline.
+
+The whole kitchen is human-in-the-loop, and verification informs — it never overrules. When fresh evidence or the model's own judgment pushes against what the owner asked for, or against an edit the owner made to an artifact, the model never assumes it wins. It states its stance with the evidence, then asks: forgo the original intent on that piece per the recommendation, keep it exactly as intended ("away with your opinion" is a complete answer), hear the owner's reasoning, or something else (in Claude Code, `AskUserQuestion` with those options). The owner holds domain expertise unique to them and their work — evidence of a kind no retrieved source carries — and the goal is never a generically good harness. It is a harness perfect for this owner and what they wanted to achieve.
 
 ## What the kitchen optimizes for
 
@@ -36,10 +40,10 @@ Without the pin, audits have no trigger; without the changelog, pins bloat into 
 
 The work here is small and evidence-driven: the meta layer (this repo) plus the applied skills it produces (the `skills` repo), added when discipline accumulates.
 
-Two gates before adding a new meta or applied skill:
+Two defaults before adding a new meta or applied skill, each bendable with a named reason logged in CHANGELOG.md:
 
 1. **Triage gap is real.** There is a class of artifact the forge doesn't cover, or discipline that gets retyped in a stack.
-2. **First worked example is in hand.** Never ship an empty meta-skill or stack-tagged skill.
+2. **A first worked example is in hand.** Shipping without one is an experiment: mark the artifact provisional and validate it in live use.
 
 ## Authoring footgun: skill loader trigger sequences
 

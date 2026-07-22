@@ -30,7 +30,7 @@ From "wait until a gap annoys the owner into naming it" to "the corrections are 
 > - **Corrections**: user messages that correct, reject, redirect, or re-explain something the agent did. Quote each (≤ 60 words) with its timestamp.
 > - **Repeats**: anything the user had to say more than once, in this or plainly-similar wording.
 > - **Failure smells**: user messages reacting to the same error class twice (reverts, "again", "still broken", re-pasted errors).
-> Cap: 12 items. No paraphrase, no interpretation, no advice. Skill-invocation boilerplate ("Base directory for this skill: …" and the instruction text after it) is the harness speaking, not the user, so skip it. If the transcript is all task-dispatch with no corrections, return "no corrections" and stop.
+> Cap: ~12 items, favoring the strongest; note in one line if more remained. No paraphrase, no interpretation, no advice. Skill-invocation boilerplate ("Base directory for this skill: …" and the instruction text after it) is the harness speaking, not the user, so skip it. If the transcript is all task-dispatch with no corrections, return "no corrections" and stop.
 
 ## Phase 2: Cluster and dedup against the standing harness
 
@@ -39,7 +39,7 @@ Group the returned quotes by theme. Then, before anything becomes a candidate, c
 - **Not encoded anywhere** → candidate for a new artifact.
 - **Already encoded but the correction recurs after the artifact existed** → a *compliance* finding: the artifact isn't steering. That routes to the forge as a fix-the-artifact job (wrong altitude, buried instruction, dead trigger), not a new-artifact job. Date comparison matters, because a correction that predates the artifact that encodes it is the system working, not failing.
 
-Evidence bar, per the forge: the same correction in **two or more sessions**, or one failure with real cost (reverted work, shipped defect, user frustration stated in so many words). One-off phrasing preferences don't clear it.
+Evidence weight, per the forge: recurrence across sessions, or one failure with real cost (reverted work, shipped defect, user frustration stated in so many words), weighs heaviest. A single correction still surfaces when it looks load-bearing — the owner decides at the table, not the reader.
 
 ## Phase 3: Candidates to the forge
 
@@ -47,7 +47,7 @@ Present a table: cluster, verbatim exemplar quote, evidence count (sessions + da
 
 ## Anti-patterns
 
-- **Manufacturing artifacts from noise.** A correction that appears once, in one session, about one file, is conversation, not an artifact. Report it only if it cost something.
+- **Manufacturing artifacts from noise.** Most corrections that appear once, in one session, about one file, are conversation, not artifacts. Surface them with their evidence count; the owner calls it.
 - **Harvesting the already-harvested.** Skipping Phase 2's dedup produces duplicate skills and CLAUDE.md bloat; the standing harness is the first thing to read, not the last.
 - **Pasting transcript bulk into the main thread.** The script plus reader contract exists to keep multi-MB files out of context. If raw transcript is flowing into the conversation, the architecture has been skipped.
 - **Treating task phrasing as correction.** "Now do X" is dispatch. A correction pushes *against* something the agent did or was about to do. Readers that can't tell the difference return dispatch noise, so tighten the contract rather than lowering the bar.

@@ -47,7 +47,7 @@ print(total, 'chars ~', total // 4, 'tokens/session')
 EOF
 ```
 
-- Instruction files: `wc -l` on every always-loaded file. The repo's own cost model applies (CLAUDE.md sweet spot under 200 lines; loaded local files count too).
+- Instruction files: `wc -l` on every always-loaded file. The repo's own cost model applies (shorter is better-read; loaded local files count too).
 - Ask the user to run `/context` for the authoritative split. Your estimates bound it; the command confirms it.
 
 ## Step 3: The five checks
@@ -71,7 +71,7 @@ CLAUDE.md is the always-on spine, the most-paid surface and the one that rots fa
 - **Frozen facts that should be discovered.** A value that lives at runtime (a token file, a config, a schema, a vendored doc set) belongs behind a read-first instruction ("read `globals.css` for the theme before writing classNames"; "read the docs in `node_modules/…` before coding"), not pasted as today's snapshot. The discovery survives every project the snapshot dies in.
 - **Bare directives.** A rule the model can't generalize from ("Y before Z", no reason, no condition) underperforms a condition-shaped, reasoned one ("when X genuinely needs Y, do Z, because …"). The model generalizes from a why where it can't from a bare MUST.
 - **Unverified mechanisms.** An intent voice does not protect a wrong mechanism inside it: check each concrete claim (a path, a script name, a flag) against the filesystem it names.
-- **Over the ceilings.** Past ~14 top-level rules compliance drops sharply; worked examples cost ~3× a rule and induce overfitting. Count them; a file over the line buys less compliance than it thinks.
+- **Bloat.** Compliance dilutes as rules and examples accumulate. Count them and report the counts; size is judgment for the owner, not a threshold to enforce.
 
 Finding and quantifying these gaps is this skill's job; authoring the fixes (voice, the Why pattern, the goes-elsewhere table) is the forge's `CLAUDE.md and rules` remit.
 

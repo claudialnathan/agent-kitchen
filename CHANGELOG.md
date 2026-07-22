@@ -4,6 +4,15 @@ Provenance ledger for the kitchen's skills (`skills/`: forge, harness-audit, har
 
 On 2026-07-14 the repo split: the `cook` plugin was renamed `agent-kitchen` and its skills moved to `skills/`; the applied skills left the `serve/` plugin for the separate `skills` repo (github.com/claudialnathan/skills), which now carries their provenance. Entries before that date reference the former `cook/`/`serve/` names and paths as they were at the time.
 
+## 2026-07-22: doctrine: human-in-the-loop — verification informs, never overrules
+
+- **Owner directive, 2026-07-22 (same session as the strictness sweep below):** even verifiable pushback never wins by assumption — not when running the kitchen's skills, and not when the owner edits a skill directly. The model states its stance with the evidence, then asks whether the owner wants to forgo their original intent per the recommendation, keep it exactly as intended (dismissing the opinion outright is a complete answer), give their reasoning, or something else. The owner's domain expertise is unique to them and their work — evidence no retrieved source carries — and the bar is never a generically good harness but one perfect for this owner and what they wanted to achieve.
+- **CLAUDE.md** gains the human-in-the-loop block in its header, with `AskUserQuestion` named as the Claude Code mechanism for putting the choice to the owner.
+- **forge**: the opening standard now grades output against the domain's best practitioner *and, above that, what this owner wanted it to achieve* (expert-grade in the wrong direction is still wrong); decision-time verification gains "verification informs; it never overrules" with the stance-evidence-ask protocol for contradictions with owner intent or owner edits.
+- **ingest**: the disagreement clause now ends in a question, not a verdict — the owner may dismiss cited pushback outright.
+- harvest and harness-audit needed no change: both already route judgment calls to the owner (evidence tables the owner calls; report-don't-act at machine scope).
+- Pins untouched (doctrine revision, not re-earning). Model state: Fable 5 (`claude-fable-5`), Claude Code v2.1.217. preship-check passes; loader-trigger grep clean on touched files.
+
 ## 2026-07-22: doctrine: strictness swept; questions unrationed; hard rules require recent grounding
 
 - **Owner directive, 2026-07-22, superseding parts of the entry below:** the kitchen holds no strictness that isn't earned by evidence. Rules are rebuttable defaults; questions to the owner are never rationed; fluidity, growth, adaptability, and room for failure outrank consistency with the repo's past self. CLAUDE.md gains this as a standing block, and a hard rule now keeps hard force only while grounded in significant, recent, verifiable evidence (a dated incident, a live canonical doc, real measurements from roughly the last two months).

@@ -108,12 +108,10 @@ for d in skills/*/; do
 done
 [ "$dangle_fail" -eq 0 ] && echo "  OK"
 
-# 6. Plugin SHA-versioning guard (FAIL). This repo uses commit-SHA plugin versioning:
-#    no "version" field anywhere, so every pushed commit is a new version and marketplace
-#    installs auto-propagate. A "version" in plugin.json or a marketplace entry silently
-#    pins the install cache to that string and re-breaks propagation (see CLAUDE.md).
+# 6. Claude plugin SHA-versioning guard (FAIL). The Claude manifests use commit-SHA
+#    versioning; the separate Codex manifest intentionally carries strict semver.
 echo
-echo "Plugin SHA-versioning (no version field):"
+echo "Claude plugin SHA-versioning (no version field):"
 ver_fail=0
 for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json; do
   [ -f "$f" ] || continue
@@ -125,7 +123,14 @@ for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json; do
 done
 [ "$ver_fail" -eq 0 ] && echo "  OK"
 
-# 7. Model-version pins (advisory). CLAUDE.md "Model-version pinning and provenance":
+# 7. Native Codex plugin packaging and cross-harness invocation parity.
+echo
+echo "Codex plugin packaging:"
+if ! bin/validate-codex-plugin; then
+  fail=1
+fi
+
+# 8. Model-version pins (advisory). CLAUDE.md "Model-version pinning and provenance":
 #    each non-trivial artifact carries a ONE-LINE pin near the top of the body
 #    (`<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->`) that triggers a
 #    sunset audit when a new model lands. The pin records the earning event ONLY:
@@ -152,7 +157,7 @@ for d in skills/*/; do
   fi
 done
 
-# 8. Machine-scope shadow collisions (advisory; machine-local). CLAUDE.md: a skill name here that
+# 9. Machine-scope shadow collisions (advisory; machine-local). CLAUDE.md: a skill name here that
 #    collides with a real dir (or a symlink from elsewhere) at ~/.claude/skills/<name> is SHADOWED —
 #    personal scope overrides plugin scope, so pushed changes never win in other repos. Same silent
 #    propagation break as a pinned "version" field, but machine-local, so it only warns and never
@@ -181,7 +186,7 @@ else
   [ "$coll" -eq 0 ] && echo "  OK"
 fi
 
-# 9. Dangling self-plugin cross-references (advisory). A skill body that names another skill in
+# 10. Dangling self-plugin cross-references (advisory). A skill body that names another skill in
 #    THIS plugin as agent-kitchen:<name> which no longer exists points readers and the loader at
 #    nothing (the trap that hid /changelog behind a phantom reference). Only same-plugin
 #    (agent-kitchen:) refs are checked — a skills:<name> ref points at the sibling skills repo and

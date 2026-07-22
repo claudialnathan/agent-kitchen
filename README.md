@@ -41,8 +41,9 @@ flowchart LR
 
 `INSTALL`
 
-Both plugins are served through the `claudia` marketplace, whose catalog is hosted in
-this repo:
+### Claude Code
+
+The Claude plugins are served through the `claudia` marketplace, whose catalog is hosted in this repo:
 
 ```bash
 /plugin marketplace add claudialnathan/agent-kitchen
@@ -51,3 +52,20 @@ this repo:
 
 Commit-SHA versioning (no version field), so a pushed commit reaches other repos on the
 next `/plugin marketplace update claudia` → `/plugin update`.
+
+### Codex
+
+The kitchen is also a native Codex plugin, published as its own Git marketplace so a pushed commit to this repo can refresh independently:
+
+```bash
+codex plugin marketplace add claudialnathan/agent-kitchen
+codex plugin add agent-kitchen@claudia-kitchen
+```
+
+Pull later revisions and refresh the installed plugin cache with:
+
+```bash
+codex plugin marketplace upgrade claudia-kitchen
+```
+
+Start a new Codex thread after installing or upgrading so its skill catalog is rebuilt. The applied `skills` plugin is published independently from `claudialnathan/skills`.

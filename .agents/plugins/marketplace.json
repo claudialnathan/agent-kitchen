@@ -1,0 +1,20 @@
+{
+  "name": "claudia-kitchen",
+  "interface": {
+    "displayName": "Claudia's Agent Kitchen"
+  },
+  "plugins": [
+    {
+      "name": "agent-kitchen",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

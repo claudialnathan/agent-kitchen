@@ -49,9 +49,11 @@ Two defaults before adding a new meta or applied skill, each bendable with a nam
 
 The skill loader executes two literal byte sequences as shell commands in any file inside a skill directory. Markdown context (fences, inline code, quotes) offers no protection, and a hit breaks the whole skill's loading. The sequences, how to document them safely, and the self-check grep are in the `forge` skill. `bin/preship-check` catches both; a committed PreToolUse hook runs it on every `git commit` and blocks on failure, so there is no need to run it manually before committing.
 
-## Publishing footgun: keep the plugins versionless (commit-SHA versioning)
+## Publishing footgun: Claude stays versionless; Codex does not
 
-No `version` field anywhere, not in either plugin's `.claude-plugin/plugin.json` and not in the `claudia` marketplace entries. Commit-SHA versioning is what makes a pushed commit propagate on the next `/plugin update`; a `version` string pins the per-install cache and pushed changes silently stop reaching other repos (a frozen `0.1.0` hid `quality-audit` for weeks). `bin/preship-check` fails if one reappears. Propagation and recovery playbooks: the machine-local session notes.
+No `version` field belongs in either plugin's `.claude-plugin/plugin.json` or the Claude `claudia` marketplace entries. Commit-SHA versioning is what makes a pushed commit propagate on the next `/plugin update`; a version string there pins Claude's per-install cache and pushed changes silently stop reaching other repos (a frozen `0.1.0` hid `quality-audit` for weeks). `bin/preship-check` fails if one reappears.
+
+Codex is a separate contract: `.codex-plugin/plugin.json` carries the strict-semver version its manifest validator requires, and `.agents/plugins/marketplace.json` publishes this repo as the `claudia-kitchen` Git marketplace. A pushed commit propagates through `codex plugin marketplace upgrade claudia-kitchen`, which refreshes the installed plugin cache from the new marketplace revision. Do not copy the Codex version into the Claude manifests, and do not remove it from the Codex manifest.
 
 ## Other general rules
 

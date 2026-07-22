@@ -4,6 +4,13 @@ Provenance ledger for the kitchen's skills (`skills/`: forge, harness-audit, har
 
 On 2026-07-14 the repo split: the `cook` plugin was renamed `agent-kitchen` and its skills moved to `skills/`; the applied skills left the `serve/` plugin for the separate `skills` repo (github.com/claudialnathan/skills), which now carries their provenance. Entries before that date reference the former `cook/`/`serve/` names and paths as they were at the time.
 
+## 2026-07-22: native Codex plugin packaging for both repositories
+
+- **`agent-kitchen` and the sibling `skills` repo now publish independent Codex Git marketplaces.** Each repository owns `.codex-plugin/plugin.json` plus `.agents/plugins/marketplace.json`, so its pushed revisions can refresh without depending on a catalog commit in the other repository.
+- **Cross-harness behavior stays intentional.** Claude manifests and marketplace entries remain versionless for commit-SHA propagation; Codex manifests carry the strict-semver version required by that format. Claude's user-only `disable-model-invocation` setting is mirrored for Codex with `agents/openai.yaml` policy rather than weakening either harness's contract.
+- **Repository-native validation is part of preship.** `bin/validate-codex-plugin` checks manifest shape, marketplace identity and policy, recursive skill discovery, interface metadata, and manual-only invocation parity; `bin/preship-check` runs it alongside the existing Claude guards.
+- Model state: GPT-5, Codex CLI v0.144.5. Both repositories' preship checks pass.
+
 ## 2026-07-22: doctrine: human-in-the-loop — verification informs, never overrules
 
 - **Owner directive, 2026-07-22 (same session as the strictness sweep below):** even verifiable pushback never wins by assumption — not when running the kitchen's skills, and not when the owner edits a skill directly. The model states its stance with the evidence, then asks whether the owner wants to forgo their original intent per the recommendation, keep it exactly as intended (dismissing the opinion outright is a complete answer), give their reasoning, or something else. The owner's domain expertise is unique to them and their work — evidence no retrieved source carries — and the bar is never a generically good harness but one perfect for this owner and what they wanted to achieve.

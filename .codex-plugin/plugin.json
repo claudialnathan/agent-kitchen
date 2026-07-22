@@ -1,0 +1,28 @@
+{
+  "name": "agent-kitchen",
+  "version": "0.1.0",
+  "description": "A kitchen for designing, grounding, harvesting, and auditing coding-agent harness artifacts.",
+  "author": {
+    "name": "Claudia Nathan",
+    "url": "https://github.com/claudialnathan"
+  },
+  "homepage": "https://github.com/claudialnathan/agent-kitchen",
+  "repository": "https://github.com/claudialnathan/agent-kitchen",
+  "license": "MIT",
+  "keywords": ["agent-skills", "codex", "harness", "meta-skills"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Kitchen",
+    "shortDescription": "Design, ground, harvest, and audit agent harnesses.",
+    "longDescription": "Forge the right harness artifact, ground it in supplied sources, harvest recurring corrections, and audit the setup that loads it.",
+    "developerName": "Claudia Nathan",
+    "category": "Productivity",
+    "capabilities": ["Interactive"],
+    "websiteURL": "https://github.com/claudialnathan/agent-kitchen",
+    "defaultPrompt": [
+      "Design the right harness artifact for this task.",
+      "Audit this coding-agent harness end to end.",
+      "Ground a harness decision in these sources."
+    ]
+  }
+}

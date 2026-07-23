@@ -28,7 +28,7 @@ If the tier is genuinely ambiguous — a pile with no clear center — ask which
 
 ## Essence over shape
 
-Distill what the material *says, intends, and means*, never its structure, format, or voice. Read the meaning twice: against context primitives (what does this imply for how skills, hooks, rules, CLAUDE.md, and agent context actually behave?) and against the owner's standing harness and intent. A source can be anything — an article, a paper, someone else's skill. A skill used as a source is excerpted like any document; its ideas are reworked into the owner's artifacts, never cross-wired as a dependency.
+Distill what the material *says, intends, and means*, never its structure, format, or voice. Read the meaning twice: against context primitives (what does this imply for how skills, hooks, rules, CLAUDE.md, and agent context actually behave?) and against the owner's standing harness and intent. A source can be anything — an article, a paper, someone else's skill. A skill used as a source is excerpted like any document; its ideas are reworked into the owner's artifacts, never cross-wired as a dependency, and the artifact forge builds from them stands alone — it never invokes another skill or assumes one is installed.
 
 ## How it works
 

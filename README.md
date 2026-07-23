@@ -84,3 +84,7 @@ codex plugin marketplace upgrade claudia-kitchen
 ```
 
 Start a new Codex thread after installing or upgrading so its skill catalog is rebuilt. The applied `skills` plugin is published independently from `claudialnathan/skills`.
+
+### Cursor (and other agentskills.io tools)
+
+The skills follow the open [agentskills.io](https://agentskills.io) spec, so any spec-compatible agent reads them directly — there is no marketplace step. Cursor loads whatever sits in `~/.cursor/skills/` (global) or a repo's `.cursor/rules/`; symlink or copy the skill folders from `skills/` there, then reload. Spec consumers read only the `description` field (they ignore `when_to_use`), which is why the triggers live in the description.

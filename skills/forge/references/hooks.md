@@ -13,7 +13,7 @@ Cadence: once per session (`SessionStart`, `SessionEnd`); once per turn (`UserPr
 | Run after a tool fails (retry, page) | `PostToolUseFailure` | no |
 | Inject context into every prompt | `UserPromptSubmit` | yes (or just add context) |
 | Run on session start (env, banner) | `SessionStart` | no |
-| Stop Claude finishing (force more work) | `Stop` | yes (use sparingly, loops) |
+| Stop the agent finishing (force more work) | `Stop` | yes (use sparingly, loops) |
 | Automate a permission decision | `PermissionRequest` | yes |
 | React to a subagent starting/finishing | `SubagentStart` / `SubagentStop` | start yes / stop yes (nudge) |
 | React to a file changing on disk | `FileChanged` | no |
@@ -26,7 +26,7 @@ Event-specific output worth knowing:
 
 - **PreToolUse**, the richest: JSON `hookSpecificOutput` with `permissionDecision: "allow" | "deny" | "ask" | "defer"`, `permissionDecisionReason`, `updatedInput` (modify params before execution), `additionalContext`. `defer` flags the call for later resumption in `-p` automation.
 - **UserPromptSubmit**: `additionalContext` (appended to the prompt), `sessionTitle` (auto-name the session), `decision: "block"` + `reason`.
-- **Stop / SubagentStop**: `additionalContext` hands Claude feedback and continues, the non-blocking nudge; exit 2 / `decision: "block"` forces more work.
+- **Stop / SubagentStop**: `additionalContext` hands the agent feedback and continues, the non-blocking nudge; exit 2 / `decision: "block"` forces more work.
 - **SessionStart**: stdout becomes context; write env vars to `$CLAUDE_ENV_FILE`; return `reloadSkills: true` after installing skills mid-session.
 - **PermissionDenied**: `decision: { retry: true }` lets the model retry with a different approach.
 
@@ -50,7 +50,7 @@ Common input on every hook: `session_id`, `transcript_path`, `cwd`, `permission_
 | Exit | Behavior |
 | :--- | :--- |
 | **0** | Success. Stdout parsed for JSON output (event-dependent); otherwise debug-log only |
-| **2** | **Blocking error.** Stderr is fed to Claude. Blocks the tool (PreToolUse), the prompt (UserPromptSubmit), or the stop (Stop) |
+| **2** | **Blocking error.** Stderr is fed to the agent. Blocks the tool (PreToolUse), the prompt (UserPromptSubmit), or the stop (Stop) |
 | other | Non-blocking error. **Does not block**, including exit 1 |
 
 The single most-misunderstood fact: `if (bad) exit 1` does not block. Block with 2.

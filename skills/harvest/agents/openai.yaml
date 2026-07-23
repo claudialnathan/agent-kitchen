@@ -1,6 +1,6 @@
 interface:
   display_name: "Harvest"
-  short_description: "Mine Claude Code transcripts for corrections that earn harness artifacts."
+  short_description: "Mine coding-agent transcripts for corrections that earn harness artifacts."
 
 policy:
   allow_implicit_invocation: false

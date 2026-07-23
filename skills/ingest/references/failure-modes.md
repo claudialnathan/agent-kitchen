@@ -4,6 +4,8 @@ Primary-source catalog of failure modes documented for "load external sources, t
 
 This is on-demand depth. `SKILL.md` references it; you only load it when investigating a defense or considering a deliberate skip.
 
+**These defenses belong to the fan-out path, which is conditional.** `/ingest` fans a *large supplementary pile* out to one subagent per source; a small set is read in the main thread, and spec material (the sources a request is built on, one author's work being distilled) is read whole in-thread by design. So the isolation defenses below bite where isolation is actually used — the large pile — and the in-thread reads stay under saturation because they are few and bounded, with spec material the deliberate exception (owner-vouched, fidelity over isolation).
+
 ## Context poisoning
 
 A hallucination enters context once and gets cited repeatedly downstream, compounding into the final artifact. Once a fabricated claim is in working memory, subsequent reasoning steps treat it as evidence.
@@ -18,7 +20,7 @@ A hallucination enters context once and gets cited repeatedly downstream, compou
 
 Past ~100k tokens, models begin repeating context history rather than synthesizing novel plans. Documented in Google DeepMind's Gemini agent research.
 
-**`/ingest`'s defense:** the source material itself never enters the main thread. The brief is bounded to ~2,000 tokens of synthesis. The forge step then runs in a context well under saturation.
+**`/ingest`'s defense:** a large supplementary pile is read in subagents, so its bulk never enters the main thread; the placement that reaches the forge is bounded to ~2,000 tokens of synthesis. The forge step then runs in a context well under saturation. Spec material is the bounded exception, read in-thread because its judgment does not survive excerpting.
 
 ## Context confusion
 
@@ -44,7 +46,7 @@ U-shaped attention: middle-of-context evidence is under-weighted relative to sta
 
 Accuracy degrades with token count due to training-distribution mismatch (Anthropic's term in their context-engineering post).
 
-**`/ingest`'s defense:** same as context distraction: bounded brief, bounded forge-step context, source material never inlined.
+**`/ingest`'s defense:** same as context distraction: bounded placement, bounded forge-step context, a large supplementary pile read in subagents rather than inlined.
 
 ## Citation hallucination
 
@@ -66,7 +68,7 @@ Models skim long documents rather than reading carefully, especially when there 
 
 Even with quotes, the synthesis can become so comprehensive that it covers everything and reveals nothing. The downstream forge ends up no more grounded than if no sources had been consulted, just longer.
 
-**`/ingest`'s defense:** the brief includes a mandatory **rough edge** section: 2–4 sentences on what these sources collectively add that Claude's training priors didn't. If you cannot fill the rough-edge section, the sources didn't add anything, and the brief should say so rather than padding.
+**`/ingest`'s defense:** the brief includes a mandatory **rough edge** section: 2–4 sentences on what these sources collectively add that the model's training priors didn't. If you cannot fill the rough-edge section, the sources didn't add anything, and the brief should say so rather than padding.
 
 ## Related precedents (design analogues, not failure modes)
 

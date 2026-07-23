@@ -1,7 +1,7 @@
 ---
 name: harvest
 description: |
-  Mines Claude Code session transcripts for the corrections that earn artifacts, the intake stage of the kitchen's loop. Extracts what the user actually said across recent sessions (via a bundled script that reduces multi-MB transcripts to user turns), dispatches readers to classify corrections, redirects, and repeated failures, dedups against the standing harness, and hands surviving candidates to the forge with evidence counts. Use on a cadence (end of a heavy week, after a project push), when a correction feels familiar, or before claiming a harness has no gaps; skip when recent sessions were light or single-topic.
+  Mines coding-agent session transcripts for the corrections that earn artifacts, the intake stage of the kitchen's loop. Extracts what the user actually said across recent sessions (via a bundled script that reduces multi-MB transcripts to user turns), dispatches readers to classify corrections, redirects, and repeated failures, dedups against the standing harness, and hands surviving candidates to the forge with evidence counts. Use on a cadence (end of a heavy week, after a project push), when a correction feels familiar, or before claiming a harness has no gaps; skip when recent sessions were light or single-topic.
 disable-model-invocation: true
 ---
 

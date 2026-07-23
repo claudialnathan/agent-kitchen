@@ -1,89 +1,82 @@
 ---
 name: ingest
 description: |
-  Grounds the next forge step in supplied reading, weighing sources the way the owner handed them. Material the request is built on (inspired-by, do-what-they-do, this person's articles, "the primary resources") is read whole in the main thread; supplementary references fan out to parallel subagents (one per source) that return quoted excerpts. Both land in a bounded brief with citations that hands off to the forge skill with the right surface in mind. Use when you have reading material (URLs, papers, blog posts, internal docs, pasted content) and want the next forge step grounded in those sources rather than training-data priors; skip when training already covers the topic well.
+  Reads content the owner hands over and works out where it belongs in the harness: which existing primitive it improves, whether it warrants a new one, or that nothing does. Scoped to the primitives forge designs (skills, hooks, path-scoped rules, CLAUDE.md and AGENTS.md entries, workflow scripts, subagents, MCP), read for what they mean for how those behave rather than summarized. Sources a request is built on, or one author's body of work being distilled, are read whole in the main thread whatever the count; a large pile of side references may fan out to one subagent per source that returns quoted excerpts. Surveys whatever harness exists around it, a skills repo or a codebase's .claude or nothing, instead of assuming a shape, then surfaces the placement for the owner to confirm and hands it to forge to build. Use when handing over reading, links, or someone's public writing to turn into a harness improvement.
 disable-model-invocation: true
 ---
 
-<!-- Earned against: Opus 4.7, 2026-05-22; history: CHANGELOG.md -->
+<!-- Earned against: Opus 4.8, 2026-07-22, v2.1.217; history: CHANGELOG.md -->
 
-## The attention this skill redirects
+## What it does
 
-From "what Claude already knows about topic X" to "what *these specific sources* say about X, where they agree, where they disagree, and what they collectively point at that wasn't in training data."
+The owner hands over reading — an article, a paper, a doc, links, pasted text, or one person's body of public work — and `/ingest` works out **where that content belongs in the harness**: which existing primitive it should improve, whether it warrants a new one, or that nothing here is worth building.
 
-Without this redirection, the next forge step runs against priors and silently produces a generic artifact. With it, the brief carries citations, dates, and an explicit rough edge, and the forge designs against current reality.
+Scope is the primitives the forge designs and nothing wider: skills, hooks, path-scoped rules, CLAUDE.md / AGENTS.md entries, workflow scripts, subagents, MCP. Content that isn't aimed at one of these isn't `/ingest`'s job; that is ordinary research, and the model's priors or a plain read answer it.
 
-**The brief is the handoff artifact, not the kitchen sink.** Supplementary material is read in subagents and enters the main thread only as excerpted quotes; primary material is read whole, and the brief distills it rather than duplicating it. The synthesis is bounded.
+## The attention this redirects
 
-**Essence over shape.** Distill what the material *says, intends, and means*, never its structure, format, or voice. Meaning is read twice: against AI context primitives (what does this imply for how skills, hooks, rules, CLAUDE.md, and agent context actually behave?) and against what is known of the owner's harness and intent. A source can be anything: an article, a paper, someone else's skill. A skill used as a source is excerpted like any document; its ideas are reworked into the owner's artifacts, never cross-wired as a dependency.
+From "what the model already knows about topic X" to "what *these specific sources* say, what they add that priors didn't, and which primitive in *this* harness they change." The deliverable is not a summary of the reading. It is a **placement**: a target primitive (existing or new, or none), the concrete change, and the cited excerpts that ground it, surfaced for the owner to confirm before the forge builds it.
 
-## Weigh sources as the owner handed them
+## Read the spec whole; fan out only a large pile
 
-Not every source is a footnote. When the owner says they were inspired by a piece, want to do what it does, or want a skill made from someone's public writing, that source is the spec, and it gets read accordingly.
+Two kinds of source, and role decides how each is read. Count never overrides role.
 
-- **Primary: the material the request is built on.** Signals: "inspired by", "I want to do the same as", "make a skill from their articles", "here are the primary resources", or a request that simply stands on one to three sources. Read these whole, in the main thread, before designing anything. The isolation machinery is not applied to them: what the artifact must transplant (the judgment, the voice, the call at the fork) lives in the connective tissue that excerpting drops, and an artifact built from eight quotes of its own spec is a skeleton. The token cost is the price of the material the artifact is made of.
-- **Supplementary: everything offered as context.** References marked semi-relevant, trailing link lists, "might also be useful" material. These fan out one subagent per source under the quote-only contract; only excerpts enter the main thread.
-- **Unmarked sources take their tier from the request's shape.** A few sources offered as the basis are primary. A pile with a clear center: read the center whole, fan out the rest. Genuinely ambiguous, ask which sources the work is built on; a one-line answer beats a guessed tier in either direction (a fanned-out spec loses its judgment, an inlined pile floods the thread).
+- **Spec material is read whole, in the main thread, however many there are.** The sources a request is built on: "inspired by this", "do what they do", "make a skill from this person's writing", or one author's body of work being distilled into taste. The isolation machinery is *not* applied to these. What the artifact must transplant — the judgment, the voice, the call at the fork — lives in the connective tissue that excerpting drops, so a taste skill built from eight quotes of its own spec is a skeleton. Six articles by one author you are distilling are six spec sources, and you read all six whole. The token cost is the price of the material the artifact is made of.
+- **Supplementary references are read in the main thread by default, and *may* fan out when the pile is large.** Trailing "might also be useful" links, semi-relevant context. A handful (roughly under four to go fetch) you just read. Once the pile is large enough to crowd the main thread, dispatch one subagent per source under the quote-only contract below, and only excerpts return. The fan-out is a tool you reach for to spare context, not a step you owe.
+
+If the tier is genuinely ambiguous — a pile with no clear center — ask which sources the work is built on. A one-line answer beats a guessed tier in either direction: a fanned-out spec loses its judgment, an inlined pile floods the thread.
+
+## Essence over shape
+
+Distill what the material *says, intends, and means*, never its structure, format, or voice. Read the meaning twice: against context primitives (what does this imply for how skills, hooks, rules, CLAUDE.md, and agent context actually behave?) and against the owner's standing harness and intent. A source can be anything — an article, a paper, someone else's skill. A skill used as a source is excerpted like any document; its ideas are reworked into the owner's artifacts, never cross-wired as a dependency.
 
 ## How it works
 
-### Phase 1: Primary sources, read whole
+### Phase 1: Survey the surrounding harness
 
-Fetch and read each primary source in the main thread, in full. While reading, hold the forge's question (what does world-class output in this domain look like?) and mark what carries it: the judgment calls, the trade-offs, the moves a competent generalist wouldn't make. Those are what the next forge step distills. The fresh-retrieval lens still applies: a primary source is weighted, not exempt; its claims about fast-moving mechanisms are checked against the live canonical doc like anyone else's.
+Before deciding where content belongs, find out what is here to improve — and assume nothing about the shape. `/ingest` runs in at least three:
 
-### Phase 2: Supplementary sources, one subagent each
+- **A skills repo** (the common case): many candidate primitives to target.
+- **An arbitrary codebase**: a `.claude/` tree that may hold some skills, hooks, rules, or a CLAUDE.md, or may hold none.
+- **Standalone, with no predetermined location**: the owner wants a primitive produced from the reading and there is nowhere it already lives.
 
-For each supplementary source (URLs, file paths, pasted text), spawn one general-purpose `Agent` with the contract in the **Per-source agent prompt template** section below. Discipline:
+Glob for the primitives that exist (`**/.claude/skills/**`, a `skills/` tree, `**/.claude/hooks/**`, `**/.claude/rules/**`, `CLAUDE.md`, `AGENTS.md`) and read the descriptions of the few the content plausibly touches. If nothing exists, that is not a failure — it means the placement will be "a new primitive." Do not write the placement against the repo you expected; write it against the harness that is actually there.
 
-- **Single source per agent.** No agent reads more than one URL/document. If six supplementary sources are in play, dispatch 6 agents in parallel via a single message with multiple Agent tool calls.
-- **Source already pasted in full? Extract inline, don't re-dispatch.** If the user pasted a source's complete text into the conversation, the subagent's isolation benefit is already spent, because the material is in the main thread and re-dispatching it only re-transmits the same tokens for no isolation gain. Extract its excerpts inline under the same quote-only contract (verbatim, ≤ 100 words, tagged, relevance-bounded). Still dispatch a subagent for every supplementary source you'd have to *go fetch*: URLs, file paths, anything not already in-context. The subagent buys isolation for material you don't yet hold, not ceremony for material you do.
-- **Output is quoted excerpts, not paraphrase.** Each agent returns: source URL + retrieval date + 3–8 verbatim quoted passages directly relevant to the target topic, each ≤ 100 words, each tagged with the section/heading it came from. No summary in prose. Quotes only.
-- **Bound the agent to the topic.** The dispatch prompt names the target topic, and the agent extracts only what is relevant to it. Tangents are excluded.
-- **Stale-source handling.** If a URL 404s, redirects to a different topic, or paywalls the content, the agent reports the failure mode rather than fabricating content. The brief records the failure under **Sources unavailable**.
+### Phase 2: Read the material
 
-If the user hasn't said which sources are which type (web vs. local file vs. pasted text), assume URL by default and ask before dispatching only if the source string is ambiguous.
+Read per the rule above: spec whole in the main thread; a large supplementary pile fanned out. While reading, hold two questions — what does world-class output in this domain look like (the forge's question), and which surveyed primitive does this bear on? Those two answers are what Phase 3 turns into a placement.
 
-### Phase 3: Synthesis in the main thread
+### Phase 3: Place it
 
-When the per-source agents return, hold their excerpts beside the primary material already read and assemble a brief with this structure:
+From what the sources say and the surveyed context, decide the target and ground it in cited excerpts:
 
-1. **Topic**: one line stating what the user is designing for.
-2. **Sources consulted**: URL or path, retrieval date, tier (primary / supplementary), and status (ok / 404 / paywalled / redirected / other) for each source. Failures included, not omitted.
-3. **Points of agreement**: claims that ≥ 2 sources support, each with the citing excerpts inlined as quotes (not paraphrased).
-4. **Points of contention**: claims sources disagree on, both sides quoted.
-5. **The rough edge**: 2–4 sentences on what these sources collectively reveal that you wouldn't know from training priors. This section is load-bearing. If you cannot fill it, the sources may not have added anything, and the brief should say so explicitly rather than padding.
-6. **What it means**: the essence read against context primitives and the owner's standing harness, covering what the material is saying and intending (not its shape), which standing artifacts it makes stale, and the change it argues for.
-7. **Open questions**: claims no source addressed that the next forge will still need to make.
+- **Improve an existing primitive** — name it, name the concrete change, quote the excerpt that argues for it.
+- **Warrant a new one** — name the surface (run forge's triage: recurring procedure → skill; path-scoped convention → rule; hard guarantee → hook; session-floor fact → CLAUDE.md).
+- **Nothing warranted** — say so and stop. A non-failure is a valid outcome.
 
-Primary sources enter the brief as distilled essence plus load-bearing pointers (the sections and judgment calls the next step must keep), not as bulk: the material itself is already in-thread, but the brief is what survives compaction and reaches a later session. Supplementary sources appear only as their quotes.
+Ground every claim in a verbatim excerpt with its source; bare paraphrase is not evidence. Keep what the sources support distinct from what you inferred for the owner's stack — an inference dressed as a source citation is the same failure as a paraphrase passed off as a quote. Where two or more sources bear on the same claim, note agreement and contention with both sides quoted. Fill **the rough edge**: two to four sentences on what these sources collectively add beyond training priors. If you cannot fill it, they did not add anything, and the honest placement is "nothing here."
 
-Bound the brief: **agreement + contention together stay under ~2,000 tokens.** If you're approaching that, cut weaker quotes; don't expand the brief.
+Keep the placement small — the synthesis that reaches the forge stays well under a couple of thousand tokens. Cut weak excerpts; raise the relevance bar rather than expand.
 
-Write the brief to `.claude/ingest/<topic-slug>.md` so the user can read, edit, and reference it independently of the session. If `.claude/ingest/` doesn't exist, create it. **First glance at what's already in `.claude/ingest/`:** if a prior brief covers overlapping sources or topic, update or cross-link it rather than silently writing a near-duplicate, because two briefs on the same material fragment the handoff and bury which one the forge should read.
+Write the placement to `.claude/ingest/<slug>.md` when the material should outlive the session, or the run was large enough that the excerpts will not survive compaction. For a quick single-source run, inline is enough. Glance at what is already in `.claude/ingest/` first, and update or cross-link an overlapping prior placement rather than writing a near-duplicate.
 
-### Phase 4: Confirm, then hand off to the right forge
+### Phase 4: Propose, then hand to forge
 
-Display the brief to the user. State your recommended next forge in one sentence with the reason. **Wait for the user to confirm or redirect before invoking the next skill.** The brief is artifact-agnostic; the right next step depends on the rough edge, not on the user's original phrasing.
+Surface the placement to the owner. When more than one target is plausible, or improve-existing versus new-primitive is a live choice, put it as a question (`AskUserQuestion`); when it is clear, state it and let them redirect. The choice of where the content lands is the owner's, never made silently.
 
-Run the forge's triage ladder against the brief:
+On confirm, hand the placement to `/forge` — the target primitive plus the grounded excerpts and the rough edge — and forge runs its design pipeline against grounded reality instead of priors.
 
-- **Recurring procedure or body of knowledge across sessions** → a skill
-- **Path-scoped convention that only applies to certain files** → a rule
-- **Hard guarantee the model can't reliably enforce** → a hook
-- **Session-floor fact every Claude session should hold** → a CLAUDE.md entry
-- **No clear rough edge; Claude's priors already cover this adequately** → say so and stop. Don't manufacture an artifact for a non-failure.
+## The fan-out contract
 
-When the user confirms, invoke `/forge` and pass the brief path plus the recommended surface. The forge then runs its design pipeline against the grounded synthesis instead of against priors.
+When you do fan out a large supplementary pile, one subagent per source, and the discipline is what keeps it honest:
 
-## Freshness and the critical lens
+- **Single source per agent.** No agent reads more than one URL or document; dispatch them in parallel in a single message.
+- **Already pasted in full? Extract inline, don't re-dispatch.** If a source's complete text is already in the conversation, the subagent's isolation benefit is spent; excerpt it inline under the same quote-only contract. Dispatch subagents only for material you would have to go fetch: URLs, file paths, anything not already in context.
+- **Quotes, not paraphrase.** Each agent returns the source, the retrieval date, and 3–8 verbatim passages (≤ 100 words each), each tagged with the section it came from. A subagent that returns "the source argues that X" has paraphrased; reject it and re-dispatch with the contract repeated.
+- **Bound to the target.** The dispatch names the target topic, and the agent extracts only what is relevant to it.
+- **Stale sources are facts, not failures.** A 404, paywall, or redirect is reported and recorded, never fabricated around and never silently swapped for an alternative.
 
-- **Supplied sources outrank the standing harness.** When the owner hands material over, presume the existing skills (the owner's own first, and anything else installed) are stale relative to it. The brief challenges standing artifacts with the new material; a local skill disagreeing with a source is evidence about the skill, not against the source.
-- **No source is taken at face value, but the lens is not local.** The critical read comes from freshly retrieved knowledge of how Claude and Claude Code currently work, not from repo context: STATE.md, existing skills, and already-loaded session context are perishable inputs, never the baseline. When a claim concerns current harness behavior, fetch the canonical doc at that moment (`code.claude.com/docs/en/skills` and its siblings; `code.claude.com/docs/llms.txt` indexes them) and judge against what it says today.
-- **Disagreement is always allowed, and earned the same way.** Push back on a source (or on the owner's framing) only with freshly retrieved evidence, cited in the brief. "The repo says otherwise" is not a rebuttal; a live canonical doc or primary source is. And pushback is a question, not a verdict: state the stance, cite the evidence, and ask whether the owner wants to follow it, keep their original framing, or take another path — the owner may dismiss it outright, and their domain expertise is evidence no source outranks by default.
-
-## Per-source agent prompt template
-
-When dispatching Phase 2 agents, use this template. Substitute `{{topic}}` and `{{source}}` at dispatch time; do not paraphrase the contract, because its specificity is the defense.
+Per-source agent prompt template. Substitute `{{topic}}` and `{{source}}` at dispatch time; do not paraphrase the contract, because its specificity is the defense.
 
 > Read the single source at `{{source}}` and extract 3–8 quoted passages directly relevant to: `{{topic}}`.
 >
@@ -95,54 +88,44 @@ When dispatching Phase 2 agents, use this template. Substitute `{{topic}}` and `
 >
 > **Constraints:**
 > - Quote-only. No summaries, no prose synthesis, no preamble or closing commentary. Return only the formatted output above.
-> - If the source is irrelevant to the topic, return the Source / Retrieved / Status lines and the single line `out of scope`, with no excerpts and no explanation of why. Don't pad, and don't write a scope note.
+> - If the source is irrelevant to the topic, return the Source / Retrieved / Status lines and the single line `out of scope`, with no excerpts and no explanation.
 > - If the source contradicts itself internally, capture both sides as separate excerpts and flag the conflict.
 > - Cap output under 800 tokens.
 
-## Failure modes this skill defends against
+## Freshness and the critical lens
 
-The shape of `/ingest` is a direct response to documented context-engineering failure modes from the AI research literature. See [references/failure-modes.md](references/failure-modes.md) for the catalog with primary-source citations.
-
-The defense map at a glance:
-
-- **Context poisoning** → quote-only output keeps fabricated text out; parallel agents surface a poisoned source as visible disagreement, not silent averaging.
-- **Surface skim** → the Phase 2 contract *is* Anthropic's quote-extraction scratchpad pattern.
-- **Citation hallucination** → every claim in the brief inlines the quote + URL; bare paraphrase is rejected.
-- **Lost in the middle** → each source is read in its own short, fresh context; there is no middle of a 100k-token pile.
-- **Context clash** → agreement and contention surfaced as separate sections.
-- **Context distraction** → supplementary material never enters the main thread; only ≤ 2,000 tokens of synthesis do. Primary sources are the deliberate exception: few, owner-vouched, and load-bearing enough that fidelity beats isolation.
-- **Surface skim disguised as completeness** → the mandatory rough-edge section forces an explicit answer to "what did these sources add that priors didn't?" If you can't fill it, they didn't.
-
-If you find yourself wanting to skip any of these defenses for *supplementary* material, that's a signal the topic doesn't need `/ingest` and Claude's priors are probably enough.
+- **Supplied sources outrank the standing harness.** When the owner hands material over, presume the existing primitives (the owner's own first, and anything else installed) are stale relative to it. A local skill disagreeing with a source is evidence about the skill, not against the source.
+- **Keep the canonical mechanism; don't blend versions.** When sources describe different versions of one pattern, carry the newest canonical form and present any stack-specific adaptation as optional on top of it, not blended into it. Never let an adaptation swap a source's mechanism for a look-alike: a renamed selector or a visually-identical substitute can invert the behavior, so verify the adaptation does what the original did, not merely that it resembles it.
+- **No source is taken at face value, and the lens is not local.** The critical read comes from freshly retrieved knowledge of how the agent and its harness currently work, not from repo context: STATE.md, existing skills, and already-loaded context are perishable inputs. When a claim concerns current harness behavior, fetch the canonical doc at that moment (`code.claude.com/docs/en/skills` and its siblings; `code.claude.com/docs/llms.txt` indexes them) and judge against what it says today.
+- **Disagreement is a question, not a verdict.** Push back on a source, or on the owner's framing, only with freshly retrieved evidence, cited in the placement. State the stance, cite it, and ask whether the owner wants to follow it, keep their original framing, or take another path. The owner may dismiss it outright, and their domain expertise is evidence no source outranks by default.
 
 ## Anti-patterns
 
-- **The kitchen-sink brief.** If Phase 3 produces 4,000 tokens of synthesis "to be thorough", you've defeated the point. The brief is the *small* artifact that survives into the forge. Cut weaker quotes; raise the relevance bar.
-- **The excerpted spec.** Running the source the request is built on through the quote-only contract, then designing from its excerpts. What the owner pointed at (the voice, the judgment, the call at the fork) is exactly what the contract strips, and the artifact that results is a skeleton of its own spec. "Inspired by" and "do what they do" mean read it whole.
-- **Tier inflation.** Fifteen links are not fifteen specs. Primary is earned by the request's shape, not claimed by volume; a pile without a center is a supplementary corpus with at most a primary or two at its heart.
-- **The single-agent firehose.** Dispatching one agent to "read all the URLs and synthesize" undoes the parallel-subagent architecture. Each supplementary source gets its own agent; the isolation is the point.
-- **The paraphrase smuggle.** A subagent that returns "the source argues that X" instead of a verbatim quote has done paraphrase, and Phase 3 will treat it as authoritative. Reject paraphrase output and re-dispatch with the contract repeated.
-- **The handoff that assumes skill.** Phase 4 isn't always a skill. Run the triage. If the brief points at a hook or a rule, route there.
-- **The pile of stale URLs.** Sources that 404 or redirect are facts of the brief, not failures of `/ingest`. Record them. Don't substitute alternatives without surfacing the swap to the user.
-- **The empty rough edge.** If the rough-edge section reads as bullet-pointed restatement of the agreement section, the sources didn't actually add anything beyond priors. Say so and skip the forge step.
+- **The excerpted spec.** Running the source the request is built on through the quote-only contract, then designing from its excerpts. What the owner pointed at (the voice, the judgment, the call at the fork) is exactly what the contract strips, and the result is a skeleton of its own spec. "Inspired by" and "do what they do" mean read it whole, whatever the count.
+- **Count over role.** Fanning out six articles because six is more than four, when all six are the spec. Count is a permission to isolate a large *reference* pile; it never sends spec material to subagents.
+- **Assuming the repo's shape.** Writing the placement against the skills repo you expected instead of the harness that is actually present. Survey first; "no primitives, no location" is a real and common shape, and its placement is "a new one."
+- **Silent placement.** Choosing improve-existing versus new-primitive without surfacing it. That choice is the owner's; put it as a question when it is live, state it when it is clear.
+- **The kitchen-sink placement.** Four thousand tokens of synthesis "to be thorough" defeats the point. The placement is the small artifact that reaches the forge. Cut weak quotes; raise the relevance bar.
+- **The empty rough edge.** If what the sources "add" reads as a restatement of what priors already hold, they added nothing. Say so and stop; don't manufacture a target for a non-gap.
+- **The paraphrase smuggle.** A subagent that returns "the source argues that X" instead of a verbatim quote has done paraphrase, and synthesis will treat it as authoritative. Reject the output and re-dispatch with the contract.
 
-## When to skip `/ingest` entirely
+## When to reach for `/ingest`, and when to skip
 
-Reach for `/ingest` when at least one of:
+Reach for it when the content is meant to become a harness improvement and at least one holds:
 
-- The topic is newer than training cutoff (recent release, new spec, fresh paper).
-- The topic is contested and sources disagree, and you want both sides cited.
-- The user has reading they want reflected, not just topical questions answered.
-- The user has internal docs / blog posts Claude can't have seen.
+- The topic is newer than the training cutoff (recent release, new spec, fresh paper).
+- The owner has reading they want *reflected*, not just topical questions answered.
+- The owner has internal docs, or someone's public writing, the model can't have seen.
+- Sources disagree and both sides should be cited into the placement.
 
 Skip when:
 
-- The topic is well-covered in training data and the user is asking from priors anyway.
-- The sources are a primary or two and nothing else, and the next step is immediate: read them whole inline; the fan-out machinery has no leverage, and the brief only earns its writing if the material must survive to a later session.
-- The user wants a quick answer, not a designed artifact. `/ingest` is part of the forge pipeline; it costs time and tokens.
+- The content isn't aimed at a harness primitive. That's research, not `/ingest`.
+- The topic is well-covered in training and the owner is asking from priors anyway.
+- It's one source and the next step is immediate: read it whole inline and go. The fan-out machinery has no leverage, and a written placement only earns its writing if the material must survive to a later session.
 
 ## See also
 
-- [references/failure-modes.md](references/failure-modes.md): context-engineering failure modes catalog with primary-source citations.
-- `/forge`: the Phase 4 handoff target; its triage ladder picks the surface.
-- [examples/ingest-fanout.workflow.mjs](examples/ingest-fanout.workflow.mjs): this skill's fan-out expressed as a deterministic JS workflow (real concurrency, schema-enforced quote-only output, resumable), for when the corpus is large or the run must reproduce. Authored against the runtime, not yet run end-to-end; treat as a template.
+- [references/failure-modes.md](references/failure-modes.md): the context-engineering failure modes the fan-out path defends against, with primary-source citations.
+- `/forge`: the handoff target; its triage ladder picks the surface and builds it.
+- [examples/ingest-fanout.workflow.mjs](examples/ingest-fanout.workflow.mjs): the large-pile fan-out as a deterministic JS workflow (real concurrency, schema-enforced quote-only output, resumable). A template authored against the runtime, not yet run end-to-end.

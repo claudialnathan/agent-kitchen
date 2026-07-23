@@ -88,23 +88,20 @@ The kind constrains the form; it doesn't decide worth (that's additive-vs-transf
 - **Silent failure**: invoked, in context, not steering. Only a transcript read catches it.
 - **Greedy description**: "for any code-related task"; eats the shared budget, truncates others.
 - **Wrong-surface**: "ALWAYS lint after edit" (hook), five lines of conventions (CLAUDE.md), "query the database" with no connection (MCP).
+- **Cross-skill dependency**: a body that says "first run `/X`", or that only works if `/X` is installed. It breaks silently the moment `/X` is absent, disabled, or off-menu. Encode the behavior, not the neighbor (see *A skill stands alone*).
 - **Article-as-speculation**: encoding the interesting-but-unproven; the most expensive kind of skill, paying rent until something forces removal.
 - **Conversation residue**: the artifact is not the conversation. No session narration, no addressing the reader, no quoting requests.
 
-## Skills invoking skills; harness-capability clauses
+## A skill stands alone
 
-- A skill invocation is prompt injection: the rendered SKILL.md enters the conversation as one message and persists for the session. Custom slash commands and skills are one surface, since both create `/name` and work the same way.
-- On compaction, the most recent invocation of each skill is re-attached: first 5,000 tokens per skill, 25,000-token shared budget, most-recently-invoked filled first.
+An authored skill never instructs the agent to invoke another skill, and never assumes another skill is installed — not a third-party skill, and not a harness built-in (`/loop`, `/batch`, `/code-review`) either. When a skill needs a behavior another skill happens to package, it encodes the behavior itself — "repeat until nothing is pending", not "drive it with `/loop`" — so the guidance holds in any harness, with whatever set of skills is present, or none. The only cross-skill reference that survives is an optional, one-directional "see also" pointer that costs nothing when the target is absent; a "first run `/X`" step is a dependency wearing a pointer's clothes, and it breaks the moment `/X` isn't there.
 
-- By default the model can invoke any skill lacking `disable-model-invocation: true` through the Skill tool, including bundled skills (`/loop`, `/batch`, `/debug`, `/code-review`). Fixed-logic built-ins such as `/compact` aren't reachable this way.
-- `user-invocable: false` hides the `/` menu entry only; it does not block Skill-tool access.
+The mechanics are the reasons the dependency is fragile, not a licence to build one:
 
-- A skill body may therefore direct invoking another skill when that's the honest mechanism (e.g. a manifest-driven idempotent procedure telling the agent to drive it with `/loop` until nothing is pending).
-- Verify chainability where the skill will actually run: the target must be model-invocable in that environment. Bundled skills can be disabled wholesale via `disableBundledSkills`, and model-invocable listings vary by environment.
+- **A skill invocation is prompt injection.** The rendered SKILL.md enters the conversation as one message and stays for the session (compaction re-attaches the most recent invocation, first 5,000 tokens per skill under a 25,000-token shared cap), so a chained invocation silently inflates standing context for the rest of the session.
+- **Model-invocability is per-skill configuration, not a stable guarantee.** The model can invoke any skill lacking `disable-model-invocation: true` through the Skill tool — so a target that sets it fails the chain *silently*; bundled built-ins can be switched off wholesale via `disableBundledSkills`; `user-invocable: false` changes only the `/` menu, not Skill-tool access; and which skills are model-invocable varies by environment. A body that names `/X` bets on all of that holding, every session, forever.
 
-**Portability form (the capability clause):** name the intent, name the Claude Code surface as the worked example, and give the degraded path in the same clause ("if this harness cannot spawn parallel agents, run the passes sequentially"). Do not enumerate other tools' equivalents; that list rots fastest of all.
-
-**Considerations, not prohibitions:** chained skill bodies stack standing context for the rest of the session; a skill that starts a loop or schedule commits future tokens, so its description must say so (invocation is then the consent); a chain into a `disable-model-invocation` target fails silently.
+So: encode the intent and the behavior, never the neighbor. A procedure that is genuinely idempotent-until-drained *says* so and lets the agent (or a loop it is already inside) carry it, rather than reaching for a named driver skill the guidance cannot guarantee is there.
 
 Canonical source on conflict: `code.claude.com/docs/en/skills`.
 

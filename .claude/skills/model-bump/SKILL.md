@@ -88,6 +88,7 @@ Review each route independently:
 - backend and terminal work;
 - writing and idea distillation;
 - internet research;
+- output-token-efficient frontier work;
 - fast inexpensive loops;
 - open-weight or self-hosted work.
 
@@ -95,6 +96,7 @@ Change a recommendation only when the evidence changes the work an agent should 
 
 Do not compute one synthetic score. When signals conflict, preserve the split:
 
+- output-token efficiency is not API list price or dollar cost per task;
 - WebDev preference is not production React correctness.
 - Write React is not Fix React.
 - human writing preference is not factual correctness.
@@ -116,6 +118,8 @@ Refresh:
 7. Source register and retrieval date.
 
 Preserve benchmark version, snapshot date, preliminary status, confidence interval, and sample size wherever the source provides them.
+
+Keep an explicit “best output-token-efficient frontier work” route. Record output tokens per task when a source exposes them, and keep it distinct from the fast/inexpensive route: the lowest dollar-cost capable model may generate more tokens, retry more often, or deliver less intelligence.
 
 If one source exposes contradictory labels or values, state the inconsistency and identify exactly which visible figure the table records. Do not reconcile it by guesswork.
 

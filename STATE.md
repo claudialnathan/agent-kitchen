@@ -6,6 +6,19 @@ A snapshot of what's true about Claude Code and the broader coding-agent ecosyst
 
 If you've been away for a few months, read this first; the surface has shifted faster than the mental models. For verification against current docs, see the **URLs to keep handy** section below. For per-version changes, `code.claude.com/docs/en/changelog` is authoritative.
 
+## How the kitchen uses this snapshot
+
+`STATE.md` is not automatically loaded by the kitchen skills. They consult it only when the current harness can change the decision:
+
+| Skill | Read `STATE.md` when |
+| --- | --- |
+| `forge` | choosing among skills, hooks, rules, workflows, subagents, MCP, or a native harness capability |
+| `harness-audit` | checking the installed harness against the documented surface, limits, or cross-tool conventions |
+| `harvest` | a surviving correction may already be solved by the harness or may expose a stale mechanism |
+| `ingest` | supplied material concerns a current harness primitive, capability, or placement boundary |
+
+Each skill treats this as a local map, not proof of current behavior. It still verifies decision-bearing claims against the live canonical source; if this file is absent, the skill proceeds from discovery and live documentation.
+
 ## The six surfaces of Claude Code, and how they coexist
 
 There are six places to put behavior, and they don't substitute for each other:

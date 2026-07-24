@@ -8,11 +8,25 @@ A routing reference for choosing models while building, testing, and retiring ag
 
 API prices below are USD per 1 million input/output tokens. They exclude cached-token rates, batch discounts, long-context multipliers, reasoning-token differences, and tool-call charges. Benchmark cost per rollout is more useful than list price when it is available.
 
+## How the kitchen uses this guide
+
+This file is a conditional reference, not context every skill should load. Kitchen skills open it only when model choice, effort, evaluation cost, or model-release convergence can change the decision:
+
+| Skill | Read `MODELS.md` when |
+| --- | --- |
+| `forge` | choosing the model/effort that should author, earn, or re-test an artifact |
+| `harness-audit` | auditing model policy, routing cost, or whether a model release may have absorbed an artifact |
+| `harvest` | a surviving correction cluster is plausibly model-specific or a re-test signal |
+| `ingest` | supplied material makes a claim about model capability, economics, or model-dependent artifact design |
+
+The skills point here from their own source directory and otherwise leave the file unopened. The guide orients a decision; current provider docs, benchmark pages, and local evals still verify it.
+
 ## Recommended routing
 
 | Work | First pick | Strong alternative | Why | Confidence |
 | --- | --- | --- | --- | --- |
 | Best overall fallback | **Claude Fable 5, high** | GPT-5.6 Sol, xhigh | Fable is #1 in Agent Arena, Text Arena, and Creative Writing, and #2 in Arena WebDev. Sol is #2 in Agent Arena, #3 in Arena WebDev, and leads the Artificial Analysis Coding Agent Index in the Codex harness. | High |
+| Best output-token-efficient frontier work | **GPT-5.6 Sol, max** | GPT-5.6 Luna when dollar cost matters more | Artificial Analysis places Sol on the Intelligence-vs-output-tokens Pareto frontier at about 15K output tokens per Intelligence Index task. Luna is far cheaper per task, but is not the output-token frontier at comparable intelligence. | High |
 | Production frontend across design + code | **GPT-5.6 Sol, xhigh/max** | Fable 5, xhigh | Sol is near the top of visual WebDev preference and ReactBench, and is the strongest React fixer. Fable is stronger at greenfield React writing and subjective product work, but much weaker at React repair and much more expensive per ReactBench rollout. | High |
 | Visual UI exploration and prototypes | **Kimi K3** | Fable 5 | Kimi is #1 in Arena WebDev blind preference. Treat the output as a visual direction, not production React: Kimi is well below the ReactBench leaders. | Medium |
 | New React feature work | **Fable 5, xhigh** | GPT-5.6 Terra, max | Fable leads ReactBench Write React; Terra is close at a fraction of the rollout cost and has a much better Fix React result. | High |
@@ -25,6 +39,18 @@ API prices below are USD per 1 million input/output tokens. They exclude cached-
 | Open-weight or self-hosted work | **GLM 5.2** | Kimi K3 after weights ship | GLM 5.2 is MIT-licensed, has 1M context, and ranks #4 in Arena WebDev. Kimi says K3 weights will release on 2026-07-27; until that actually happens, do not route self-hosted work to it. | Medium |
 
 If one model must cover this owner's full mix of coding, design, ideas, writing, and distillation, use **Fable 5**. If frontend and React correctness carry more weight than writing, or cost matters, use **GPT-5.6 Sol**. That is a routing judgment from the evidence below, not a claim that either model is universally best.
+
+## Choose the lowest capable model
+
+“Token-efficient” and “cheap” are different routes. Output-token efficiency asks how much generated reasoning a successful task consumes; dollar efficiency also includes input/output prices, cache behavior, tool calls, and retry rate. A low list price can lose after a failed run, while a frontier model can be token-efficient and still cost more per token.
+
+For skill and primitive work, start with the lowest model and effort that is likely to pass a representative local eval, then escalate on an observed failure:
+
+- use Luna or another low-cost capable model for mechanical extraction, formatting, inventory, and well-specified edits;
+- use Sol for artifact authoring or review that needs non-obvious engineering judgment, especially frontend and React;
+- use the strongest task-specific route when earning or re-testing the judgment an artifact exists to add. The baseline model should be the model the artifact is meant to steer, not an artificially weak opponent.
+
+Record the chosen model, harness, effort, task cost, and output tokens when available. The “best token-efficient model” is therefore a maintained route in this guide, not a permanent model pin inside every skill.
 
 ## Current model and cost snapshot
 

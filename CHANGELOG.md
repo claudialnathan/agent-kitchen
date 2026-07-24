@@ -4,6 +4,12 @@ Provenance ledger for the kitchen's skills (`skills/`: forge, harness-audit, har
 
 On 2026-07-14 the repo split: the `cook` plugin was renamed `agent-kitchen` and its skills moved to `skills/`; the applied skills left the `serve/` plugin for the separate `skills` repo (github.com/claudialnathan/skills), which now carries their provenance. Entries before that date reference the former `cook/`/`serve/` names and paths as they were at the time.
 
+## 2026-07-24: conditional shared snapshots and model-efficiency routing
+
+- **`MODELS.md` and `STATE.md` become decision-time inputs without becoming a standing token tax.** No doc is copied or symlinked into individual skill directories. Each kitchen skill carries a short, individualized trigger: forge consults model routing when authoring/eval choice matters and state when surface choice depends on current harness capability; harness-audit only for model-policy/economics/convergence or current-capability checks; harvest only after a surviving cluster appears model- or harness-dependent; ingest only when supplied material turns on those claims. The files orient decisions and may be absent; live canonical sources still verify anything current.
+- **Model routing now separates output-token efficiency from cheap tokens.** `MODELS.md` adds an explicit best output-token-efficient frontier route: GPT-5.6 Sol max, supported by Artificial Analysis's roughly 15K output tokens per Intelligence Index task and Pareto-frontier result. Luna remains the low-dollar capable route. The guide and `/model-bump` now require this distinction and tell artifact work to start at the lowest model/effort likely to pass a representative eval, escalating on observed failure rather than pinning every skill to the strongest model.
+- **Pins untouched:** the four kitchen process skills keep their original earning pins because their objectives did not change. Model state: GPT-5.6 Sol, 2026-07-24.
+
 ## 2026-07-24: system seams — shared intake contract, structural diagnosis, assembled-behavior audit
 
 - **No new systems-thinking skill.** The supplied systems-thinking proposal mostly named the kitchen's existing loop and lifecycle. Its useful delta was at the seams: shared handoff information, repair order, and system-level evaluation. The gardener metaphor and general systems prose stay out of CLAUDE.md and the skill fleet.

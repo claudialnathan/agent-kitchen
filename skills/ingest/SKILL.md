@@ -42,6 +42,8 @@ Before deciding where content belongs, find out what is here to improve — and 
 
 Glob for the primitives that exist (`**/.claude/skills/**`, a `skills/` tree, `**/.claude/hooks/**`, `**/.claude/rules/**`, `CLAUDE.md`, `AGENTS.md`) and read the descriptions of the few the content plausibly touches. If nothing exists, that is not a failure — it means the placement will be "a new primitive." Do not write the placement against the repo you expected; write it against the harness that is actually there.
 
+Do not load shared snapshots during a routine survey. If the supplied material makes a model-dependent claim, consult the plugin-root `MODELS.md`; if placement turns on a current harness capability or primitive boundary, consult `STATE.md`. Resolve them from this skill's source, use them as a local map only, and verify current claims from live canonical sources.
+
 ### Phase 2: Read the material
 
 Read per the rule above: spec whole in the main thread; a large supplementary pile fanned out. While reading, hold two questions — what does world-class output in this domain look like (the forge's question), and which surveyed primitive does this bear on? Those two answers are what Phase 3 turns into a placement.

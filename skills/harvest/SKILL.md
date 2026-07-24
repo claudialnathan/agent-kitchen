@@ -42,6 +42,8 @@ Group the returned quotes by theme. Then, before anything becomes a candidate, c
 - **Not encoded anywhere** → candidate for a new artifact.
 - **Already encoded but the correction recurs after the artifact existed** → a *compliance* finding: the artifact isn't steering. That routes to the forge as a fix-the-artifact job (wrong altitude, buried instruction, dead trigger), not a new-artifact job. Date comparison matters, because a correction that predates the artifact that encodes it is the system working, not failing.
 
+Only for a cluster that survives this dedup and appears model- or harness-dependent, consult the plugin-root shared snapshot from this skill's source: `MODELS.md` for model-specific failure or convergence, `STATE.md` for a capability the harness may already provide. Do not open either for ordinary clusters, and verify any decision-bearing current claim live.
+
 Evidence weight, per the forge: recurrence across sessions, or one failure with real cost (reverted work, shipped defect, user frustration stated in so many words), weighs heaviest. A single correction still surfaces when it looks load-bearing — the owner decides at the table, not the reader.
 
 ## Phase 3: Forge-ready briefs

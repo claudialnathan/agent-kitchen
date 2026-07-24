@@ -6,6 +6,8 @@ description: |
 
 <!-- Earned against: Opus 4.8, 2026-06-10, v2.1.170; history: CHANGELOG.md -->
 
+Do not load shared snapshots for every audit. Read the plugin-root `STATE.md` when an installed capability, limit, or cross-tool convention is in question; read `MODELS.md` only when the audit includes model policy, routing economics, or model-release convergence. Resolve both from this skill's source. They orient the check but never replace inspection of the installed harness or live canonical docs.
+
 ## The attention this skill redirects
 
 From "read the config files and comment" to "measure what every session pays before any work starts, then check the harness's claims against its own behavior."

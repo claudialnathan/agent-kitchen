@@ -4,6 +4,12 @@ Provenance ledger for the kitchen's skills (`skills/`: forge, harness-audit, har
 
 On 2026-07-14 the repo split: the `cook` plugin was renamed `agent-kitchen` and its skills moved to `skills/`; the applied skills left the `serve/` plugin for the separate `skills` repo (github.com/claudialnathan/skills), which now carries their provenance. Entries before that date reference the former `cook/`/`serve/` names and paths as they were at the time.
 
+## 2026-07-24: model routes intersect with the user's real access
+
+- **Public rank is no longer treated as runnable availability.** `MODELS.md` gains a decision-time preflight for installed harnesses, models actually selectable in the account, authentication and paid-plan/API entitlement, marginal task cost, quota, and enterprise or regional policy. Installed, logged in, entitled, and model-visible remain separate facts; agents use non-secret native status/model-list surfaces and ask where tooling cannot establish the plan.
+- **Paid plans change the economics without becoming repository state.** A capable model already included in a subscription may be the best marginal-cost route; tight included quotas may instead favor a separately billed high-volume model. Personal account, plan, and billing details stay transient unless the owner explicitly asks to persist them.
+- **`/model-bump` now performs the same preflight.** It builds a temporary harness/auth/billing/selectable-model matrix, filters public routes through it for the owner-facing recommendation, and reports the inaccessible ideal separately from the best usable alternative. Pin unchanged: this extends the existing routing objective rather than re-earning the workflow. Model state: GPT-5.6 Sol, 2026-07-24.
+
 ## 2026-07-24: cross-tool local shipping and native Cursor packaging
 
 - **`ship-agent-skills` is now a tracked, cross-tool local workflow.** Its explicit `harness-targets` makes the same source available to Claude, Cursor, and Codex through `bin/sync-cross-tool`; other `.claude/skills/` workflows remain Claude-only by default. The workflow now respects owner-named exclusions, pushes, refreshes the machine's live links, updates Claude and Codex plugin caches when their published surfaces changed, and names Cursor's current manual marketplace-refresh boundary instead of inventing a CLI command.

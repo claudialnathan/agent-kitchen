@@ -21,6 +21,29 @@ This file is a conditional reference, not context every skill should load. Kitch
 
 The skills point here from their own source directory and otherwise leave the file unopened. The guide orients a decision; current provider docs, benchmark pages, and local evals still verify it.
 
+## Availability and entitlement preflight
+
+The public winner is not the usable winner when the user cannot select it, has no access to its harness, or would pay twice to reach it. Before applying the routing table, build a transient picture of the user's actual options:
+
+| Check | Establish it from |
+| --- | --- |
+| Installed harnesses | `command -v`, the installed app/CLI version, and the current repository's enabled plugins or integrations |
+| Models actually selectable | The harness's native model picker or model-list command, not the models its marketing page says it supports |
+| Authentication and plan access | A non-secret account/status command when it exposes the tier; otherwise ask the user which subscription, API, enterprise, or pay-as-you-go access they have |
+| Real marginal cost | Included subscription usage and remaining quota, API billing, overage policy, tool charges, retry rate, and whether a separate provider account would be required |
+| Policy constraints | Enterprise allowlists, regional availability, preview opt-ins, data-handling restrictions, and model fallbacks |
+
+Do not inspect credential files, print account identifiers, or infer a paid plan from an installed CLI. Installation, login, entitlement, and a visible model are four different facts. Keep personal plan and billing details in the session unless the owner explicitly asks to persist them.
+
+Apply the table only after filtering it through that availability picture:
+
+1. Prefer the strongest task-specific route already included in a paid plan when it clears the task's quality bar and its quota is acceptable.
+2. Otherwise choose the best accessible model by task-level cost, not nominal token price.
+3. If the ideal model is unavailable, name it separately from the best **available** recommendation and use the strongest accessible alternative.
+4. Ask rather than guess when plan tier, remaining quota, API budget, or willingness to add another paid provider changes the answer.
+
+Subscription usage is not economically free, but its marginal cost for the next task may be lower than opening an API bill elsewhere. Conversely, a bundled plan with tight weekly limits may make a cheaper API model the better high-volume route.
+
 ## Recommended routing
 
 | Work | First pick | Strong alternative | Why | Confidence |
@@ -38,7 +61,7 @@ The skills point here from their own source directory and otherwise leave the fi
 | Fast, inexpensive loops | **GPT-5.6 Luna** | Gemini 3.6 Flash | Luna is $1/$6 per MTok and reaches 43.9% on ReactBench at max. Gemini is strongly tooled and multimodal at $1.50/$7.50, but has not yet been published on ReactBench v1. | Medium |
 | Open-weight or self-hosted work | **GLM 5.2** | Kimi K3 after weights ship | GLM 5.2 is MIT-licensed, has 1M context, and ranks #4 in Arena WebDev. Kimi says K3 weights will release on 2026-07-27; until that actually happens, do not route self-hosted work to it. | Medium |
 
-If one model must cover this owner's full mix of coding, design, ideas, writing, and distillation, use **Fable 5**. If frontend and React correctness carry more weight than writing, or cost matters, use **GPT-5.6 Sol**. That is a routing judgment from the evidence below, not a claim that either model is universally best.
+If one model must cover this owner's full mix of coding, design, ideas, writing, and distillation, use **Fable 5** when it is available in an already-usable harness. If frontend and React correctness carry more weight than writing, or cost matters, use **GPT-5.6 Sol** when the user's Codex/API access exposes it. That is a public-evidence routing judgment; the availability preflight determines the recommendation the user can act on now.
 
 ## Choose the lowest capable model
 

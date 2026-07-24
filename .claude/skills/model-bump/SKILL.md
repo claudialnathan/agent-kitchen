@@ -22,6 +22,16 @@ Note the current verification date, routes, model configurations, benchmark vers
 
 If `MODELS.md` does not exist, stop and report that this command expects the established document rather than inventing a new structure.
 
+Before browsing rankings, establish the owner's usable set without reading credential files or exposing account identifiers:
+
+- inventory installed harnesses with `command -v` and their version commands;
+- use each installed harness's native account/status and model-list surfaces where they expose non-secret authentication, plan, or selectable-model facts;
+- distinguish installed, logged in, entitled, and model-visible rather than treating any one as proof of the others;
+- ask the owner for subscription tier, API access, remaining quota, budget, or willingness to add another provider wherever the tooling does not expose it reliably;
+- build a transient availability matrix of harness / auth mode / plan or billing mode / selectable models / quota constraint / evidence.
+
+Do not write personal account, plan, or billing details into `MODELS.md` unless the owner explicitly asks. The publication carries the discovery procedure and public routing evidence; the session applies it to the current user.
+
 ## 2. Fetch current sources
 
 Retrieve live pages; do not update from memory or search snippets alone.
@@ -93,6 +103,8 @@ Review each route independently:
 - open-weight or self-hosted work.
 
 Change a recommendation only when the evidence changes the work an agent should do. A newly released model is not automatically table-worthy. Keep a model when it leads, offers a meaningful cost/capability trade-off, or exposes a decision-relevant failure shape.
+
+For the owner-facing recommendation, filter every public route through the transient availability matrix. Prefer a capable model already included in a paid plan when its marginal task cost and quota are acceptable. If the public first pick is unavailable, report both the ideal and the best accessible alternative rather than silently recommending something the owner cannot select.
 
 Do not compute one synthetic score. When signals conflict, preserve the split:
 

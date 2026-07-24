@@ -1,7 +1,7 @@
 ---
 name: harness-audit
 description: |
-  Audits a coding-agent harness end-to-end: what loads every session, what it costs, and whether the harness's own claims hold. Inventories the standing surfaces (CLAUDE.md chain, personal/project/plugin skills, MCP instruction blocks, agent rosters, hooks, settings at every scope), quantifies their per-session token cost, runs five checks (self-consistency, duplication across scopes, enforcement parity, scope discipline, and a provisional routing-effectiveness check for doc-fleet repos) and reads the CLAUDE.md chain as intent (code outranks the doc; no restated stack, deps, or layout). Output is a quantified triage that stays in-repo: findings at machine scope (anything under ~/.claude, user or enterprise settings, global plugins) are reported for the owner to action, never edited. Use to review, slim, or sanity-check a whole coding-agent harness (including 'why is my context so big' or 'what loads every session') after major harness changes (a new plugin fleet, a new machine, a model release) or when sessions feel slow from turn one; for a single artifact, the relevant forge owns the audit.
+  Audits a coding-agent harness end-to-end: what loads every session, what it costs, whether the harness's own claims hold, and whether its parts work when assembled. Inventories the standing surfaces (CLAUDE.md chain, personal/project/plugin skills, MCP instruction blocks, agent rosters, hooks, settings at every scope), quantifies their per-session token cost, runs setup checks (self-consistency, duplication across scopes, enforcement parity, scope discipline, and a provisional routing-effectiveness check for doc-fleet repos), and after substantial harness changes can run a representative composition probe through the complete installed system. Output is a quantified triage that stays in-repo: findings at machine scope (anything under ~/.claude, user or enterprise settings, global plugins) are reported for the owner to action, never edited. Use to review, slim, or sanity-check a whole coding-agent harness after major harness changes or when sessions feel slow or behave incoherently from turn one; for a single artifact, the relevant forge owns the audit.
 ---
 
 <!-- Earned against: Opus 4.8, 2026-06-10, v2.1.170; history: CHANGELOG.md -->
@@ -50,7 +50,7 @@ EOF
 - Instruction files: `wc -l` on every always-loaded file. The repo's own cost model applies (shorter is better-read; loaded local files count too).
 - Ask the user to run `/context` for the authoritative split. Your estimates bound it; the command confirms it.
 
-## Step 3: The five checks
+## Step 3: The setup checks
 
 1. **Self-consistency.** Diff what the harness's documentation claims against what the harness does. Classic finds: a loaded file that says it is not loaded; a dateline pinned to a version several releases back; a "this is enforced" line with no enforcement; a skill or command body that invokes or assumes another skill (`/X`) — fragile by construction (the target can be absent, disabled via `disableBundledSkills`, or set to `disable-model-invocation`) and a dead cross-reference that reads as working capability when `/X` is not in the inventory at all. This flags the *presence* of the reference, not the quality of the body — authoring skills to stand alone is the forge's remit.
 2. **Duplication across scopes.** The same artifact listed twice pays twice: a project symlink and a user-scope plugin copy of the same skill; two plugins shipping the same command under different names; a personal skill shadowing a project one (personal wins silently).
@@ -61,6 +61,20 @@ EOF
    - **Two-level routing.** Each system doc opens with a greppable header (`Purpose / Read when / Key constraints / Relevant paths / Last verified`) so an agent can confirm the doc applies before paying to read it. A fleet routed only by a top-level table forces whole-doc reads just to check relevance.
    - **Mechanical backing.** The highest-value rows are duplicated down into mechanical surfaces (path-scoped rules, skill descriptions, hooks). A routing table whose only enforcement is a prose "read the router first" instruction is a request, not a guarantee — the same failure as enforcement parity one level up, because the model won't reliably run a preflight.
    - **Staleness.** Each doc's `Last verified` sits within a sane window; a fleet of confidently-worded but months-stale docs is the doc-fleet form of the frozen-fact trap.
+
+## Step 4: Probe the assembled behavior when the harness changed
+
+After a substantial harness change, or when individually sound artifacts produce incoherent sessions, test the system as installed. This is conditional because a fresh live run costs tokens: reuse a recent representative transcript already in the audit's scope when it exercises the changed seams; otherwise state the proposed job, tools, token cost, mutation boundary, and external side effects, then get the owner's approval before launching one or two fresh sessions.
+
+Choose one or two high-traffic jobs that cross more than one surface — for example an instruction file plus a skill plus a tool or hook — and state the expected output and required human boundary before running them. Default to replay, a read-only job, a finished real job, or a disposable copy. A composition probe never mutates active work, another repo, machine scope, or an external system without explicit approval for those exact side effects; when no safe representative probe exists, report composition as unverified. Use the complete installed harness, not an isolated artifact fixture. Inspect the trace and result together:
+
+- Which instructions and context were loaded or supplied, and which artifacts and tools were invoked?
+- Did two surfaces compete, duplicate ownership, or issue contradictory guidance?
+- Was intent or state lost between a trigger, a tool call, and the next surface?
+- Did the system pause, ask, or stop at the intended human decision point?
+- Was the final work better against the job's objective, not merely compliant with each component?
+
+Report the observable composition path and the first seam that failed. A transcript cannot prove which loaded instruction causally changed hidden reasoning; leave that unknown unless a controlled comparison establishes it. An artifact passing alone does not clear this check; the unit of quality is the installed system's behavior. Keep this at the interaction boundary: reviewing the expertise inside one skill body still belongs to that artifact's forge.
 
 ## The CLAUDE.md chain, read as intent
 
@@ -75,7 +89,7 @@ CLAUDE.md is the always-on spine, the most-paid surface and the one that rots fa
 
 Finding and quantifying these gaps is this skill's job; authoring the fixes (voice, the Why pattern, the goes-elsewhere table) is the forge's `CLAUDE.md and rules` remit.
 
-## Step 4: Triage
+## Step 5: Triage
 
 Forge writes only inside the current repository. Everything at **machine scope** is **inventory-and-report only**: anything under `~/.claude/` (personal skills, user `CLAUDE.md`/`settings.json`, `skillOverrides`, user-scope hooks), enterprise or managed settings, global `enabledPlugins`, and anything that changes another repo. Never edit it, never stage an edit, never ask "shall I apply this?"; the audit's job at machine scope ends at the observation the owner acts on herself. This holds even when the finding is obviously correct and the fix is one line, because the owner owns her machine. It is a hard boundary, not a default to weigh.
 
@@ -94,5 +108,6 @@ Every finding is quantified and lands in one bucket:
 - **Recommending a cut you never use-tested.** Flagging a skill, plugin, or server for removal on token cost alone, without weighing whether the owner reaches for it. The description budget is real and the *unchosen* marginal artifact taxes every turn, but a used one out-earns its cost by being used; report its cost, do not charge it as waste.
 - **Bulk-disabling without a reversal note.** Every disable gets a one-line "flip this back by..." where the change lives.
 - **Auditing only the visible skill list.** MCP instruction blocks and agent rosters are quieter and often bigger.
+- **Declaring composition from isolated passes.** Individually valid skills, hooks, and rules can still compete or lose context when assembled. Trace at least one representative cross-surface job after a substantial change before calling the system coherent.
 - **Drifting into skill-body content review.** Whether a *skill's* guidance is expert-grade is the forge's job; this skill audits the setup (including the always-on CLAUDE.md chain that frames it), not the quality of individual artifact bodies.
 - **Offering to apply machine-scope fixes.** The tell is a question like "which of these should I prepare exact changes for?" aimed at `~/.claude/`, user settings, or global plugins. Report them; do not stage or offer them.

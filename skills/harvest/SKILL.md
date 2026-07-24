@@ -1,7 +1,7 @@
 ---
 name: harvest
 description: |
-  Mines coding-agent session transcripts for the corrections that earn artifacts, the intake stage of the kitchen's loop. Extracts what the user actually said across recent sessions (via a bundled script that reduces multi-MB transcripts to user turns), dispatches readers to classify corrections, redirects, and repeated failures, dedups against the standing harness, and hands surviving candidates to the forge with evidence counts. Use on a cadence (end of a heavy week, after a project push), when a correction feels familiar, or before claiming a harness has no gaps; skip when recent sessions were light or single-topic.
+  Mines coding-agent session transcripts for the corrections that earn artifacts, the intake stage of the kitchen's loop. Extracts what the user actually said across recent sessions (via a bundled script that reduces multi-MB transcripts to user turns), dispatches readers to classify corrections, redirects, reported behavioral deltas, and repeated failures, dedups against the standing harness, and packages surviving candidates as forge-ready briefs with evidence counts. Use on a cadence (end of a heavy week, after a project push), when a correction feels familiar, or before claiming a harness has no gaps; skip when recent sessions were light or single-topic.
 disable-model-invocation: true
 ---
 
@@ -30,7 +30,10 @@ From "wait until a gap annoys the owner into naming it" to "the corrections are 
 > - **Corrections**: user messages that correct, reject, redirect, or re-explain something the agent did. Quote each (≤ 60 words) with its timestamp.
 > - **Repeats**: anything the user had to say more than once, in this or plainly-similar wording.
 > - **Failure smells**: user messages reacting to the same error class twice (reverts, "again", "still broken", re-pasted errors).
+> - **Reported behavioral deltas**: user messages saying they rewrote, reverted, replaced, or bypassed the agent's work, even when they do not frame it as feedback.
 > Cap: ~12 items, favoring the strongest; note in one line if more remained. No paraphrase, no interpretation, no advice. Skill-invocation boilerplate ("Base directory for this skill: …" and the instruction text after it) is the harness speaking, not the user, so skip it. If the transcript is all task-dispatch with no corrections, return "no corrections" and stop.
+
+The extractor intentionally removes tool outputs, assistant-authored file contents, and system reminders. It therefore cannot prove a *silent* behavioral delta such as a user rewriting an agent-authored field without saying so. Never infer one from missing context or reopen raw file contents to manufacture the signal; report only deltas present in the reduced user turns until a privacy-preserving detector exists.
 
 ## Phase 2: Cluster and dedup against the standing harness
 
@@ -41,9 +44,21 @@ Group the returned quotes by theme. Then, before anything becomes a candidate, c
 
 Evidence weight, per the forge: recurrence across sessions, or one failure with real cost (reverted work, shipped defect, user frustration stated in so many words), weighs heaviest. A single correction still surfaces when it looks load-bearing — the owner decides at the table, not the reader.
 
-## Phase 3: Candidates to the forge
+## Phase 3: Forge-ready briefs
 
-Present a table: cluster, verbatim exemplar quote, evidence count (sessions + dates), already-encoded-where (or "nowhere"), proposed surface from the forge's triage ladder (skill / hook / rule / CLAUDE.md entry / fix-existing). The user picks; hand each survivor to `/forge` with its quotes as the earned-intent evidence. The quotes are the spec, because the forge's without-the-skill baseline already ran, in production, in those sessions.
+Present a table: cluster, verbatim exemplar quote, evidence count (sessions + dates), already-encoded-where (or "nowhere"), proposed surface from the forge's triage ladder (skill / hook / rule / CLAUDE.md entry / fix-existing). The user picks. Package each survivor in the shared handoff shape:
+
+- **Objective / expected output**
+- **Evidence of the gap** — exemplar quotes, session count, and dates
+- **Invocation mode / actor**
+- **Proposed trigger**
+- **Required context**
+- **Allowed actions / side effects**
+- **Human decision points**
+- **Proposed surface**
+- **Unknowns / contention**
+
+Omit a field or mark it unknown rather than guessing. The brief is sufficient input for a later artifact-design pass whether or not another kitchen skill is installed. The quotes remain the spec: the unaided baseline already ran, in production, in those sessions.
 
 ## Anti-patterns
 
@@ -51,9 +66,10 @@ Present a table: cluster, verbatim exemplar quote, evidence count (sessions + da
 - **Harvesting the already-harvested.** Skipping Phase 2's dedup produces duplicate skills and CLAUDE.md bloat; the standing harness is the first thing to read, not the last.
 - **Pasting transcript bulk into the main thread.** The script plus reader contract exists to keep multi-MB files out of context. If raw transcript is flowing into the conversation, the architecture has been skipped.
 - **Treating task phrasing as correction.** "Now do X" is dispatch. A correction pushes *against* something the agent did or was about to do. Readers that can't tell the difference return dispatch noise, so tighten the contract rather than lowering the bar.
+- **Inventing a silent correction.** The reduced transcript can expose a delta the user reports, not infer a rewrite or revert from tool and file content it deliberately cannot see.
 - **Cross-project harvest by default.** Other repos' transcripts are in scope only when named.
 
 ## See also
 
-- `/forge`: the handoff target; its earned-bar and triage ladder govern what candidates become.
+- `/forge`: an optional consumer of the forge-ready brief; its earned-bar and triage ladder govern what candidates become.
 - `/ingest`: the same fan-out-and-synthesize architecture pointed at external sources instead of session history.

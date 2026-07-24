@@ -94,8 +94,9 @@ const brief = await agent(
   { label: 'synthesize', phase: 'Synthesize' },
 )
 
-// Workflows have no filesystem access — the script returns the brief and the MAIN THREAD
-// writes it to .claude/ingest/<slug>.md and runs the confirm-before-handoff step. The
-// workflow does the expensive fan-out; the durable side effects stay outside it.
+// Workflows have no filesystem access — the script returns the source brief and the MAIN
+// THREAD writes it to .claude/ingest/<slug>.md, confirms placement, and packages the
+// forge-ready brief. The workflow does the expensive fan-out; durable side effects stay
+// outside it.
 log(brief ? `Brief assembled on "${topic}".` : 'No brief produced.')
 return { topic, sources: got, brief }

@@ -1,7 +1,7 @@
 ---
 name: ingest
 description: |
-  Reads content the owner hands over and works out where it belongs in the harness: which existing primitive it improves, whether it warrants a new one, or that nothing does. Scoped to the primitives forge designs (skills, hooks, path-scoped rules, CLAUDE.md and AGENTS.md entries, workflow scripts, subagents, MCP), read for what they mean for how those behave rather than summarized. Sources a request is built on, or one author's body of work being distilled, are read whole in the main thread whatever the count; a large pile of side references may fan out to one subagent per source that returns quoted excerpts. Surveys whatever harness exists around it, a skills repo or a codebase's .claude or nothing, instead of assuming a shape, then surfaces the placement for the owner to confirm and hands it to forge to build. Use when handing over reading, links, or someone's public writing to turn into a harness improvement.
+  Reads content the owner hands over and works out where it belongs in the harness: which existing primitive it improves, whether it warrants a new one, or that nothing does. Scoped to the primitives forge designs (skills, hooks, path-scoped rules, CLAUDE.md and AGENTS.md entries, workflow scripts, subagents, MCP), read for what they mean for how those behave rather than summarized. Sources a request is built on, or one author's body of work being distilled, are read whole in the main thread whatever the count; a large pile of side references may fan out to one subagent per source that returns quoted excerpts. Surveys whatever harness exists around it, a skills repo or a codebase's .claude or nothing, instead of assuming a shape, then surfaces the placement for the owner to confirm and packages it as a forge-ready brief. Use when handing over reading, links, or someone's public writing to turn into a harness improvement.
 disable-model-invocation: true
 ---
 
@@ -15,7 +15,7 @@ Scope is the primitives the forge designs and nothing wider: skills, hooks, path
 
 ## The attention this redirects
 
-From "what the model already knows about topic X" to "what *these specific sources* say, what they add that priors didn't, and which primitive in *this* harness they change." The deliverable is not a summary of the reading. It is a **placement**: a target primitive (existing or new, or none), the concrete change, and the cited excerpts that ground it, surfaced for the owner to confirm before the forge builds it.
+From "what the model already knows about topic X" to "what *these specific sources* say, what they add that priors didn't, and which primitive in *this* harness they change." The deliverable is not a summary of the reading. It is a **placement**: a target primitive (existing or new, or none), the concrete change, and the cited excerpts that ground it, surfaced for the owner to confirm before an artifact-design pass.
 
 ## Read the spec whole; fan out only a large pile
 
@@ -56,15 +56,27 @@ From what the sources say and the surveyed context, decide the target and ground
 
 Ground every claim in a verbatim excerpt with its source; bare paraphrase is not evidence. Keep what the sources support distinct from what you inferred for the owner's stack — an inference dressed as a source citation is the same failure as a paraphrase passed off as a quote. Where two or more sources bear on the same claim, note agreement and contention with both sides quoted. Fill **the rough edge**: two to four sentences on what these sources collectively add beyond training priors. If you cannot fill it, they did not add anything, and the honest placement is "nothing here."
 
-Keep the placement small — the synthesis that reaches the forge stays well under a couple of thousand tokens. Cut weak excerpts; raise the relevance bar rather than expand.
+Keep the placement small — the synthesis that reaches a later artifact-design pass stays well under a couple of thousand tokens. Cut weak excerpts; raise the relevance bar rather than expand.
 
 Write the placement to `.claude/ingest/<slug>.md` when the material should outlive the session, or the run was large enough that the excerpts will not survive compaction. For a quick single-source run, inline is enough. Glance at what is already in `.claude/ingest/` first, and update or cross-link an overlapping prior placement rather than writing a near-duplicate.
 
-### Phase 4: Propose, then hand to forge
+### Phase 4: Confirm, then package the brief
 
 Surface the placement to the owner. When more than one target is plausible, or improve-existing versus new-primitive is a live choice, put it as a question (`AskUserQuestion`); when it is clear, state it and let them redirect. The choice of where the content lands is the owner's, never made silently.
 
-On confirm, hand the placement to `/forge` — the target primitive plus the grounded excerpts and the rough edge — and forge runs its design pipeline against grounded reality instead of priors.
+On confirmation, package the placement in the shared handoff shape:
+
+- **Objective / expected output**
+- **Evidence of the gap** — grounded excerpts, citations, and the rough edge
+- **Invocation mode / actor**
+- **Proposed trigger**
+- **Required context**
+- **Allowed actions / side effects**
+- **Human decision points**
+- **Proposed surface**
+- **Unknowns / contention**
+
+Omit a field or mark it unknown rather than guessing. The brief is sufficient input for a later artifact-design pass whether or not another kitchen skill is installed; when `/forge` is present, it can consume the same shape without translation.
 
 ## The fan-out contract
 
@@ -127,5 +139,5 @@ Skip when:
 ## See also
 
 - [references/failure-modes.md](references/failure-modes.md): the context-engineering failure modes the fan-out path defends against, with primary-source citations.
-- `/forge`: the handoff target; its triage ladder picks the surface and builds it.
+- `/forge`: an optional consumer of the forge-ready brief; its triage ladder picks the surface and builds it.
 - [examples/ingest-fanout.workflow.mjs](examples/ingest-fanout.workflow.mjs): the large-pile fan-out as a deterministic JS workflow (real concurrency, schema-enforced quote-only output, resumable). A template authored against the runtime, not yet run end-to-end.

@@ -32,7 +32,21 @@ The objective is the heaviest of **four design facts no artifact is drafted with
 
 Together they are the artifact's shape: the task and its trigger understood (1–2), the context secured before work starts (3), and the exploration and work aimed at a describable, testable outcome (4).
 
-An objective is not yet a standard. Next: **what does world-class output against it look like, and what must go in front of the agent to reach it?** If you can't describe exemplary output (the non-obvious moves, the trade-offs an expert weighs, the traps between game-changing and merely competent), you are not yet qualified to write the artifact. Acquire the standard first: read the current state of the practice, fetch primary sources, find or write an exemplar. Weight supplied sources the way the owner handed them: material the request is built on ("inspired by", "do what they do", "a skill from this person's writing") is read whole in the main thread, because it is the spec and judgment doesn't survive excerpting; a trailing reference list fans out through `/ingest` and returns as quotes. Expertise you don't hold cannot be transplanted. And verify at decision time: every design decision is checked against freshly retrieved sources (the live canonical doc, the primary source), not against repo docs, STATE.md, or context already loaded, which are perishable inputs, never the baseline. Verification informs; it never overrules. When a fresh source or your own judgment contradicts the owner's stated intent — or an edit the owner made to an artifact — state the stance, cite the evidence, and ask: follow the recommendation, keep the original intent unchanged, or another path of the owner's choosing. The owner's domain expertise is evidence too, of a kind no source carries, and they may dismiss the pushback outright.
+Material arriving from source distillation, transcript mining, or an earlier design pass should cross the seam as a **forge-ready brief**, not as stage-specific prose. The shape is deliberately small and can be a table or bullets, not new frontmatter or machinery:
+
+- **Objective / expected output**
+- **Evidence of the gap**
+- **Invocation mode / actor**
+- **Proposed trigger**
+- **Required context**
+- **Allowed actions / side effects**
+- **Human decision points**
+- **Proposed surface**
+- **Unknowns / contention**
+
+Treat the brief as evidence, not authority. Preserve grounded fields, challenge the proposed surface through triage, and resolve any missing design fact by verification or a question rather than inventing it.
+
+An objective is not yet a standard. Next: **what does world-class output against it look like, and what must go in front of the agent to reach it?** If you can't describe exemplary output (the non-obvious moves, the trade-offs an expert weighs, the traps between game-changing and merely competent), you are not yet qualified to write the artifact. Acquire the standard first: read the current state of the practice, fetch primary sources, find or write an exemplar. Weight supplied sources the way the owner handed them: material the request is built on ("inspired by", "do what they do", "a skill from this person's writing") is read whole in the main thread, because it is the spec and judgment doesn't survive excerpting; a trailing reference list may fan out to one reader per source under a quote-only contract. Expertise you don't hold cannot be transplanted. And verify at decision time: every design decision is checked against freshly retrieved sources (the live canonical doc, the primary source), not against repo docs, STATE.md, or context already loaded, which are perishable inputs, never the baseline. Verification informs; it never overrules. When a fresh source or your own judgment contradicts the owner's stated intent — or an edit the owner made to an artifact — state the stance, cite the evidence, and ask: follow the recommendation, keep the original intent unchanged, or another path of the owner's choosing. The owner's domain expertise is evidence too, of a kind no source carries, and they may dismiss the pushback outright.
 
 **Forge is a working draft, not the authority. The output is.** When another approach produces better work, it is right and forge is wrong; absorb what beats it and cut the rule it beat.
 
@@ -47,6 +61,18 @@ Aim transformative, not additive, because the test is about the work, not the to
 Every non-trivial artifact carries a one-line pin, `<!-- Earned against: <model>, <YYYY-MM-DD>, <CC version> -->`, recording the earning event only; rationale, verdicts, and revisions go to CHANGELOG.md, and the artifact never references the conversation that produced it (full discipline: the kitchen's CLAUDE.md).
 
 **Scope: build in-repo, never reach into machine scope.** Machine-scope surfaces (anything under `~/.claude/`, user or enterprise `settings.json`, global plugins and user-scope hooks) are read for context but never written, staged, or offered for apply, even during an audit and even when the fix is one obvious line. Report it; the owner acts. A hard boundary, not a default to weigh.
+
+## Repair the system before the sentence
+
+When an artifact underperforms, diagnose the seam in this order and stop at the first failed layer:
+
+1. **Information flow:** did the artifact receive the context and state the decision actually required?
+2. **Position:** is it on the right surface, visible to the right actor, and triggered at the right moment?
+3. **Boundaries:** are preconditions, permissions, side effects, and human decision points explicit?
+4. **Composition:** is another artifact duplicating ownership, contradicting it, or stealing its trigger?
+5. **Wording:** only after the preceding layers hold, revise the prompt or prose.
+
+A wording patch that compensates for missing context or the wrong surface makes the failure quieter, not fixed. Prefer changing the information path, contract, or ownership boundary when that is where the behavior broke.
 
 ## Triage: pick the surface
 

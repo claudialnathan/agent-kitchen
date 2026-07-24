@@ -87,6 +87,16 @@ codex plugin marketplace upgrade claudia-kitchen
 
 Start a new Codex thread after installing or upgrading so its skill catalog is rebuilt. The applied `skills` plugin is published independently from `claudialnathan/skills`.
 
-### Cursor (and other agentskills.io tools)
+### Cursor
 
-The skills follow the open [agentskills.io](https://agentskills.io) spec, so any spec-compatible agent reads them directly — there is no marketplace step. Cursor loads whatever sits in `~/.cursor/skills/` (global) or a repo's `.cursor/rules/`; symlink or copy the skill folders from `skills/` there, then reload. Spec consumers read only the `description` field (they ignore `when_to_use`), which is why the triggers live in the description.
+The kitchen now carries a native Cursor plugin package under `.cursor-plugin/`, including a marketplace catalog for `agent-kitchen` and the separate applied `skills` repo. For immediate use on this machine, the live-link path remains:
+
+```bash
+bin/sync-cross-tool
+```
+
+That links published kitchen skills into `~/.cursor/skills/` and `~/.codex/skills/`, plus any project workflow that explicitly declares those harness targets. Reload Cursor or start a new agent session after syncing. The repo-specific `ship-agent-skills` workflow uses this path; it is not bundled into the published kitchen plugin.
+
+### Other agentskills.io tools
+
+The skills follow the open [agentskills.io](https://agentskills.io) spec, so other spec-compatible agents can read the folders under `skills/` directly. Spec consumers read only the `description` field (they ignore `when_to_use`), which is why the triggers live in the description.

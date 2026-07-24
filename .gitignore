@@ -7,6 +7,8 @@ working/
 !.claude/skills/state-bump/**
 !.claude/skills/model-bump/
 !.claude/skills/model-bump/**
+!.claude/skills/ship-agent-skills/
+!.claude/skills/ship-agent-skills/**
 .claude/ingest/
 .claude/hooks/doc-drift-gate.sh
 .claude/settings.local.json

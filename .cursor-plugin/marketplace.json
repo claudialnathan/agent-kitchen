@@ -1,0 +1,21 @@
+{
+  "name": "claudia",
+  "owner": {
+    "name": "Claudia Nathan"
+  },
+  "metadata": {
+    "description": "The agent-kitchen forge and the applied skills it produces."
+  },
+  "plugins": [
+    {
+      "name": "agent-kitchen",
+      "source": "./",
+      "description": "The kitchen that designs agent artifacts: forge, ingest, harvest, and harness-audit. The reusable design layer."
+    },
+    {
+      "name": "skills",
+      "source": "https://github.com/claudialnathan/skills",
+      "description": "Applied skills: design, engineering, writing, and workflow craft."
+    }
+  ]
+}

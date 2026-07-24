@@ -2,14 +2,14 @@
 # bin/sync-cross-tool — link artifacts from this repo into the right cross-tool
 # locations.
 #
-# The kitchen's skills live under one source root:
-#   skills/<name>/    — forge, harness-audit, harvest, ingest
-# The root is walked and synced flat (one level deep) into
-# ~/.cursor/skills and ~/.codex/skills. Each SKILL.md may declare
-# `harness-targets:` in its frontmatter (e.g. `harness-targets: [claude]` for
-# claude-only). Default when absent is `[claude, cursor, codex]`. Claude
-# itself consumes skills via the marketplace plugins defined in
-# .claude-plugin/, so we don't symlink those here.
+# The kitchen has two skill source roots:
+#   skills/<name>/            — published kitchen skills
+#   .claude/skills/<name>/    — project-local workflow skills
+# Both roots are walked and synced flat (one level deep). Published skills
+# default to all three tools; project-local workflows default to Claude only
+# and must opt into other tools with `harness-targets:`. This lets one local
+# workflow (such as ship-agent-skills) travel without leaking every private
+# project helper into global Cursor and Codex scope.
 #
 # Rules (rules/<name>.md) sync to ~/.claude/rules only. Cursor's rule format
 # (.mdc, project-scoped) and Codex's lack of a rules concept mean cross-tool
@@ -23,7 +23,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SKILLS_DIRS=("$REPO_ROOT/skills")
+SKILLS_DIRS=("$REPO_ROOT/skills" "$REPO_ROOT/.claude/skills")
 RULES_DIR="$REPO_ROOT/rules"
 
 DRY_RUN=0
@@ -40,7 +40,7 @@ esac
 
 # Read `harness-targets:` from an .md file's frontmatter. Output a
 # space-separated list of tokens. Second arg is the default when frontmatter
-# is absent (skills default to all three tools; rules default to claude only).
+# is absent (the caller chooses the default for each source class).
 read_targets() {
   local md="$1"
   local default="$2"
@@ -77,12 +77,17 @@ sync_one_tool() {
   local src_root skill_dir
   for src_root in "${SKILLS_DIRS[@]}"; do
     [[ -d "$src_root" ]] || continue
+    # Project-local Claude skills already live at the Claude destination.
+    # Skipping that root avoids self-links while published skills still sync.
+    [[ "$src_root" == "$dest" ]] && continue
     for skill_dir in "$src_root"/*/; do
       [[ -d "$skill_dir" ]] || continue
       local name; name=$(basename "$skill_dir")
       local md="$skill_dir/SKILL.md"
       [[ -f "$md" ]] || continue
-      local targets; targets=$(read_targets "$md" "claude cursor codex")
+      local default_targets="claude cursor codex"
+      [[ "$src_root" == "$REPO_ROOT/.claude/skills" ]] && default_targets="claude"
+      local targets; targets=$(read_targets "$md" "$default_targets")
       if echo " $targets " | grep -q " $tool "; then
         wanted_list+=" $name"
         local want="$src_root/$name"

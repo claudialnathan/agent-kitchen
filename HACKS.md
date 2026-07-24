@@ -1,8 +1,8 @@
 ```
 HACKS, FYIs & NICE-TO-KNOWS █
-CLAUDE CODE v2.1.207 + CLAUDE AGENT PLATFORM
+CLAUDE CODE v2.1.218 + CLAUDE AGENT PLATFORM
 
-UPDATED: 2026-07-13
+UPDATED: 2026-07-24
 SOURCE REPO: anthropics/claude-code/blob/main/CHANGELOG.md
 STATUS: DRAFT
 ```
@@ -40,6 +40,7 @@ A couple lesser-known or new features I like.
 <tr><td>channels<sup>NEW</sup> <kbd><samp>v2.1.80+</samp></kbd></td><td><code>claude --channels plugin:&lt;name&gt;@&lt;mkt&gt;</code></td><td>Pushes outside events (CI fail, Telegram, <code>curl</code>) <em>into</em> your live session over stdio, files + context already loaded. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
 <tr><td>deep links<sup>NEW</sup> <kbd><samp>v2.1.91+</samp></kbd></td><td><code>claude-cli://open?repo=…&q=…</code></td><td>One click opens Claude in a new terminal, right repo, prompt pre-typed. <code>mailto:</code> for agent sessions. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
 <tr><td>remote control</td><td><code>claude remote-control · /rc</code></td><td>Drive your local session from your phone; full tooling, outbound HTTPS only. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
+<tr><td>artifacts + MCP<sup>NEW</sup> <kbd><samp>v2.1.207–212</samp></kbd></td><td>ask for it in the build prompt</td><td>A published artifact can call MCP connectors <em>on every view</em>, not just at build time — live dashboards, not snapshots. Runs through the <em>viewer's</em> own connections (they approve before the first call), not the author's. Also new: public sharing links, Team/Enterprise editor roles, artifacts from Claude Tag sessions.</td></tr>
 </table>
 
 ---
@@ -124,6 +125,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>claude setup-token</code></td><td>Long-lived OAuth token for CI/scripts (Claude subscription).</td></tr>
 <tr><td><code>claude mcp login &lt;name&gt;</code> / <code>logout</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td>Authenticate an MCP server from the CLI without the <code>/mcp</code> menu; <code>--no-browser</code> completes OAuth over SSH via paste-the-URL.</td></tr>
 <tr><td><code>/config key=value</code><sup>NEW</sup> <kbd><samp>v2.1.181</samp></kbd></td><td>Set <em>any</em> setting from the prompt (<code>/config thinking=false</code>). Scriptable in <code>-p</code> and Remote Control, no settings.json edit. <code>/config --help</code> lists the keys.</td></tr>
+<tr><td><code>--ax-screen-reader</code><sup>NEW</sup> <kbd><samp>v2.1.208</samp></kbd></td><td>Screen reader mode: swaps the visual TUI for plain linear text a screen reader (VoiceOver/NVDA) reads in order. Also <code>CLAUDE_AX_SCREEN_READER=1</code> or <code>"axScreenReader": true</code>.</td></tr>
+<tr><td><code>claude auto-mode reset</code><sup>NEW</sup> <kbd><samp>v2.1.213</samp></kbd></td><td>Restores default auto-mode config in one shot; <code>--yes</code> skips the confirmation prompt.</td></tr>
 <tr><td><code>/doctor</code> (= <code>/checkup</code>)<sup>NEW</sup> <kbd><samp>v2.1.205+</samp></kbd></td><td>Went from diagnostics-only to a full checkup that <em>fixes</em> issues too (v2.1.205); now proposes trimming checked-in <code>CLAUDE.md</code> content Claude could already derive from the codebase (v2.1.206) and flags an externally managed launcher script the auto-updater can't safely overwrite (v2.1.207).</td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>Environment variables</h4></kbd></td></tr>
 <tr><th><samp>VAR</samp></th><th><samp>FUNCTION</samp></th></tr>
@@ -140,6 +143,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>ENABLE_TOOL_SEARCH=auto:5</code></td><td>Threshold-load only MCP tools fitting in 5% of context; defer the rest.</td></tr>
 <tr><td><code>CLAUDE_CODE_RETRY_WATCHDOG</code><sup>NEW</sup> <kbd><samp>v2.1.199</samp></kbd></td><td>Raises the default retry count for non-capacity transient errors to 300 and <em>lifts</em> the former cap of 15 on <code>CLAUDE_CODE_MAX_RETRIES</code>: the supported lever for unattended sessions that must not give up.</td></tr>
 <tr><td><code>CLAUDE_ENABLE_STREAM_WATCHDOG=0</code><sup>NEW</sup> <kbd><samp>v2.1.196</samp></kbd></td><td>Opt out of the idle-stream watchdog, which is now on by default for <em>all</em> providers and aborts and retries a response stream that emits no events for 5 min.</td></tr>
+<tr><td><code>CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS</code><sup>NEW</sup> <kbd><samp>v2.1.213</samp></kbd></td><td>MCP tool calls past 2 min now auto-background by default so the session stays usable; tune the threshold or disable here.</td></tr>
+<tr><td><code>CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH</code> / <code>_MAX_SUBAGENTS_PER_SESSION</code> / <code>_MAX_CONCURRENT_SUBAGENTS</code><sup>NEW</sup> <kbd><samp>v2.1.212–217</samp></kbd></td><td>The 3 subagent-fan-out limits: nesting is now off by default (set the depth to enable it), 200 total/session, 20 concurrent. → <a href="#07-orchestration">#07</a></td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>settings.json keys</h4></kbd></td></tr>
 <tr><th><samp>KEY</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>skillOverrides</code></td><td>Set a skill to <code>"name-only"</code> (keep listed, drop description budget) or <code>"off"</code>, without editing its file; great for noisy third-party skills.</td></tr>
@@ -154,7 +159,14 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>disableBundledSkills</code><sup>NEW</sup> <kbd><samp>v2.1.169</samp></kbd></td><td>Hide <em>all</em> bundled skills, workflows, and built-in slash commands from the model in one key: reclaim their description budget.</td></tr>
 <tr><td><code>Tool(param:value)</code> perm rules<sup>NEW</sup> <kbd><samp>v2.1.178</samp></kbd></td><td>Permission rules match a tool call's <em>input params</em> (with <code>*</code>): e.g. <code>Agent(model:opus)</code> blocks Opus subagents. Param-level <code>deny</code>/<code>allow</code> without a <code>PreToolUse</code> hook.</td></tr>
 <tr><td><code>sandbox.credentials</code><sup>NEW</sup> <kbd><samp>v2.1.187</samp></kbd></td><td>Block sandboxed commands from reading credential files and secret env vars. Defense-in-depth for untrusted shell.</td></tr>
+<tr><td><code>sandbox.filesystem.disabled</code><sup>NEW</sup> <kbd><samp>v2.1.216</samp></kbd></td><td>Skip filesystem isolation while keeping network egress control — the inverse trade-off from <code>sandbox.credentials</code> above.</td></tr>
 <tr><td><code>respondToBashCommands: false</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td>Revert the new default where a <code>!</code> bash run makes Claude react to the output; keeps <code>!</code> output as context only.</td></tr>
+</table>
+
+> [!WARNING]
+> <code>Write(path)</code>, <code>NotebookEdit(path)</code>, and <code>Glob(path)</code> aren't valid permission-rule shapes<sup>NEW</sup> <kbd><samp>v2.1.210</samp></kbd> — those tools don't take a path-scoped rule the way <code>Edit(path)</code>/<code>Read(path)</code> do. A startup warning now flags the mistake instead of the rule silently matching nothing.
+
+<table>
 <tr><td colspan="2" align="center"><kbd><h4>Interactive shortcuts & TUI</h4></kbd></td></tr>
 <tr><th><samp>KEYS</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>Esc Esc</code></td><td>Empty prompt → rewind menu; with text → clear draft (saved to history, <code>↑</code> recalls).</td></tr>
@@ -169,7 +181,10 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 </table>
 
 > [!NOTE]
-> **Fable 5 + Mythos 5 restored 2026-07-01**: a 19-day US export-control suspension (from 2026-06-12) was lifted 2026-06-30; both are back globally (API/AWS/Foundry), rollout throttled to ≤50% of weekly usage limits through 2026-07-12, then usage credits. Neither the suspension nor the restoration hit the CC changelog: model availability moves independently of it, so check it out of band on every bump.
+> "Always allow" permission rules now save at the <strong>repository root</strong><sup>NEW</sup> <kbd><samp>v2.1.211</samp></kbd>, not the worktree you were in — an approval granted inside a git worktree now persists across sessions and other worktrees of the same repo.
+
+> [!NOTE]
+> **Fable 5 + Mythos 5 restored 2026-07-01**: a 19-day US export-control suspension (from 2026-06-12) was lifted 2026-06-30; both are back globally (API/AWS/Foundry), the throttled-rollout window (≤50% of weekly usage limits) closed 2026-07-12. Neither the suspension nor the restoration hit the CC changelog: model availability moves independently of it, so check it out of band on every bump. Still true as of v2.1.210: Fable is a dimmed, unselectable "temporarily unavailable" row in the new <code>/advisor</code> picker (→ <a href="#07-orchestration">#07</a>) — a remote rollout, not the changelog, controls when that clears.
 
 Fable 5 (<code>/model fable</code>,<sup>NEW</sup> <kbd><samp>v2.1.170</samp></kbd>) reroutes classifier-flagged requests (cybersecurity/biology) to Opus mid-session, and it can trip on <em>workspace context</em> alone (CLAUDE.md, git status, directory names) before you type anything. <code>claude --safe-mode</code> isolates whether your config is the trigger; <code>/config</code> → "switch models when a message is flagged" off = pause-and-ask instead of silent switch.
 
@@ -238,8 +253,11 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 
 <table>
 <tr><th><code>FEATURE</code></th><th><code>INVOKE</code></th><th><code>FUNCTION</code></th></tr>
-<tr><td>forked subagents<sup>NEW</sup> <kbd><samp>v2.1.161+ default-on</samp></kbd></td><td><code>/fork &lt;directive&gt;</code> · <code>CLAUDE_CODE_FORK_SUBAGENT=1</code></td><td>Inherits the <em>entire</em> conversation (zero re-explaining) and shares the parent's prompt cache, so cheaper than a fresh subagent for same-context work. Open a running fork's transcript and steer it mid-flight.</td></tr>
-<tr><td>nested subagents<sup>NEW</sup> <kbd><samp>v2.1.172+</samp></kbd></td><td><code>Agent</code> in a subagent's <code>tools</code> (default)</td><td>A subagent spawns its <em>own</em> subagents: a delegated task that itself fans out (reviewer → a verifier per finding) keeps the sub-fan-out off your main thread, only the top summary returns. Both chains cap at depth 5 now (fixed, not configurable): a <em>background</em> subagent loses the <code>Agent</code> tool there, and foreground chains hit the same limit (v2.1.181) on top of self-limiting by each blocking its parent. Omit <code>Agent</code> from a subagent's <code>tools</code> to block it; a fork still can't spawn a fork.</td></tr>
+<tr><td>forked subagents / <code>/subtask</code><sup>CHANGED</sup> <kbd><samp>v2.1.212</samp></kbd></td><td><code>/subtask &lt;directive&gt;</code> · <code>CLAUDE_CODE_FORK_SUBAGENT=1|0</code></td><td>The old <code>/fork</code>, renamed. Inherits the <em>entire</em> conversation (zero re-explaining) and shares the parent's prompt cache, so cheaper than a fresh subagent for same-context work. Default-on since v2.1.161 (the env var now just forces on/off). <code>/fork</code> means something else now — see the next row.</td></tr>
+<tr><td><code>/fork</code><sup>CHANGED</sup> <kbd><samp>v2.1.212</samp></kbd></td><td><code>/fork [prompt]</code></td><td>Copies the whole conversation into a new, independent <strong>background session</strong> (its own row in <code>claude agents</code>) while you keep working here; runs its own subagent budget. With agent view off, <code>/subtask</code> disappears and <code>/fork</code> reverts to the old forked-subagent behavior.</td></tr>
+<tr><td>nested subagents<sup>CHANGED, off by default</sup> <kbd><samp>v2.1.217</samp></kbd></td><td><code>CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=&lt;n&gt;</code></td><td>A subagent spawning its <em>own</em> subagents (reviewer → a verifier per finding) is now <strong>opt-in, not default</strong> (reversed from v2.1.172). Set the env var to the number of layers you want; there's no fixed depth-5 cap anymore, you configure the depth. While off, every subagent but a fork keeps <code>Agent</code> listed but gets an error if it tries to spawn.</td></tr>
+<tr><td>subagent limits, 3 of them<sup>NEW</sup> <kbd><samp>v2.1.212–217</samp></kbd></td><td><code>CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION</code> (200) · <code>CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS</code> (20) · spawn depth above</td><td>Per-session total (v2.1.212, can't be disabled, resets on <code>/clear</code>, doesn't count a <code>/fork</code> session or workflow <code>agent()</code> calls) · concurrency cap (v2.1.217, exempt under <code>ultracode</code>/workflows, <code>/subtask</code> never blocked by it) · nesting depth. Also new: a 200-call WebSearch cap per session (<code>CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION</code>, v2.1.213).</td></tr>
+<tr><td>advisor tool<sup>NEW</sup> <kbd><samp>experimental, API-only</samp></kbd></td><td><code>/advisor &lt;model&gt;</code> · <code>advisorModel</code> setting · <code>--advisor</code></td><td>Claude consults a second, typically stronger model at decision points (before committing to an approach, when stuck on a recurring error, before declaring done) — the advisor sees the <em>full</em> transcript and Claude generally follows its guidance. Anthropic API only (no Bedrock/Vertex/Foundry/AWS). Advisor tokens bill on top of main-model usage. Fable 5 can be the main model but currently can't be the advisor (dimmed "temporarily unavailable" in the picker, pending a remote rollout).</td></tr>
 <tr><td><code>/goal</code><sup>NEW</sup> <kbd><samp>v2.1.139+</samp></kbd></td><td><code>/goal &lt;condition&gt;</code></td><td>A small fast model re-checks your condition every turn and keeps Claude working until it holds, no per-turn prompting. Judges <em>only the transcript</em>, so write conditions the output can prove: <code>"npm test exits 0 and git status clean, or stop after 20 turns"</code>.</td></tr>
 <tr><td>agent view</td><td><code>claude agents</code> · <code>--json</code></td><td><code>←</code> on an empty prompt backgrounds + jumps here; <code>Ctrl+T</code> pins (survives idle, restarts onto new binaries); <code>s:blocked</code> filters "what needs me"; <code>--json</code> emits an inventory with a <code>waitingFor</code> field.</td></tr>
 <tr><td>respawn</td><td><code>claude respawn --all</code></td><td>Rolls every background session onto an updated Claude Code binary at once.</td></tr>
@@ -394,7 +412,7 @@ lap's configuration.
 ┌────────────────────────────────────────────────────────────────────────────┐
 │ ② IMPLEMENT                                         "do the work"  §07 §08 │
 ├────────────────────────────────────────────────────────────────────────────┤
-│  same context .... /fork  (full history + warm cache, steerable)           │
+│  same context .... /subtask  (full history + warm cache, steerable)        │
 │  isolation ....... --worktree <name> · worktree.baseRef fresh|head         │
 │  parallelism ..... claude agents (Ctrl+T pins) · /bg · /batch              │
 │  heavy fan-out ... ultracode dynamic workflows · agent teams (~7× tokens)  │
@@ -452,6 +470,6 @@ lap's configuration.
 
 ```
 EVERY FLAG, FIELD, AND VERSION ABOVE: COPIED FROM A DOC, NOT RECALLED.
-RE-CHECKED: 2026-07-13 · AGAINST: v2.1.207 · AUTHORITATIVE: docs changelog
+RE-CHECKED: 2026-07-24 · AGAINST: v2.1.218 · AUTHORITATIVE: docs changelog
 ON DRIFT: FIX IT HERE, RE-PIN THE DATE.
 ```

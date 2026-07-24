@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 13 July 2026 | Version: v2.1.207
+Last updated: 24 July 2026 | Version: v2.1.218
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. It is a factual reference for builders working against these surfaces, not a tutorial. Filtered to what changes how you build, configure, and ship.
 
@@ -69,6 +69,21 @@ Features that changed how skills get built, in rough order of impact:
 - New levers: `ANTHROPIC_DEFAULT_FABLE_MODEL` (alias target; also what enables fallback on Bedrock/Vertex/Foundry), `DISABLE_PROMPT_CACHING_FABLE`.
 - **Mythos 5** is the same model without cybersecurity safeguards, restricted to vetted partners, and not a Claude Code surface.
 
+### Advisor tool (experimental, Anthropic API only)
+
+- Pairs the main model with a second, typically stronger model that Claude itself decides to consult mid-task — before committing to an approach, when an error keeps recurring, or before declaring a task done. The advisor gets the *full* conversation (every tool call and result) and returns guidance Claude generally follows, but surfaces a conflict rather than blindly complying when its own evidence contradicts the advice.
+- Enable via `/advisor <model>` (persists to `advisorModel` in user settings), the `advisorModel` setting directly, or `--advisor <model>` for one session (not in `--help`). `/advisor off` or `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` turns it off.
+- The advisor must be at least as capable as the main model (Sonnet 5 main rejects a Sonnet 4.6 advisor; Opus 4.7/4.8 are ranked equal so either accepts the other). Subagents inherit the configured advisor and are checked against the same pairing rule.
+- **Fable 5 can be a main model but not an advisor right now**: a Fable 5 main runs without an advisor (only a Fable advisor would be accepted, and Fable isn't currently offered in the `/advisor` picker — it shows dimmed as "temporarily unavailable" pending a remote rollout).
+- Anthropic API only — unavailable on Bedrock, Vertex, Foundry, or Claude Platform on AWS. Toggling it mid-session doesn't invalidate the main model's prompt cache, but each advisor call re-reads the full transcript uncached, and tokens bill at the advisor model's rate on top of the main model's usage (countable in `/usage`).
+- Distinct from `opusplan` (stronger model only during plan mode, then switches for execution), a `model`-pinned subagent (stronger model for one whole delegated subtask), and `/model` (switches the main model for all subsequent turns) — the advisor is the only one of the four that runs *at decision points mid-task* while the main model keeps driving.
+
+### Artifacts call MCP connectors (web, v2.1.207–212)
+
+- A published Artifact can call MCP connectors *each time someone views it*, not just once at build time — a dashboard artifact can show live data or take actions on demand. Each call runs through the *viewing* account's own connections, and viewers approve access before the page's first connector call (so the artifact author's connections aren't what's exposed).
+- Ask for it directly in the prompt that builds the artifact, e.g. "pull the live list through my GitHub connector when the page loads."
+- Shipped alongside: public sharing links, editor roles for shared editing (Team/Enterprise), and artifacts created directly from Claude Tag (Slack) sessions.
+
 ### Dynamic workflows (`/workflows`, v2.1.154)
 
 - Ask Claude to create a workflow and it orchestrates work across tens to hundreds of agents in the background for tasks too large for one context (large migrations, audits, broad sweeps).
@@ -96,13 +111,13 @@ Features that changed how skills get built, in rough order of impact:
 - No longer gated: the `--enable-auto-mode` flag was removed, and the first-use opt-in consent prompt is gone too (v2.1.152).
 - `settings.autoMode.hard_deny` defines classifier rules that block unconditionally regardless of user intent or allow exceptions, which makes it useful as a policy-grade backstop.
 - `autoMode.classifyAllShell` (v2.1.193) routes **every** Bash/PowerShell command through the classifier, not just arbitrary-code-execution patterns. This is tighter, at the cost of more classifier calls. Denial reasons now land in the transcript, the denial toast, and `/permissions` recent denials.
-- **Destructive-command guards** (v2.1.183): independent of `hard_deny`, auto mode now blocks unrequested `git reset --hard` / `git checkout -- .` / `git clean -fd` / `git stash drop`, `git commit --amend` on a commit the agent didn't make this session, `terraform`/`pulumi`/`cdk destroy` unless you named the stack, and tampering with session transcript files (v2.1.205); it also now asks first before running `rm -rf` on a variable it can't resolve from context (v2.1.205), rather than blocking outright.
+- **Destructive-command guards** (v2.1.183): independent of `hard_deny`, auto mode now blocks unrequested `git reset --hard` / `git checkout -- .` / `git clean -fd` / `git stash drop`, `git commit --amend` on a commit the agent didn't make this session, `terraform`/`pulumi`/`cdk destroy` unless you named the stack, and tampering with session transcript files (v2.1.205); it also now asks first before running `rm -rf` on a variable it can't resolve from context (v2.1.205), rather than blocking outright. Catastrophic removals hidden behind `$(…)`/backticks/`<(…)` now prompt the same as the plain form (v2.1.208). As of v2.1.218, the dangerous-`rm`, background-`&`, and suspicious-Windows-path checks (plus, in plan mode, Bash commands the static analyzer can't prove read-only) no longer open a permission dialog at all — the auto-mode classifier adjudicates them directly instead.
 
-### Forked subagents (`/fork`, w17)
+### `/fork` and `/subtask` (split at v2.1.212)
 
-- `CLAUDE_CODE_FORK_SUBAGENT=1` enables fork mode.
-- A fork inherits the _full conversation history_ (unlike a normal subagent which starts fresh). Same system prompt, tools, model, prompt cache.
-- `/fork <directive>` spawns one. Useful for try-this-and-keep-going workflows.
+- **The old `/fork` was renamed `/subtask`** (v2.1.212). `/subtask <directive>` spawns an in-session forked subagent: it inherits the _full conversation history_ (unlike a normal subagent, which starts fresh) and shares system prompt, tools, model, and prompt cache with the parent. Default-on since v2.1.161; `CLAUDE_CODE_FORK_SUBAGENT=1`/`=0` still forces it on/off explicitly (needed for opt-in only on v2.1.117–160). A fork can't spawn further forks.
+- **`/fork` now means something different**: it copies the whole conversation into a new, independent **background session** with its own row in `claude agents`, and you keep working in the original. Pass a prompt and the copy starts immediately; without one it waits in agent view. Requires v2.1.212+; with agent view turned off, `/subtask` isn't available and `/fork` falls back to the old forked-subagent behavior.
+- A `/fork` background session runs its own budget (doesn't count against the per-session subagent caps below); a `/subtask` does count, but is never blocked by the concurrent-subagent limit.
 
 ### Monitor tool (w15, v2.1.98)
 
@@ -210,7 +225,8 @@ The hook surface has accumulated several useful fields:
 - **`acceptEdits` guards code-execution writes**: it now prompts before writing files that can run code on open: shell startup files (`.zshenv`, `.zlogin`), `~/.config/git/`, and build configs (`.npmrc`, `.yarnrc*`, `bunfig.toml`, `.bazelrc`, `.pre-commit-config.yaml`, `.devcontainer/`).
 - **`requiredMinimumVersion` / `requiredMaximumVersion`** managed settings: Claude Code refuses to start outside the allowed version range and points to an approved build.
 - **`fallbackModel` setting** (v2.1.166): up to three fallback models, tried in order when the primary is unavailable; the settings-file form of the `--fallback-model` flag.
-- **Nested subagents** (v2.1.172): a subagent can now spawn its own subagents, so a delegated task that splits into parallel subtasks (a reviewer dispatching a verifier per finding) keeps that fan-out off the main thread; only the top-level summary returns. A background subagent stops receiving the `Agent` tool at depth 5; foreground chains hit the same depth-5 cap (v2.1.181) on top of self-limiting by each blocking its parent. Fixed, not configurable. A lighter-weight alternative to a workflow script when the orchestration is a single delegated task, not a standing pipeline.
+- **Nested subagents** (introduced v2.1.172, **default flipped to off at v2.1.217**): a subagent can spawn its own subagents — useful for a delegated task that itself splits into parallel subtasks (a reviewer dispatching a verifier per finding), keeping that fan-out off the main thread with only the top-level summary returning — but as of v2.1.217 this is opt-in, not default-on. Set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to the number of layers you want below the main conversation (e.g. `"2"`) to enable it; while it's off, every subagent except a fork keeps the `Agent` tool listed but gets an error if it tries to spawn. No longer a fixed depth-5 cap — depth is however deep you configure. A lighter-weight alternative to a workflow script when the orchestration is a single delegated task, not a standing pipeline.
+- **Three independent subagent limits** (as of v2.1.217): a **per-session total** (default 200, `CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION`, v2.1.212+, no upper bound but can't be disabled, resets on `/clear`) counting every subagent spawned with the `Agent` tool — nested, forked, background, and your own `/subtask` — but *not* a `/fork` background session or agents a workflow script spawns with `agent()` (those have their own per-run cap); a **concurrency cap** (default 20, `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`, v2.1.217+, exempt when `ultracode`/workflows are active) that blocks new spawns with `Concurrent subagent limit reached` until the running count drops, but never blocks your own `/subtask`; and the **depth limit** above. Also new: a session-wide WebSearch cap (default 200, `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION`, v2.1.213) against runaway search loops.
 - **`availableModels` allowlist + `enforceAvailableModels`** (managed settings; `enforceAvailableModels` added v2.1.175): restrict which models a deployment may use; with `enforceAvailableModels` on, the allowlist also constrains the resolved Default model (a Default that would resolve to a blocked model falls back to the first allowed one) and user/project settings can't widen a managed list. `ANTHROPIC_DEFAULT_*_MODEL` env vars and `/fast` can no longer slip a blocked model past it (v2.1.177). The model-governance analog to `requiredMinimumVersion`.
 - **`Tool(param:value)` permission rules** (v2.1.178): permission rules can now match a tool call's input parameters, with `*` wildcards: e.g. `Agent(model:opus)` blocks Opus subagents. Parameter-level policy in `permissions.deny`/`allow`, where you'd previously have needed a `PreToolUse` hook.
 - **Nested `.claude/` directories resolve by proximity** (v2.1.178): a skill in a nested `.claude/skills/` loads when you work on files beneath it (dir-qualified `<dir>:<name>` on a name clash, so both survive), and the agent / workflow / output-style in the closest `.claude/` wins a name collision. Monorepo subprojects can carry their own harness.
@@ -225,6 +241,12 @@ The hook surface has accumulated several useful fields:
 - **`"default"` permission mode is now labelled "Manual"** (v2.1.200) across the CLI, `--help`, VS Code, and JetBrains. `--permission-mode manual` and `"defaultMode": "manual"` are accepted alongside the old `default`; both still work.
 - **Organization default models** (v2.1.196, Enterprise): admins set a Claude Code default in the claude.ai console, org-wide or per role; it shows as "Org default" / "Role default" in `/model`. A starting point, not a restriction, since any explicit model selection overrides it. The soft-default analog to the hard `availableModels` allowlist.
 - **`claude_code.assistant_response` OTEL log event** (v2.1.193) carries the model's response text. Redacted unless `OTEL_LOG_ASSISTANT_RESPONSES=1`; but when that var is *unset* it follows `OTEL_LOG_USER_PROMPTS`, so a deployment already logging prompts starts logging responses on upgrade. Set `OTEL_LOG_ASSISTANT_RESPONSES=0` to keep prompts-only.
+- **Screen reader mode** (v2.1.208): `claude --ax-screen-reader`, `CLAUDE_AX_SCREEN_READER=1`, or the `axScreenReader` setting replaces the visual terminal UI with plain, linear text a screen reader (VoiceOver, NVDA) can read in order, instead of boxes/spinners/in-place redraws.
+- **In-app browser on Desktop** (v2.1.202+): Claude Code Desktop can browse and interact with external sites the same way it does local dev-server previews; sandboxed, session persistence is your choice, and safety classifiers review actions on external sites.
+- **Permission-rule footgun**: `Write(path)`, `NotebookEdit(path)`, and `Glob(path)` aren't valid permission-rule shapes (v2.1.210 added a startup warning) — use `Edit(path)` or `Read(path)` instead.
+- **"Always allow" permission rules now save at the repository root** (v2.1.211), so an approval granted inside a git worktree persists across sessions and other worktrees of the same repo, not just that one checkout.
+- **`claude auto-mode reset`** (v2.1.213): restores default auto-mode configuration in one command; prompts for confirmation, `--yes` skips it.
+- **MCP tool calls auto-background past 2 minutes** (v2.1.213): a long-running MCP call moves to the background automatically so the session stays usable; tune or disable via `CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS`.
 
 ## Constraints worth designing around
 
@@ -242,7 +264,8 @@ The hook surface has accumulated several useful fields:
 
 These exist in stock Claude Code; building parallel skills competes for description budget:
 
-- **`/code-review`** (skill): reports correctness bugs in the current diff at the requested effort level (e.g. `/code-review high`); `--comment` posts findings as inline GitHub PR comments, `--fix` applies them to the working tree. For a PR, `/code-review <level> <pr#>` runs the multi-agent review; plain `/review <pr>` is a fast single-pass review (the split was restored v2.1.202).
+- **`/code-review`** (skill): reports correctness bugs in the current diff at the requested effort level (e.g. `/code-review high`); `--comment` posts findings as inline GitHub PR comments, `--fix` applies them to the working tree. For a PR, `/code-review <level> <pr#>` runs the multi-agent review; plain `/review <pr>` is a fast single-pass review (the split was restored v2.1.202). **As of v2.1.215, Claude no longer runs `/code-review` (or `/verify`) on its own** — both are invoke-only now, where before Claude could trigger them unprompted. **As of v2.1.218, `/code-review` runs as a background subagent**, so the review no longer fills the calling conversation, and it targets the review at any slash commands stacked in the same invocation.
+- **`/verify`** (skill): a separate bundled skill, named alongside `/code-review` in the v2.1.215 invoke-only change above. Confirm its exact scope against `code.claude.com/docs/en/commands` before relying on specifics — not independently verified this bump.
 - **`/simplify`** (skill): cleanup-only review of the diff (reuse, simplification, efficiency, altitude) that applies its fixes; a quality pass, not bug-hunting, so use `/code-review` for bugs.
 - **`/batch <instruction>`** (skill): decomposes large changes into 5–30 units; spawns one background agent per unit in isolated worktrees; opens PRs.
 - **`/debug`** (skill): captures debug logs from current point forward; analyzes issues.
@@ -260,7 +283,7 @@ These exist in stock Claude Code; building parallel skills competes for descript
 - **`/recap`**: one-line session summary on demand.
 - **`/usage`** (= `/cost` = `/stats`): usage breakdown showing what's driving limits. As of v2.1.149, splits the per-category breakdown across skills, subagents, plugins, and per-MCP-server cost.
 - **`/btw`**: side question without polluting context.
-- **`/fork`** / **`/branch`**: branch the conversation (or spawn a forked subagent if `CLAUDE_CODE_FORK_SUBAGENT=1`).
+- **`/fork`** (background-session copy, v2.1.212+) / **`/subtask`** (in-session forked subagent, the old `/fork`) / **`/branch`** (switch into a copy yourself): see the `/fork` and `/subtask` section above.
 - **`/rewind`** (= `/checkpoint` = `/undo`): restore prior conversation/code state.
 
 The full list is at `https://code.claude.com/docs/en/commands` and is worth re-checking on each visit.
@@ -344,13 +367,12 @@ Cross-tool standards:
 - `https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills`: Agent Skills standard announcement.
 - `https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation`: AAIF formation.
 
-## In flux as of early July 2026
+## In flux as of late July 2026
 
 Things that were research previews or moving fast at the time of writing:
 
-- **Fable 5 is back** (restored 2026-07-01 after the US export-control order was lifted; see the Fable 5 section above). `/model fable` selects it again and `best` resolves to it where the org has access. Rollout was throttled to ≤50% of weekly usage limits through 2026-07-12, then usage credits. The episode is a standing reminder that model availability moves independently of the changelog.
+- **Fable 5 is back as a main model** (restored 2026-07-01 after the US export-control order was lifted; see the Fable 5 section above). `/model fable` selects it again and `best` resolves to it where the org has access. The throttled-rollout window closed 2026-07-12. **Still excluded as an advisor** (see the Advisor tool section above): a remote rollout, not the changelog, decides when the `/advisor` picker stops showing it dimmed as "temporarily unavailable." The episode remains a standing reminder that model availability — including partial availability in a specific role like advisor — moves independently of the changelog.
 - **Agent view (`claude agents`)** is research preview. Surface and command shape may shift.
-- **Forked subagents** remain gated behind `CLAUDE_CODE_FORK_SUBAGENT=1` (v2.1.117+); now work in SDK and `-p` modes as well as interactive. Likely to become default eventually.
 - **Auto mode** is in research preview. Default thresholds and classifier behavior may change. `hard_deny` rules are stable.
 - **Agent teams** (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) are experimental. Listed limitations: no in-process teammate session resumption, lagging task status, no nested teams.
 - **Computer use** in CLI is research preview. Expect rough edges.

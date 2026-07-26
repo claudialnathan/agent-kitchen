@@ -42,6 +42,8 @@ The CLAUDE.md ↔ local-notes boundary is **functional, not topical**: a behavio
 - Integration tests hit a real database, not mocks. **Why:** a mock/prod divergence masked a broken migration. **How to apply:** tests/integration/; mocks fine in tests/unit/.
 ```
 
+**A standing-bar line beats per-session correction when the repo itself steers wrong.** Existing code reads to the model as the accepted standard, and harnesses instruct matching the surrounding code, so a repo below the owner's bar recruits every session into extending it — the model won't spontaneously flag entrenched drift it was told to conform to. The counterweight is an explicit clause naming where the repo is not the standard ("the component composition under `components/legacy/` predates the current conventions — follow `components/ui/`, don't match neighbors"). The license to deviate is intent the model cannot infer from a repo whose every file argues the opposite.
+
 **Short files are read; long ones are skimmed.** Compliance dilutes as rules accumulate; worked examples are expensive and induce overfitting (reach for one when prose can't name the edge case); identity prompts and adverbs ("be careful", "act senior") deliver little, so prefer concrete imperatives. A short file of reasoned rules often outperforms a long one because what's there is read — size is judgment, not a threshold. Phrase capability-agnostically: "match the codebase's enforced style" survives a missing eslint; "always run eslint" fails silently.
 
 **The three jobs**, sharing the same triage:

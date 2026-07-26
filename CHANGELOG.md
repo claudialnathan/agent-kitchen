@@ -11,6 +11,12 @@ On 2026-07-14 the repo split: the `cook` plugin was renamed `agent-kitchen` and 
 - **Verdict revision.** The 2026-07-26 assessment of the owner's AGENTS.md contract is downgraded from "largely absorbed" to "unproven either way at the right baseline": the reconciliation and completion-state sections have an observed in-situ failure (Opus 5) and so clear the earning bar for this owner's environment; any probe for them must reproduce the steering, not run clean.
 - **Pins untouched** (re-specification of the existing bars, not re-earnings). Model state: Fable 5 (`claude-fable-5`), 2026-07-26.
 
+## 2026-07-26: harness-audit gains the native debug-instrument battery
+
+- **Self-consistency now names its instruments.** Check 1 diffed claims against behavior without saying what to diff *with*; it now points at the live command battery — `/context` as the authoritative load record, the per-surface commands (`/skills`, `/hooks`, `/mcp`, `/permissions`, `/status`, `/doctor`), and `claude --safe-mode` (v2.1.169+) / clean `CLAUDE_CONFIG_DIR` bisection for faults that won't localize. The canonical URL `code.claude.com/docs/en/debug-your-config` sits in-body because it directs action at audit time (the exception the provenance rule carves out); `code.claude.com/docs/llms.txt` is named as the index for verifying any other doc claim.
+- **The chain's restated-state find gains native automation.** From v2.1.206 `/doctor` flags checked-in CLAUDE.md content Claude can derive from the codebase; the "Restated current state" bullet now cites it, so the audit can hand that sub-check to the harness instead of grepping manifests by hand.
+- **Pin untouched** (instrumentation added to the current objective, not a re-earning): harness-audit stays Opus 4.8, 2026-06-10, v2.1.170. Facts verified against the live page 2026-07-26. Model state: Fable 5 (`claude-fable-5`).
+
 ## 2026-07-24: model routes intersect with the user's real access
 
 - **Public rank is no longer treated as runnable availability.** `MODELS.md` gains a decision-time preflight for installed harnesses, models actually selectable in the account, authentication and paid-plan/API entitlement, marginal task cost, quota, and enterprise or regional policy. Installed, logged in, entitled, and model-visible remain separate facts; agents use non-secret native status/model-list surfaces and ask where tooling cannot establish the plan.

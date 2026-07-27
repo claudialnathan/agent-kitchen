@@ -231,6 +231,6 @@ sync_rules() {
 }
 
 sync_one_tool cursor "$HOME/.cursor/skills"
-sync_one_tool codex  "$HOME/.codex/skills"
+sync_one_tool codex  "$HOME/.agents/skills"  # current Codex location; ~/.codex/skills is legacy and no longer read
 sync_one_tool claude "$REPO_ROOT/.claude/skills"  # project-local for in-repo Claude sessions
 sync_rules    claude "$HOME/.claude/rules"

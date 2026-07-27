@@ -7,7 +7,6 @@ when_to_use: |
   Scoped only to this repo's STATE.md, which is a curated snapshot of Claude Code plus the coding-agent landscape. Not a general changelog summarizer.
 ---
 
-<!-- Earned against: Opus 4.7 (claude-opus-4-7), 2026-05-24. Re-tested 2026-05-29 (Opus 4.8): KEPT, slim held. The generic filter instinct is now largely native (a skill-withheld trial filtered 4 of 16 changelog entries and used a header-only dateline), but the repo-specific section map + dateline convention aren't inferable, which is the load-bearing part. Did not cut teaching content: n=2, skill is 5 days old. -->
 <!-- Scope expanded 2026-06-10 (Fable 5 bump, user directive): HACKS.md companion bump, CLAUDE.md staleness check, and the kitchen skills sweep are standing steps on every substantive bump, not offers. -->
 
 ## The attention this skill redirects
@@ -89,7 +88,7 @@ HACKS.md is the "did you know" layer. Same repo, different filter: obscure, powe
 
 ## Step 6: Check CLAUDE.md for staleness (standing)
 
-Scan the repo CLAUDE.md against the new state: any rule, footgun, or pin the release contradicts? CLAUDE.md holds intent, not current state, so most bumps find nothing, but a contradicted line must be flagged to the user, not silently relied on. A major *model* release additionally activates its model-version-pinning section: every `Earned against:` pin in the repo becomes a re-test candidate. Where a kitchen artifact carries `evals/probes.md`, the re-test is a replay of that file, so inventory the probe files alongside the pins and offer the runs (real tokens, opt-in). The applied skills' replay is owned by the skills repo: hand off to its `/retest` skill (`.claude/skills/retest/` in the sibling `skills` checkout) rather than reconstructing the procedure here; if that repo isn't checked out, flag the pending re-test instead of improvising one.
+Scan the repo CLAUDE.md against the new state: any rule or footgun the release contradicts? CLAUDE.md holds intent, not current state, so most bumps find nothing, but a contradicted line must be flagged to the user, not silently relied on. A major *model* release additionally activates CLAUDE.md's deletion discipline: every artifact in the repo becomes a re-test candidate, and the fleet is small enough to read through whole rather than selected from. Report which artifacts the release puts in question and what would settle each one; the owner decides what actually gets run. The applied skills are the skills repo's own sweep to run: flag it as pending rather than reaching into that repo from here.
 
 ## Step 7: Sweep the kitchen's skills/ artifacts (standing)
 

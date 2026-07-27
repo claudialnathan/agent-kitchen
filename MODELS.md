@@ -2,8 +2,6 @@
 
 Last verified: 2026-07-24
 
-<!-- Earned against: GPT-5.6 Sol, 2026-07-24, Claude Code v2.1.218 -->
-
 A routing reference for choosing models while building, testing, and retiring agent skills and primitives. It is not a universal leaderboard. Model, provider, agent harness, tools, and reasoning effort are separate variables; a result belongs to the full configuration that produced it.
 
 API prices below are USD per 1 million input/output tokens. They exclude cached-token rates, batch discounts, long-context multipliers, reasoning-token differences, and tool-call charges. Benchmark cost per rollout is more useful than list price when it is available.
@@ -73,7 +71,7 @@ For skill and primitive work, start with the lowest model and effort that is lik
 - use Sol for artifact authoring or review that needs non-obvious engineering judgment, especially frontend and React;
 - use the strongest task-specific route when earning or re-testing the judgment an artifact exists to add. The baseline model should be the model the artifact is meant to steer, not an artificially weak opponent.
 
-Record the chosen model, harness, effort, task cost, and output tokens when available. The “best token-efficient model” is therefore a maintained route in this guide, not a permanent model pin inside every skill.
+Record the chosen model, harness, effort, task cost, and output tokens when available. The “best token-efficient model” is therefore a maintained route in this guide, not a fact frozen inside every skill.
 
 ## Current model and cost snapshot
 

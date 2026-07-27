@@ -12,7 +12,6 @@ export const meta = {
 //   Workflow({ scriptPath: ".../depth-eval.js", args: { domains: [ {key, prompt}, ... ] } })
 //
 // VALIDITY CAVEATS — read these before trusting the aggregate scores.
-// (Earned against Opus 4.8, 2026-05-31, Claude Code v2.1.156. Re-test on the next major model release.)
 //
 // 1. CONTAMINATION — this is NOT a clean forge-vs-nothing test. The baseline arm's prompt never
 //    names the forge, but Workflow subagents auto-discover project skills, and the forge's own

@@ -16,7 +16,7 @@
     {
       "name": "skills",
       "source": { "source": "github", "repo": "claudialnathan/skills" },
-      "description": "Applied skills: shadcn-tailwind, design-engineer, speed-daemon, quality-audit, saltintesta, flavored-md, zoom-out, changelog. Each earned against a named model and checked by a runnable probe.",
+      "description": "Applied skills: shadcn-tailwind, improve-composition, improve-layout, improve-motion, design-polish, design-taste, optimistic-ui, quality-audit, saltintesta, flavored-md, zoom-out, ship. Each earned against a real gap between the model's default and what the work needed.",
       "license": "MIT",
       "keywords": ["claude-code", "skills", "applied"]
     }

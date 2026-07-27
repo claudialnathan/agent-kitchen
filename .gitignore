@@ -15,7 +15,5 @@ working/
 .eval-runs/
 HANDOFF-*.md
 
-**/evals/runs/
-**/evals/baselines/
 skills/forge/evals/publish-readiness-*.md
 skills/forge/evals/*owner-grade*.md

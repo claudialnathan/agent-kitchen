@@ -5,8 +5,6 @@ harness-targets: [claude, cursor, codex]
 allowed-tools: Bash(git add *), Bash(git commit *), Bash(git push*), Bash(git status*), Bash(git diff*), Bash(git log*), Bash(bin/sync-cross-tool*), Bash(claude plugin *), Bash(codex plugin marketplace upgrade *)
 ---
 
-<!-- Earned against: GPT-5.6 Sol, 2026-07-24, Claude Code v2.1.218 -->
-
 # ship-agent-skills
 
 Repo-specific workflow skill: commit → push → update the machine's live skill links and installed plugin caches. It is tracked here but distributed only to this machine's Claude, Cursor, and Codex skill directories by `bin/sync-cross-tool`; it is not part of the published kitchen plugin. The propagation steps exist because the owner should not have to remember them — running applicable updates is the point, not an optional extra.

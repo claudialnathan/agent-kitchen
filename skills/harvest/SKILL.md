@@ -5,8 +5,6 @@ description: |
 disable-model-invocation: true
 ---
 
-<!-- Earned against: Fable 5 (claude-fable-5), 2026-07-05, v2.1.201; history: CHANGELOG.md -->
-
 # harvest
 
 ## The attention this skill redirects

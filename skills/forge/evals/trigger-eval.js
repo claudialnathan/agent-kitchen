@@ -18,7 +18,7 @@ export const meta = {
 //   Recall on the `wtuOnly` should-trigger queries IS the cross-tool portability loss for a portable (applied) skill:
 //   if descPlusWtu catches them and descOnly misses them, the when_to_use is load-bearing and must fold into description.
 //
-// VALIDITY CAVEATS (earned against Opus 4.8, 2026-06-17, Claude Code v2.1.179 — re-test on the next major model release):
+// VALIDITY CAVEATS (verified 2026-06-17 against Claude Code v2.1.179 — re-check when the CLI changes):
 // 1. PROXY, not a live invocation. The judge reasons about the listing entry and one query; it does not run a real
 //    session with the skill installed. `evals/invocation-eval.js` is the live ground truth for that (drives a real
 //    `claude -p` and watches whether the skill fires). This scores the DESCRIPTION's discriminating power — the thing

@@ -4,8 +4,6 @@ description: |
   Audits a coding-agent harness end-to-end: what loads every session, what it costs, whether the harness's own claims hold, and whether its parts work when assembled. Inventories the standing surfaces (CLAUDE.md chain, personal/project/plugin skills, MCP instruction blocks, agent rosters, hooks, settings at every scope), quantifies their per-session token cost, runs setup checks (self-consistency, duplication across scopes, enforcement parity, scope discipline, and a provisional routing-effectiveness check for doc-fleet repos), and after substantial harness changes can run a representative composition probe through the complete installed system. Output is a quantified triage that stays in-repo: findings at machine scope (anything under ~/.claude, user or enterprise settings, global plugins) are reported for the owner to action, never edited. Use to review, slim, or sanity-check a whole coding-agent harness after major harness changes or when sessions feel slow or behave incoherently from turn one; for a single artifact, the relevant forge owns the audit.
 ---
 
-<!-- Earned against: Opus 4.8, 2026-06-10, v2.1.170; history: CHANGELOG.md -->
-
 Do not load shared snapshots for every audit. Read the plugin-root `STATE.md` when an installed capability, limit, or cross-tool convention is in question; read `MODELS.md` only when the audit includes model policy, routing economics, or model-release convergence. Resolve both from this skill's source. They orient the check but never replace inspection of the installed harness or live canonical docs.
 
 ## The attention this skill redirects

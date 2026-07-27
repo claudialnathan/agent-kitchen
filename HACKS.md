@@ -455,9 +455,8 @@ lap's configuration.
 │  prune ........... /fewer-permission-prompts · claude project purge        │
 │  fleet care ...... claude respawn --all · /insights usage report           │
 │  memory hygiene .. dreams rebuilds a rotting memory store (§09)            │
-│  drift control ... pin artifacts to the model they were earned against;    │
-│                    re-test on each major release; delete what no longer    │
-│                    reproduces                                              │
+│  drift control ... re-test artifacts on each major model release; delete   │
+│                    what no longer reproduces                               │
 └─────────────────────────────────────────────────────────────────────┬──────┘
                                                                       │
    ⓪ CONFIGURE ◀── feedback: corrections, memories, new skills & hooks ┘

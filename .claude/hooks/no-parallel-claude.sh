@@ -1,24 +1,21 @@
 #!/bin/bash
 # PreToolUse gate: refuse agent-typed parallel / headless `claude` fan-out.
 #
-# The safe probe runners (bin/run-probes, bin/gen-probe) cap concurrency and gate
-# on --confirm, but nothing stopped a session from bypassing them with raw shell.
-# On 2026-07-08 one did — a hand-written `xargs -P 6 ... claude -p` wave drained a
+# On 2026-07-08 a hand-written parallel wave of headless `claude -p` calls drained a
 # Max plan's session quota, then blindly relaunched on reset. Nested `claude -p`
 # turns bill against the same account session limit as the interactive session,
-# so parallel fan-out is a token bomb, not a speedup.
+# so parallel fan-out is a token bomb, not a speedup. The eval harnesses under
+# skills/forge/evals/ drive the CLI one query at a time for this reason.
 #
 # This makes "don't fan out headless claude" a guarantee, not a request (hooks for
 # guarantees, skills for guidance). Exit 2 blocks and feeds stderr back to Claude.
-# The hook only sees agent-typed Bash; the sanctioned runners call `claude` in a
-# child process the hook never intercepts, and are typed as `bin/run-probes ...`
-# (no `claude` command word), so this never blocks the safe path.
+# The hook only sees agent-typed Bash, so a harness that spawns `claude` from a
+# child process is never intercepted — this gates hand-rolled shell fan-out.
 #
-# Deliberate human override for a single command:  PROBE_ALLOW_PARALLEL=1 <command>
-# Earned against: Fable 5, 2026-07-08, v2.1.201
+# Deliberate human override for a single command:  ALLOW_PARALLEL_CLAUDE=1 <command>
 
 set -uo pipefail
-[ "${PROBE_ALLOW_PARALLEL:-0}" = "1" ] && exit 0
+[ "${ALLOW_PARALLEL_CLAUDE:-0}" = "1" ] && exit 0
 
 INPUT=$(cat)
 CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
@@ -30,13 +27,10 @@ block() {
     echo "Reason: $1"
     echo
     echo "Nested \`claude -p\` turns bill against the same session limit as this session."
-    echo "Run probes the safe way instead:"
-    echo "  bin/run-probes --dry-run             # see what would run, spend nothing"
-    echo "  bin/grade-probe --all                # zero-token grade of existing outputs"
-    echo "  bin/gen-probe   --confirm --only ID  # one cheap single-turn re-gen"
-    echo "  bin/run-probes  --confirm --only ID  # one full agent replay (last resort)"
+    echo "Run them one at a time instead: sequential, concurrency 1, stopping on the"
+    echo "first session-limit error rather than relaunching on reset."
     echo
-    echo "Never batch a full manifest in parallel. A human can override one command with PROBE_ALLOW_PARALLEL=1."
+    echo "A human can override one command with ALLOW_PARALLEL_CLAUDE=1."
   } >&2
   exit 2
 }

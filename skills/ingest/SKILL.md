@@ -5,8 +5,6 @@ description: |
 disable-model-invocation: true
 ---
 
-<!-- Earned against: Opus 4.8, 2026-07-22, v2.1.217; history: CHANGELOG.md -->
-
 ## What it does
 
 The owner hands over reading — an article, a paper, a doc, links, pasted text, or one person's body of public work — and `/ingest` works out **where that content belongs in the harness**: which existing primitive it should improve, whether it warrants a new one, or that nothing here is worth building.

@@ -17,9 +17,9 @@ The kitchen is built on the idea that:
 `THE SKILLS`
 
 The kitchen can operate as a set of skills used as needed, or as a loop:
-`harvest` and `ingest` feed `forge` through one brief contract; probes and live use
-check the artifacts; `harness-audit` checks both standing cost and assembled behavior;
-sessions feed the next harvest.
+`harvest` and `ingest` feed `forge` through one brief contract; live use decides
+which artifacts keep earning; `harness-audit` checks both standing cost and
+assembled behavior; sessions feed the next harvest.
 
 ```
         ┌──── leaner harness → sessions ────┐
@@ -52,7 +52,7 @@ sessions feed the next harvest.
 | `ingest`                | Places owner-supplied sources into the existing harness (or concludes nothing is warranted), reading spec material whole and grounding supplementary evidence in verbatim quotes, then emits the same forge-ready brief.                                                                                                                               |
 | `state.md` + `hacks.md` | Verified snapshot of Claude Code's surfaces and lesser-known features, re-checked against the live changelog on each release.                                                                                                                                                                                                                            |
 | `models.md`             | Task-routed model, harness, benchmark, and cost guide for choosing and re-testing the agents that build these artifacts; refreshed with the project-local `/model-bump` skill.                                                                                                                                                                            |
-| `changelog.md`          | Provenance ledger: why each artifact exists, what it was re-tested against, and the keep/revise/delete verdicts. The artifacts themselves carry only a one-line model pin.                                                                                                                                                                               |
+| `changelog.md`          | Provenance ledger: why each artifact exists, what it was re-tested against, and the keep/revise/delete verdicts. The artifacts carry none of it themselves.                                                                                                                                                                                              |
 
 ─────────────────────
 

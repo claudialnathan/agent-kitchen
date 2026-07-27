@@ -4,8 +4,6 @@ description: Refresh MODELS.md against current model releases, pricing, availabi
 disable-model-invocation: true
 ---
 
-<!-- Earned against: GPT-5.6 Sol, 2026-07-24, Claude Code v2.1.218 -->
-
 # Refresh MODELS.md
 
 Update this repository's `MODELS.md` as a routing guide for agents building and evaluating skills and primitives. This is a manual publication workflow. Do not turn it into a universal model leaderboard.
@@ -58,8 +56,6 @@ Fetch provider documentation for every model that may enter, leave, or materiall
 - input, cached-input, output, long-context, batch, and tool pricing where relevant;
 - reasoning effort and tool support;
 - dated price transitions.
-
-Use the current Claude Code changelog and `claude --version` only to refresh this skill's one-line earning pin if the command itself is materially re-earned. Ordinary data bumps do not move the pin.
 
 ## 3. Normalize before comparing
 
@@ -139,7 +135,7 @@ If one source exposes contradictory labels or values, state the inconsistency an
 
 Re-read the evaluation-routing table. Update it only if a benchmark's scope or limitation changed.
 
-For a major model or harness release, report which kitchen artifacts now have a re-test trigger. Do not run paid probe suites unless the owner asked for those runs. A release triggers evaluation; it does not prove convergence or justify deletion.
+For a major model or harness release, report which kitchen artifacts the release puts in question. Do not run paid test batches unless the owner asked for those runs. A release triggers evaluation; it does not prove convergence or justify deletion.
 
 ## 7. Write and verify
 

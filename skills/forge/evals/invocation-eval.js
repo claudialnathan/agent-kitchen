@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 // forge-invocation-eval — LIVE trigger ground truth.
 //
-// <!-- Earned against: Opus 4.8, 2026-06-18, v2.1.177 — history: CHANGELOG.md -->
-//
 // Installs the REAL skill in a throwaway project, drives an actual `claude -p` session per
 // query, and reports whether the model invoked the skill ON ITS OWN — the genuine trigger
 // decision, not a guess about it. A miss is labeled (stolen by a named competing skill, or handled
@@ -28,7 +26,7 @@
 //   node .../invocation-eval.js --reps 3 --concurrency 4 --model claude-opus-4-8 --json
 //   node .../invocation-eval.js --dry-run                           # print the plan + cost shape, spawn nothing
 //
-// VALIDITY CAVEATS (earned against Opus 4.8, 2026-06-18, Claude Code v2.1.177 — re-test on the next major model release):
+// VALIDITY CAVEATS (verified 2026-06-18 against Claude Code v2.1.177 — re-check when the CLI changes):
 // 1. REAL ENVIRONMENT, not a clean room. The candidate competes against the cwd's project skills,
 //    your user-scope (~/.claude/skills) skills, and enabled plugins — auth is tied to the real
 //    config dir, so a separate isolated config would not be logged in. This is realism, not noise

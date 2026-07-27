@@ -76,7 +76,13 @@ A wording patch that compensates for missing context or the wrong surface makes 
 
 ## Triage: pick the surface
 
-Run the ladder in order; first match wins. Each surface does what only it can.
+**First, does this want an artifact at all?** Three outcomes end the triage before the ladder starts, and naming them is part of the job, not a failure to do it:
+
+- **A preference about how the agent should work, with no artifact home** → a feedback memory, with the why recorded. A correction that can't point to a concrete moment is a preference; route it here rather than growing an artifact around it.
+- **A decision or gotcha worth a project trail but not a standing instruction** → the changelog or worklog the repo already keeps.
+- **Too rare, one-off, or already handled** → say so and stop. Record nothing, or leave a single line. This is a common and correct result: a single non-dangerous miss is usually a do-it-in-the-moment, and the cheapest harness is the one that didn't grow a surface for it.
+
+When it does want an artifact, run the ladder in order; first match wins. Each surface does what only it can.
 
 | The behavior is... | Surface |
 | :--- | :--- |
@@ -164,6 +170,7 @@ Zero matches means it will load.
 - `bin/preship-check` gates every commit here via the committed PreToolUse hook.
 - Log the rationale and the sunset trigger in CHANGELOG.md. A stack-keyed sunset trigger includes vendor default flips, package renames, and idiom changes, not just version majors, because a stack can break a skill without ever incrementing one.
 - **The deletion signal is live convergence, and it is enough on its own.** The moment a skill's guidance and the model's bare instinct agree in real work, it has stopped earning: log it and delete it. Production friction is the honest evidence, and no staged re-run belongs between that observation and the deletion. A new working model triggers the same read across the fleet; record every verdict, including the keeps, or a sweep can only argue for removal. Absorption is not monotonic across model lines — a gap one model had closed can reopen on its successor or a sibling line — so a deletion is a judgment about today's model, not a permanent finding. Process and workflow skills are exempt: their value is the owner wanting the procedure, which a release can't absorb.
+- **A win is evidence, and it is the only kind that argues for keeping.** "That was done well" names an artifact still earning its keep, so record which one caused it. Without that, the ledger holds nothing but convergence findings, and every sweep can only reason toward removal — the artifact that has been quietly working for months looks identical to the one that stopped mattering.
 - Artifacts are experiments with lifecycles: trying one, learning from it, and deleting it are all the system working.
 
 ## See also

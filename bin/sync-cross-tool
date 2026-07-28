@@ -6,10 +6,12 @@
 #   skills/<name>/            — published kitchen skills
 #   .claude/skills/<name>/    — project-local workflow skills
 # Both roots are walked and synced flat (one level deep). Published skills
-# default to all three tools; project-local workflows default to Claude only
-# and must opt into other tools with `harness-targets:`. This lets one local
-# workflow (such as ship-agent-skills) travel without leaking every private
-# project helper into global Cursor and Codex scope.
+# default to Claude and Codex; Cursor is served by the native plugin, whose
+# cache symlinks into this repo, so mirroring there only double-lists the same
+# live content. Project-local workflows default to Claude only and must opt into
+# other tools with `harness-targets:`. This lets one local workflow (such as
+# ship-agent-skills) travel without leaking every private project helper into
+# global Cursor and Codex scope.
 #
 # Rules (rules/<name>.md) sync to ~/.claude/rules only. Cursor's rule format
 # (.mdc, project-scoped) and Codex's lack of a rules concept mean cross-tool
@@ -85,7 +87,7 @@ sync_one_tool() {
       local name; name=$(basename "$skill_dir")
       local md="$skill_dir/SKILL.md"
       [[ -f "$md" ]] || continue
-      local default_targets="claude cursor codex"
+      local default_targets="claude codex"
       [[ "$src_root" == "$REPO_ROOT/.claude/skills" ]] && default_targets="claude"
       local targets; targets=$(read_targets "$md" "$default_targets")
       if echo " $targets " | grep -q " $tool "; then

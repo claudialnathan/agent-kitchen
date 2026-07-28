@@ -79,23 +79,26 @@ codex plugin marketplace add claudialnathan/agent-kitchen
 codex plugin add agent-kitchen@claudia-kitchen
 ```
 
-Pull later revisions and refresh the installed plugin cache with:
+Pull later revisions with both steps — `marketplace upgrade` refreshes the Git snapshot, `plugin add` rewrites the installed plugin cache from it:
 
 ```bash
 codex plugin marketplace upgrade claudia-kitchen
+codex plugin add agent-kitchen@claudia-kitchen
 ```
 
-Start a new Codex thread after installing or upgrading so its skill catalog is rebuilt. The applied `skills` plugin is published independently from `claudialnathan/skills`.
+Upgrading the marketplace alone leaves the installed plugin serving the previous revision. Start a new Codex thread after installing or upgrading so its skill catalog is rebuilt. The applied `skills` plugin is published independently from `claudialnathan/skills`.
 
 ### Cursor
 
-The kitchen now carries a native Cursor plugin package under `.cursor-plugin/`, including a marketplace catalog for `agent-kitchen` and the separate applied `skills` repo. For immediate use on this machine, the live-link path remains:
+The kitchen carries a native Cursor plugin package under `.cursor-plugin/`, including a marketplace catalog for `agent-kitchen` and the separate applied `skills` repo. Install it through Cursor's `/plugin` or Marketplace UI; that is the only path for published kitchen skills on Cursor.
+
+`bin/sync-cross-tool` covers what the plugin does not: project-local workflows that opt in with `harness-targets:`, such as `ship-agent-skills`, which is tracked here but never bundled into the published plugin.
 
 ```bash
 bin/sync-cross-tool
 ```
 
-That links published kitchen skills into `~/.cursor/skills/` and `~/.codex/skills/`, plus any project workflow that explicitly declares those harness targets. Reload Cursor or start a new agent session after syncing. The repo-specific `ship-agent-skills` workflow uses this path; it is not bundled into the published kitchen plugin.
+It links those into `~/.cursor/skills/` and `~/.agents/skills/` (the location current Codex scans; `~/.codex/skills/` is legacy and no longer read). Reload Cursor or start a new agent session after syncing.
 
 ### Other agentskills.io tools
 

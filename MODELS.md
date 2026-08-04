@@ -12,9 +12,9 @@ This file is a conditional reference, not context every skill should load. Kitch
 
 | Skill | Read `MODELS.md` when |
 | --- | --- |
-| `forge` | choosing the model/effort that should author, earn, or re-test an artifact |
+| `new-skill` | choosing the model/effort that should author, earn, or re-test an artifact |
+| `improve-skill` | judging whether a model release absorbed the gap, or whether a correction cluster is model-specific |
 | `harness-audit` | auditing model policy, routing cost, or whether a model release may have absorbed an artifact |
-| `harvest` | a surviving correction cluster is plausibly model-specific or a re-test signal |
 | `ingest` | supplied material makes a claim about model capability, economics, or model-dependent artifact design |
 
 The skills point here from their own source directory and otherwise leave the file unopened. The guide orients a decision; current provider docs, benchmark pages, and local evals still verify it.

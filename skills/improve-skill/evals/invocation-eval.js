@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// forge-invocation-eval — LIVE trigger ground truth.
+// skill-invocation-eval — LIVE trigger ground truth.
 //
 // Installs the REAL skill in a throwaway project, drives an actual `claude -p` session per
 // query, and reports whether the model invoked the skill ON ITS OWN — the genuine trigger
@@ -17,13 +17,15 @@
 //     session reads as a non-fire for the candidate (real competing-listing realism, on by design).
 //
 // RUN IT WITH node — NOT the Workflow tool. It shells out to the `claude` CLI and writes temp
-// files; the Workflow sandbox has neither subprocess nor filesystem. (depth-eval.js and
-// trigger-eval.js are the opposite — those ARE Workflow scripts.)
+// files; the Workflow sandbox has neither subprocess nor filesystem. (trigger-eval.js is the
+// opposite — that one IS a Workflow script.)
 //
-//   node skills/forge/evals/invocation-eval.js                 # default: saltintesta, real model
-//   node .../invocation-eval.js --skill skills/flavored-md    # any skill dir (must hold SKILL.md)
-//   node .../invocation-eval.js --skill <dir> --description alt.txt  # A/B a rewritten description, live
-//   node .../invocation-eval.js --reps 3 --concurrency 4 --model claude-opus-4-8 --json
+//   node .../invocation-eval.js --skill <dir> --queries q.json     # both required; dir must hold SKILL.md
+//   node .../invocation-eval.js --skill <dir> --description alt.txt --queries q.json  # A/B a rewritten description
+//
+//   q.json is [{ "q": "the user's prompt", "should": true|false }, ...] — should-fire cases and
+//   near-misses that must stay quiet. Write them in the wording you would actually type.
+//   node .../invocation-eval.js --reps 3 --concurrency 2 --model <your-shipping-model> --json
 //   node .../invocation-eval.js --dry-run                           # print the plan + cost shape, spawn nothing
 //
 // VALIDITY CAVEATS (verified 2026-06-18 against Claude Code v2.1.177 — re-check when the CLI changes):
@@ -32,9 +34,9 @@
 //    config dir, so a separate isolated config would not be logged in. This is realism, not noise
 //    (it answers "does it fire in MY setup"), but it is not reproducible across machines. Run from a
 //    minimal repo for the least competition; the printed init line names the competing listing.
-// 2. MODEL MATTERS. Small models under-invoke skills (Haiku 4.5 declined a strongly-matching query in
-//    testing); the default is your configured model — the one you actually ship against. Pass --model
-//    to pin one. A no-fire on a weak model is a model fact, not a description fact.
+// 2. MODEL MATTERS. Smaller / faster models under-invoke skills more often; the default is your
+//    configured model — the one you actually ship against. Pass --model to pin one for a controlled
+//    A/B. A no-fire on a weak model is a model fact, not a description fact.
 // 3. SKILLS UNDER-TRIGGER ON TRIVIAL PROMPTS by design — Claude handles one-step asks itself. Queries
 //    must be substantial and realistically worded, or recall reads low for reasons the listing can't fix.
 // 4. COST IS REAL — each query x rep is a live turn (most expensive of the three harnesses). A FIRE is
@@ -53,8 +55,13 @@ const argv = process.argv.slice(2)
 const opt = (flag, def) => { const i = argv.indexOf(flag); return i >= 0 && argv[i + 1] ? argv[i + 1] : def }
 const has = (flag) => argv.includes(flag)
 
-const REPO_ROOT = path.resolve(__dirname, '..', '..', '..') // evals/ -> forge/ -> skills/ -> root
-const skillArg = opt('--skill', path.join('serve', 'skills', 'saltintesta'))
+const REPO_ROOT = path.resolve(__dirname, '..', '..', '..') // evals/ -> improve-skill/ -> skills/ -> root
+const skillArg = opt('--skill', null)
+if (!skillArg) {
+  console.error('--skill <dir> is required (a directory holding SKILL.md).')
+  console.error('Usage: node invocation-eval.js --skill <dir> --queries <file.json> [--reps N] [--model M] [--dry-run]')
+  process.exit(1)
+}
 const SKILL_DIR = path.isAbsolute(skillArg) ? skillArg : path.resolve(REPO_ROOT, skillArg)
 const DESC_FILE = opt('--description', null)
 const REPS = Math.max(1, parseInt(opt('--reps', '3'), 10) || 3)
@@ -65,28 +72,21 @@ const THRESHOLD = parseFloat(opt('--threshold', '0.5')) || 0.5
 const AS_JSON = has('--json')
 const DRY_RUN = has('--dry-run')
 
-// ---- default subject: saltintesta, the SAME query set trigger-eval.js uses ------------------
-// Sharing the query set lets you read the live verdict here directly against the proxy's verdict there.
-const DEFAULT_QUERIES = [
-  { q: `write a blog post about why we moved off Kubernetes`, should: true },
-  { q: `draft a short essay on the value of boredom`, should: true },
-  { q: `write something on our Q2 hiring philosophy for the company newsletter`, should: true },
-  { q: `write the opening for my conference talk on observability`, should: true },
-  { q: `tighten this writing, it's far too wordy: "In order to be able to..."`, should: true },
-  { q: `this draft reads like it was written by an AI — make it less AI-sounding`, should: true },
-  { q: `rewrite the intro paragraph of our README so it reads less like marketing fluff`, should: true },
-  { q: `edit this ADR's summary section to be clearer and more concise`, should: true },
-  { q: `write a Python function to strip whitespace from these strings`, should: false },
-  { q: `write a commit message for this diff`, should: false },
-  { q: `summarize this 40-page PDF into bullet points`, should: false },
-  { q: `fix the grammar and typos in this sentence`, should: false },
-]
-
+// ---- query set: always supplied, never defaulted ---------------------------------------------
+// A built-in default would only suit the skill it was written for, and pairing it with any other
+// subject silently measures nothing. Point --queries at the same set trigger-eval.js uses for this
+// skill and the live verdict reads directly against the proxy's.
 const QUERIES = (() => {
   const f = opt('--queries', null)
-  if (!f) return DEFAULT_QUERIES
+  if (!f) {
+    console.error('--queries <file.json> is required.')
+    console.error('Shape: [{ "q": "the user\'s prompt", "should": true }, ...] — should-fire cases plus near-misses that must stay quiet.')
+    process.exit(1)
+  }
   const j = JSON.parse(fs.readFileSync(f, 'utf8'))
-  return Array.isArray(j) ? j : j.queries
+  const qs = Array.isArray(j) ? j : j.queries
+  if (!Array.isArray(qs) || !qs.length) { console.error(`No queries in ${f}`); process.exit(1) }
+  return qs
 })()
 
 // ---- read the skill name (and validate the dir) -----------------------------
@@ -104,7 +104,7 @@ const SKILL = readSkill(SKILL_DIR)
 // ---- build a throwaway project that holds ONLY the candidate ----------------
 // Optionally swap the description (live A/B of a rewrite) without touching the source.
 function makeTempProject() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-inv-'))
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-inv-'))
   const dest = path.join(root, '.claude', 'skills', SKILL.name)
   fs.cpSync(SKILL_DIR, dest, { recursive: true })
   if (DESC_FILE) {

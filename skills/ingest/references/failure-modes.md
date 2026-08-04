@@ -20,7 +20,7 @@ A hallucination enters context once and gets cited repeatedly downstream, compou
 
 Past ~100k tokens, models begin repeating context history rather than synthesizing novel plans. Documented in Google DeepMind's Gemini agent research.
 
-**`/ingest`'s defense:** a large supplementary pile is read in subagents, so its bulk never enters the main thread; the placement that reaches the forge is bounded to ~2,000 tokens of synthesis. The forge step then runs in a context well under saturation. Spec material is the bounded exception, read in-thread because its judgment does not survive excerpting.
+**`/ingest`'s defense:** a large supplementary pile is read in subagents, so its bulk never enters the main thread; the placement that reaches the design step is bounded to ~2,000 tokens of synthesis. That step then runs in a context well under saturation. Spec material is the bounded exception, read in-thread because its judgment does not survive excerpting.
 
 ## Context confusion
 
@@ -40,13 +40,13 @@ U-shaped attention: middle-of-context evidence is under-weighted relative to sta
 
 **Source:** Liu et al., "Lost in the Middle": https://arxiv.org/pdf/2510.10276
 
-**`/ingest`'s defense:** each source is read by its own subagent in a fresh, short context. There is no "middle" of a 100k-token pile to lose information in.
+**`/ingest`'s defense:** each source is read by its own subagent in a fresh, short context. There is no "middle" of a 100k-token pile to lose information in. Readers must stay leaf-only (no nested spawn) so that short context isn't re-expanded by a further fan-out.
 
 ## Context rot
 
 Accuracy degrades with token count due to training-distribution mismatch (Anthropic's term in their context-engineering post).
 
-**`/ingest`'s defense:** same as context distraction: bounded placement, bounded forge-step context, a large supplementary pile read in subagents rather than inlined.
+**`/ingest`'s defense:** same as context distraction: bounded placement, bounded design-step context, a large supplementary pile read in subagents rather than inlined.
 
 ## Citation hallucination
 
@@ -66,9 +66,9 @@ Models skim long documents rather than reading carefully, especially when there 
 
 ## Surface skim disguised as completeness
 
-Even with quotes, the synthesis can become so comprehensive that it covers everything and reveals nothing. The downstream forge ends up no more grounded than if no sources had been consulted, just longer.
+Even with quotes, the synthesis can become so comprehensive that it covers everything and reveals nothing. The downstream design step ends up no more grounded than if no sources had been consulted, just longer.
 
-**`/ingest`'s defense:** the brief includes a mandatory **rough edge** section: 2–4 sentences on what these sources collectively add that the model's training priors didn't. If you cannot fill the rough-edge section, the sources didn't add anything, and the brief should say so rather than padding.
+**`/ingest`'s defense:** the placement includes a mandatory **rough edge** section: 2–4 sentences on what these sources collectively add that the model's training priors didn't. If you cannot fill the rough-edge section, the sources didn't add anything, and the placement should say so rather than padding.
 
 ## Related precedents (design analogues, not failure modes)
 

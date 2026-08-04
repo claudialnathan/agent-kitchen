@@ -1,0 +1,3 @@
+interface:
+  display_name: "New Skill"
+  short_description: "Create a harness artifact and pick the surface it belongs on."

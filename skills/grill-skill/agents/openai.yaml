@@ -1,0 +1,6 @@
+interface:
+  display_name: "Grill Skill"
+  short_description: "Run a harness artifact against a real prompt and iterate from feedback."
+
+policy:
+  allow_implicit_invocation: false

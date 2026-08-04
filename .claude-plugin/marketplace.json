@@ -4,14 +4,14 @@
     "name": "Claudia Nathan",
     "url": "https://github.com/claudialnathan"
   },
-  "description": "The agent-kitchen forge and the applied skills it produces.",
+  "description": "The agent-kitchen meta layer and the applied skills it produces.",
   "plugins": [
     {
       "name": "agent-kitchen",
       "source": "./",
-      "description": "The kitchen that designs Claude Code artifacts: forge (skills, hooks, rules, CLAUDE.md, workflows), ingest, harvest (mine transcripts for the failures that earn artifacts), and harness-audit. The reusable design layer.",
+      "description": "The kitchen that designs coding-agent harness artifacts, cut by situation: new-skill, improve-skill, grill-skill, ingest, and harness-audit. The reusable design layer.",
       "license": "MIT",
-      "keywords": ["claude-code", "skills", "meta-skills", "forge"]
+      "keywords": ["claude-code", "skills", "meta-skills", "harness"]
     },
     {
       "name": "skills",

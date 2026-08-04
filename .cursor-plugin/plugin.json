@@ -1,18 +1,19 @@
 {
   "name": "agent-kitchen",
   "displayName": "Agent Kitchen",
-  "description": "The kitchen that designs agent artifacts: forge (skills, hooks, rules, CLAUDE.md/AGENTS.md, workflows), ingest (ground a design in sources first), harvest (mine session transcripts for the failures that earn artifacts), and harness-audit (audit the whole setup). The reusable design layer; the skills it produces live in the skills plugin.",
+  "description": "The kitchen that designs agent artifacts, cut by situation: new-skill (build one, and pick the surface it belongs on), improve-skill (fix one that isn't working, or work new material into it), grill-skill (run one against a real prompt and iterate), ingest (ground a design in sources first), and harness-audit (audit the whole setup). The reusable design layer; the skills it produces live in the skills plugin.",
   "author": {
     "name": "Claudia Nathan"
   },
   "homepage": "https://github.com/claudialnathan/agent-kitchen",
   "repository": "https://github.com/claudialnathan/agent-kitchen",
   "license": "MIT",
-  "keywords": ["skills", "meta-skills", "forge", "harness"],
+  "keywords": ["skills", "meta-skills", "harness"],
   "category": "developer-tools",
   "skills": [
-    "./skills/forge",
-    "./skills/harvest",
+    "./skills/new-skill",
+    "./skills/improve-skill",
+    "./skills/grill-skill",
     "./skills/ingest",
     "./skills/harness-audit"
   ]

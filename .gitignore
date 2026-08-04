@@ -14,6 +14,3 @@ working/
 .claude/settings.local.json
 .eval-runs/
 HANDOFF-*.md
-
-skills/forge/evals/publish-readiness-*.md
-skills/forge/evals/*owner-grade*.md

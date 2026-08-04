@@ -1,6 +1,16 @@
 # Hook mechanics
 
-Events, matchers, handlers, exit semantics, placement. The judgment (strictness, what deserves a hook) lives in SKILL.md. The hook surface evolves (new events, richer schemas), so on anything load-bearing, cross-check `code.claude.com/docs/en/hooks` and trust it over this file.
+Events, matchers, handlers, exit semantics, placement. The hook surface evolves (new events, richer schemas), so on anything load-bearing, cross-check `code.claude.com/docs/en/hooks` and trust it over this file.
+
+## The judgment, before the mechanics
+
+A skill redirects attention; a hook removes the concern from the model's reach entirely. The strongest surface, with the narrowest fit.
+
+- **Incidents are the strongest evidence.** A hook answers what already went wrong most convincingly; a worry usually wants an always-on entry or a warn-level hook first. A default to weigh, not a gate.
+- **Strictness is earned by precision, not importance.** Block, warn, and log are a spectrum, and after the skill/hook confusion, over-blocking is the most common design mistake: a blocking hook with false positives trains the owner to disable it, which costs the guarantee *and* their trust in the hooks layer. Most hooks that feel like blocks want to warn. Where a predicate needs judgment to separate a violation from legitimate content, it warns. Test any blocking pattern against text that resembles a violation and isn't, before shipping.
+- **Exit 2 blocks; nothing else does**, not even exit 1. Stderr on exit 2 is fed to the model, so write it to teach — the why, and the alternative — not to deny. A flat "rejected" gets retried or argued with; a reasoned block gets compliance.
+- **Success silent, failure verbose.** A hook that prints on every pass pollutes every downstream turn.
+- **Hooks gate tool inputs, not returned prose.** `SubagentStop` carries no result text and `PostToolUse` truncates large results, so don't reach for a hook to police what a fork returned; enforce that in the dispatch contract instead.
 
 ## Events
 
@@ -17,10 +27,11 @@ Cadence: once per session (`SessionStart`, `SessionEnd`); once per turn (`UserPr
 | Automate a permission decision | `PermissionRequest` | yes |
 | React to a subagent starting/finishing | `SubagentStart` / `SubagentStop` | start yes / stop yes (nudge) |
 | React to a file changing on disk | `FileChanged` | no |
+| React after `/add-dir` or SDK `register_repo_root` adds a working directory | `DirectoryAdded` | no |
 | Veto or react to compaction | `PreCompact` / `PostCompact` | pre yes / post no |
 | Transform displayed assistant text | `MessageDisplay` | no (display-only) |
 
-Async, observability-only (can't block): `SessionStart`, `SessionEnd`, `PostToolUse`, `PostToolUseFailure`, `PermissionDenied`, `FileChanged`, `ConfigChange`, `CwdChanged`, `InstructionsLoaded`, `Notification`, `MessageDisplay`, `PostCompact`, plus the task/worktree/teammate events.
+Async, observability-only (can't block): `SessionStart`, `SessionEnd`, `PostToolUse`, `PostToolUseFailure`, `PermissionDenied`, `FileChanged`, `DirectoryAdded`, `ConfigChange`, `CwdChanged`, `InstructionsLoaded`, `Notification`, `MessageDisplay`, `PostCompact`, plus the task/worktree/teammate events.
 
 Event-specific output worth knowing:
 

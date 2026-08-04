@@ -16,40 +16,47 @@ The kitchen is built on the idea that:
 
 `THE SKILLS`
 
-The kitchen can operate as a set of skills used as needed, or as a loop:
-`harvest` and `ingest` feed `forge` through one brief contract; live use decides
-which artifacts keep earning; `harness-audit` checks both standing cost and
-assembled behavior; sessions feed the next harvest.
+Each skill is named for the situation it serves, so the menu can be read without
+reading any description. An artifact gets built, tested against real prompts,
+improved as evidence arrives, and eventually deleted; `harness-audit` checks the
+standing cost and assembled behavior of whatever is installed at any point.
 
 ```
-        ┌──── leaner harness → sessions ────┐
-        ▼                                   │
-┌───────────────┐   ┌───────────────┐       │
-│ harvest       │   │ ingest        │       │
-│ session       │   │ source        │       │
-│ corrections   │   │ briefs        │       │
-└───────┬───────┘   └───────┬───────┘       │
-        └─────────┬─────────┘               │
-                  ▼                         │
-          ┌───────────────┐                 │
-          │ forge         │                 │
-          │ design        │                 │
-          │ artifacts     │                 │
-          └───────┬───────┘                 │
-                  ▼                         │
-          ┌───────────────┐                 │
-          │ harness-audit │                 │
-          │ measure &     │                 │
-          │ prune         │─────────────────┘
-          └───────────────┘
+   ┌──── leaner harness → sessions ────────────────┐
+   ▼                                               │
+┌───────────────┐   ┌───────────────┐              │
+│ ingest        │   │ new-skill     │              │
+│ where does    │──▶│ build it, or  │              │
+│ this belong?  │   │ pick another  │              │
+└───────────────┘   │ surface       │              │
+                    └───────┬───────┘              │
+                            ▼                      │
+                    ┌───────────────┐              │
+                    │ grill-skill   │              │
+        ┌──────────▶│ run it on a   │              │
+        │           │ real prompt   │              │
+        │           └───────┬───────┘              │
+        │                   ▼                      │
+        │           ┌───────────────┐              │
+        └───────────│ improve-skill │              │
+                    │ fix it, feed  │              │
+                    │ it, or delete │              │
+                    └───────┬───────┘              │
+                            ▼                      │
+                    ┌───────────────┐              │
+                    │ harness-audit │              │
+                    │ measure &     │──────────────┘
+                    │ prune         │
+                    └───────────────┘
 ```
 
 | Surface                 | Role                                                                                                                                                                                                                                                                                                                                                     |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `forge`                 | One triage ladder routes a behavior to the right surface (skill, hook, path-scoped rule, `CLAUDE.md`/`AGENTS.md`, workflow, subagent, MCP). The stance comes first: it encourages the owner to name and refine the outcome the artifact is graded against, then grades the artifact by the work it makes the agent produce rather than by its own shape. |
+| `new-skill`             | "Make a skill about X, here's my reading." Sets the gradeable objective first, then runs the one triage ladder that routes a behavior to the right surface (skill, hook, permission rule, path-scoped rule, `CLAUDE.md`/`AGENTS.md`, subagent, MCP, workflow) and builds whichever it lands on. Grades the artifact by the work it makes the agent produce rather than by its own shape. |
+| `improve-skill`         | "This isn't working" or "work this material in." Diagnoses before editing and repairs at the located layer, so a wording patch never covers for a wrong surface. Mines session transcripts for the corrections that show a failure the owner can't pin to a moment. Deleting a converged artifact is one of its outcomes.                                |
+| `grill-skill`           | "Use this skill, here's my prompt, let's iterate." Produces the real output, takes the reaction as evidence about the artifact rather than about the output, and requires a named class of requests before any change is applied.                                                                                                                        |
+| `ingest`                | Places owner-supplied sources into the existing harness (or concludes nothing is warranted), reading spec material whole and grounding supplementary evidence in verbatim quotes.                                                                                                                                                                       |
 | `harness-audit`         | Inventories everything loaded at session start, counts the per-session token cost, checks setup consistency and scope, and after substantial changes traces a representative job through the complete installed harness.                                                                                                                              |
-| `harvest`               | Mines session transcripts for corrections, repeated failures, and reported rewrites or reverts; dedups them against the standing harness; and packages survivors as forge-ready briefs. The unaided baseline already ran, in production, in those sessions.                                                                                              |
-| `ingest`                | Places owner-supplied sources into the existing harness (or concludes nothing is warranted), reading spec material whole and grounding supplementary evidence in verbatim quotes, then emits the same forge-ready brief.                                                                                                                               |
 | `state.md` + `hacks.md` | Verified snapshot of Claude Code's surfaces and lesser-known features, re-checked against the live changelog on each release.                                                                                                                                                                                                                            |
 | `models.md`             | Task-routed model, harness, benchmark, and cost guide for choosing and re-testing the agents that build these artifacts; refreshed with the project-local `/model-bump` skill.                                                                                                                                                                            |
 | `changelog.md`          | Provenance ledger: why each artifact exists, what it was re-tested against, and the keep/revise/delete verdicts. The artifacts carry none of it themselves.                                                                                                                                                                                              |
@@ -64,7 +71,7 @@ The Claude plugins are served through the `claudia` marketplace, whose catalog i
 
 ```bash
 /plugin marketplace add claudialnathan/agent-kitchen
-/plugin install agent-kitchen@claudia   # the kitchen: forge, harness-audit, harvest, ingest
+/plugin install agent-kitchen@claudia   # new-skill, improve-skill, grill-skill, ingest, harness-audit
 ```
 
 Commit-SHA versioning (no version field), so a pushed commit reaches other repos on the

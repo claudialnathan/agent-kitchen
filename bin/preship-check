@@ -8,7 +8,7 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
 
 fail=0
 
-# 1. Loader-trigger byte sequences (CLAUDE.md "Authoring footgun"; full discussion in the forge skill).
+# 1. Loader-trigger byte sequences (CLAUDE.md "Authoring footgun"; full discussion in the new-skill skill).
 echo "Loader-trigger sequences (must be empty):"
 m1=$(grep -rln $'\x60\x60\x60!' skills/ 2>/dev/null || true)
 m2=$(grep -rln $'!\x60' skills/ 2>/dev/null || true)
@@ -61,8 +61,8 @@ for d in skills/*/; do
     flag="OVER"
     fail=1
   elif [ "$len" -gt 1100 ]; then
-    # Advisory only: the cap is a truncation guard, not a target (skill-forge,
-    # "Description first" rule 5). Past ~1,100 the entry is usually padded.
+    # Advisory only: the cap is a truncation guard, not a target. Past ~1,100
+    # the entry is usually padded.
     # Skills with disable-model-invocation never enter the model's listing,
     # so their length costs nothing — no warn.
     if grep -q '^disable-model-invocation:[[:space:]]*true' "$md"; then

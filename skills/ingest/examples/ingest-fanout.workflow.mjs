@@ -1,14 +1,17 @@
-// ingest-fanout.workflow.mjs — worked example for forge (Workflows section).
+// ingest-fanout.workflow.mjs — worked example of the workflow-script surface.
 //
 // This is `/ingest`'s "fan-out-and-synthesize" expressed as a dynamic workflow:
 // one forked reader per source (parallel), then a single bounded synthesis (barrier).
 // It's the JS-runtime counterpart to the prose-dispatched Research-orchestrator skill
-// at skills/ingest/ — see forge's SKILL.md (Workflows section) for when to cross that line.
+// at skills/ingest/ — the surface ladder decides when a fan-out is worth the runtime.
 //
 // STATUS: authored against the Workflow runtime (Claude Code v2.1.154+, research preview).
 // Authored, NOT yet run end-to-end — running a workflow needs an explicit opt-in
 // ("ultracode" / "use a workflow"). Treat it as a template, not a verbatim script:
 // adjust the schema, agentType, and synthesis prompt to the corpus.
+// Size note (v2.1.202/219): Claude-authored dynamic workflows default to medium
+// (aim <15 agents). This saved script sizes itself via sources.length; if you ask
+// Claude to author a similar workflow for a larger pile, set workflowSizeGuideline.
 //
 // Invoke with args = { topic: string, sources: string[] }.
 
@@ -95,8 +98,8 @@ const brief = await agent(
 )
 
 // Workflows have no filesystem access — the script returns the source brief and the MAIN
-// THREAD writes it to .claude/ingest/<slug>.md, confirms placement, and packages the
-// forge-ready brief. The workflow does the expensive fan-out; durable side effects stay
+// THREAD writes it to .claude/ingest/<slug>.md, confirms placement, and packages it.
+// The workflow does the expensive fan-out; durable side effects stay
 // outside it.
 log(brief ? `Brief assembled on "${topic}".` : 'No brief produced.')
 return { topic, sources: got, brief }

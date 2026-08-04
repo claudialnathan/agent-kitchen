@@ -1,7 +1,7 @@
 ---
 name: ingest
 description: |
-  Reads content the owner hands over and works out where it belongs in the harness: which existing primitive it improves, whether it warrants a new one, or that nothing does. Scoped to the primitives forge designs (skills, hooks, path-scoped rules, CLAUDE.md and AGENTS.md entries, workflow scripts, subagents, MCP), read for what they mean for how those behave rather than summarized. Sources a request is built on, or one author's body of work being distilled, are read whole in the main thread whatever the count; a large pile of side references may fan out to one subagent per source that returns quoted excerpts. Surveys whatever harness exists around it, a skills repo or a codebase's .claude or nothing, instead of assuming a shape, then surfaces the placement for the owner to confirm and packages it as a forge-ready brief. Use when handing over reading, links, or someone's public writing to turn into a harness improvement.
+  Reads content the owner hands over when its destination is not yet known, and works out where it belongs in the harness: which existing primitive it improves, whether it warrants a new one, or that nothing does. Scoped to coding-agent harness primitives (skills, hooks, path-scoped rules, CLAUDE.md and AGENTS.md entries, workflow scripts, subagents, MCP), read for what they mean for how those behave rather than summarized. Sources a request is built on, or one author's body of work being distilled, are read whole in the main thread whatever the count; a large pile of side references may fan out to one subagent per source that returns quoted excerpts. Surveys whatever harness exists around it, a skills repo or a codebase's .claude or nothing, instead of assuming a shape, then surfaces the placement for the owner to confirm. Use when handing over reading, links, or someone's public writing without naming which artifact it belongs in. Material handed over for an artifact the owner names is an edit to that artifact, not a placement question.
 disable-model-invocation: true
 ---
 
@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 The owner hands over reading — an article, a paper, a doc, links, pasted text, or one person's body of public work — and `/ingest` works out **where that content belongs in the harness**: which existing primitive it should improve, whether it warrants a new one, or that nothing here is worth building.
 
-Scope is the primitives the forge designs and nothing wider: skills, hooks, path-scoped rules, CLAUDE.md / AGENTS.md entries, workflow scripts, subagents, MCP. Content that isn't aimed at one of these isn't `/ingest`'s job; that is ordinary research, and the model's priors or a plain read answer it.
+Scope is the harness primitives and nothing wider: skills, hooks, path-scoped rules, CLAUDE.md / AGENTS.md entries, workflow scripts, subagents, MCP. Content that isn't aimed at one of these isn't `/ingest`'s job; that is ordinary research, and the model's priors or a plain read answer it.
 
 ## The attention this redirects
 
@@ -26,7 +26,7 @@ If the tier is genuinely ambiguous — a pile with no clear center — ask which
 
 ## Essence over shape
 
-Distill what the material *says, intends, and means*, never its structure, format, or voice. Read the meaning twice: against context primitives (what does this imply for how skills, hooks, rules, CLAUDE.md, and agent context actually behave?) and against the owner's standing harness and intent. A source can be anything — an article, a paper, someone else's skill. A skill used as a source is excerpted like any document; its ideas are reworked into the owner's artifacts, never cross-wired as a dependency, and the artifact forge builds from them stands alone — it never invokes another skill or assumes one is installed.
+Distill what the material *says, intends, and means*, never its structure, format, or voice. Read the meaning twice: against context primitives (what does this imply for how skills, hooks, rules, CLAUDE.md, and agent context actually behave?) and against the owner's standing harness and intent. A source can be anything — an article, a paper, someone else's skill. A skill used as a source is excerpted like any document; its ideas are reworked into the owner's artifacts, never cross-wired as a dependency, and whatever is built from them stands alone — it never invokes another skill or assumes one is installed.
 
 ## How it works
 
@@ -44,14 +44,14 @@ Do not load shared snapshots during a routine survey. If the supplied material m
 
 ### Phase 2: Read the material
 
-Read per the rule above: spec whole in the main thread; a large supplementary pile fanned out. While reading, hold two questions — what does world-class output in this domain look like (the forge's question), and which surveyed primitive does this bear on? Those two answers are what Phase 3 turns into a placement.
+Read per the rule above: spec whole in the main thread; a large supplementary pile fanned out. While reading, hold two questions — what does world-class output in this domain look like, and which surveyed primitive does this bear on? Those two answers are what Phase 3 turns into a placement.
 
 ### Phase 3: Place it
 
 From what the sources say and the surveyed context, decide the target and ground it in cited excerpts:
 
 - **Improve an existing primitive** — name it, name the concrete change, quote the excerpt that argues for it.
-- **Warrant a new one** — name the surface (run forge's triage: recurring procedure → skill; path-scoped convention → rule; hard guarantee → hook; session-floor fact → CLAUDE.md).
+- **Warrant a new one** — name the surface: recurring procedure → skill; path-scoped convention → rule; hard guarantee → hook; session-floor fact → CLAUDE.md.
 - **Nothing warranted** — say so and stop. A non-failure is a valid outcome.
 
 Ground every claim in a verbatim excerpt with its source; bare paraphrase is not evidence. Keep what the sources support distinct from what you inferred for the owner's stack — an inference dressed as a source citation is the same failure as a paraphrase passed off as a quote. Where two or more sources bear on the same claim, note agreement and contention with both sides quoted. Fill **the rough edge**: two to four sentences on what these sources collectively add beyond training priors. If you cannot fill it, they did not add anything, and the honest placement is "nothing here."
@@ -60,11 +60,11 @@ Keep the placement small — the synthesis that reaches a later artifact-design 
 
 Write the placement to `.claude/ingest/<slug>.md` when the material should outlive the session, or the run was large enough that the excerpts will not survive compaction. For a quick single-source run, inline is enough. Glance at what is already in `.claude/ingest/` first, and update or cross-link an overlapping prior placement rather than writing a near-duplicate.
 
-### Phase 4: Confirm, then package the brief
+### Phase 4: Confirm, then package the placement
 
 Surface the placement to the owner. When more than one target is plausible, or improve-existing versus new-primitive is a live choice, put it as a question (`AskUserQuestion`); when it is clear, state it and let them redirect. The choice of where the content lands is the owner's, never made silently.
 
-On confirmation, package the placement in the shared handoff shape:
+On confirmation, package the placement in this shape:
 
 - **Objective / expected output**
 - **Evidence of the gap** — grounded excerpts, citations, and the rough edge
@@ -76,7 +76,7 @@ On confirmation, package the placement in the shared handoff shape:
 - **Proposed surface**
 - **Unknowns / contention**
 
-Omit a field or mark it unknown rather than guessing. The brief is sufficient input for a later artifact-design pass whether or not another kitchen skill is installed; when `/forge` is present, it can consume the same shape without translation.
+Omit a field or mark it unknown rather than guessing. The placement is sufficient input for a later artifact-design pass whether or not any other skill is installed, which is the point of writing it down.
 
 ## The fan-out contract
 
@@ -84,6 +84,7 @@ When you do fan out a large supplementary pile, one subagent per source, and the
 
 - **Single source per agent.** No agent reads more than one URL or document; dispatch them in parallel in a single message.
 - **Already pasted in full? Extract inline, don't re-dispatch.** If a source's complete text is already in the conversation, the subagent's isolation benefit is spent; excerpt it inline under the same quote-only contract. Dispatch subagents only for material you would have to go fetch: URLs, file paths, anything not already in context.
+- **Leaf readers only.** Nested spawn defaults to depth 3 on Claude Code (v2.1.219), so a reader can re-fan and break quote-only / fresh-short-context. Tell each reader not to spawn further agents, or run the fan-out under `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`.
 - **Quotes, not paraphrase.** Each agent returns the source, the retrieval date, and 3–8 verbatim passages (≤ 100 words each), each tagged with the section it came from. A subagent that returns "the source argues that X" has paraphrased; reject it and re-dispatch with the contract repeated.
 - **Bound to the target.** The dispatch names the target topic, and the agent extracts only what is relevant to it.
 - **Stale sources are facts, not failures.** A 404, paywall, or redirect is reported and recorded, never fabricated around and never silently swapped for an alternative.
@@ -100,6 +101,7 @@ Per-source agent prompt template. Substitute `{{topic}}` and `{{source}}` at dis
 >
 > **Constraints:**
 > - Quote-only. No summaries, no prose synthesis, no preamble or closing commentary. Return only the formatted output above.
+> - Do not spawn further agents or tools beyond reading this one source.
 > - If the source is irrelevant to the topic, return the Source / Retrieved / Status lines and the single line `out of scope`, with no excerpts and no explanation.
 > - If the source contradicts itself internally, capture both sides as separate excerpts and flag the conflict.
 > - Cap output under 800 tokens.
@@ -117,7 +119,7 @@ Per-source agent prompt template. Substitute `{{topic}}` and `{{source}}` at dis
 - **Count over role.** Fanning out six articles because six is more than four, when all six are the spec. Count is a permission to isolate a large *reference* pile; it never sends spec material to subagents.
 - **Assuming the repo's shape.** Writing the placement against the skills repo you expected instead of the harness that is actually present. Survey first; "no primitives, no location" is a real and common shape, and its placement is "a new one."
 - **Silent placement.** Choosing improve-existing versus new-primitive without surfacing it. That choice is the owner's; put it as a question when it is live, state it when it is clear.
-- **The kitchen-sink placement.** Four thousand tokens of synthesis "to be thorough" defeats the point. The placement is the small artifact that reaches the forge. Cut weak quotes; raise the relevance bar.
+- **The kitchen-sink placement.** Four thousand tokens of synthesis "to be thorough" defeats the point. The placement is the small artifact that reaches the design step. Cut weak quotes; raise the relevance bar.
 - **The empty rough edge.** If what the sources "add" reads as a restatement of what priors already hold, they added nothing. Say so and stop; don't manufacture a target for a non-gap.
 - **The paraphrase smuggle.** A subagent that returns "the source argues that X" instead of a verbatim quote has done paraphrase, and synthesis will treat it as authoritative. Reject the output and re-dispatch with the contract.
 
@@ -139,5 +141,4 @@ Skip when:
 ## See also
 
 - [references/failure-modes.md](references/failure-modes.md): the context-engineering failure modes the fan-out path defends against, with primary-source citations.
-- `/forge`: an optional consumer of the forge-ready brief; its triage ladder picks the surface and builds it.
 - [examples/ingest-fanout.workflow.mjs](examples/ingest-fanout.workflow.mjs): the large-pile fan-out as a deterministic JS workflow (real concurrency, schema-enforced quote-only output, resumable). A template authored against the runtime, not yet run end-to-end.

@@ -4,13 +4,13 @@
     "name": "Claudia Nathan"
   },
   "metadata": {
-    "description": "The agent-kitchen forge and the applied skills it produces."
+    "description": "The agent-kitchen meta layer and the applied skills it produces."
   },
   "plugins": [
     {
       "name": "agent-kitchen",
       "source": "./",
-      "description": "The kitchen that designs agent artifacts: forge, ingest, harvest, and harness-audit. The reusable design layer."
+      "description": "The kitchen that designs agent artifacts: new-skill, improve-skill, grill-skill, ingest, and harness-audit. The reusable design layer."
     },
     {
       "name": "skills",

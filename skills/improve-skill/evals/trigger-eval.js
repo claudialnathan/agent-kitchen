@@ -1,5 +1,5 @@
 export const meta = {
-  name: 'forge-trigger-eval',
+  name: 'skill-trigger-eval',
   description: 'Trigger-accuracy harness for a skill listing: over a labeled query set, a judge decides invoke-or-not per query, repeated for a trigger rate. Compares listing variants — description alone vs description + when_to_use — to quantify what cross-tool consumers lose when they drop when_to_use. Query sets parameterizable via args.skills.',
   phases: [
     { title: 'Decide', detail: 'judge invoke-or-not per query × variant × rep' },
@@ -7,7 +7,7 @@ export const meta = {
 }
 
 // USAGE (run from the repo root via the Workflow tool):
-//   Workflow({ scriptPath: "skills/forge/evals/trigger-eval.js" })   // default: saltintesta, descOnly vs descPlusWtu
+//   Workflow({ scriptPath: ".../trigger-eval.js", args: { skills: [ ... ] } })   // descOnly vs descPlusWtu
 //   Workflow({ scriptPath: ".../trigger-eval.js", args: { skills: [ {name, description, when_to_use, queries: [{q, should, wtuOnly}]} ], reps: 3 } })
 //
 // WHAT IT MEASURES — the discriminating power of a skill's LISTING text (name + description [+ when_to_use]):
@@ -34,33 +34,24 @@ export const meta = {
 let _args = args
 if (typeof _args === 'string') { try { _args = JSON.parse(_args) } catch (_e) { _args = undefined } }
 
-// Default subject: saltintesta — frontmatter copied verbatim from skills/saltintesta/SKILL.md (2026-06-17).
-// Its description covers DRAFTING prose; its when_to_use uniquely adds EDITING asks + README/ADR. The wtuOnly
-// queries below sit exactly in that gap, so descOnly should miss them if the field is doing real work.
-const SALTINTESTA = {
-  name: 'saltintesta',
-  description: `This skill encodes ways to produce written tone of voice that articulates ideas in as few good words as possible, built on the idea of 'Saltintesta' put forward in Paul Graham's 'Write Simply'. Use when drafting any prose meant to be read with attention, including articles, essays, posts, newsletters, talks, or anything similar, even when the ask is just 'write something on X.'`,
-  when_to_use: `Any request to write or edit prose someone will read, whether that's an article, essay, social post, newsletter, talk, README, ADR, or anything in between. Also editing asks like "tighten this writing" or "make this less AI-sounding".`,
-  queries: [
-    // should-trigger, covered by the DESCRIPTION (drafting prose) — both variants ought to catch these
-    { q: `write a blog post about why we moved off Kubernetes`, should: true },
-    { q: `draft a short essay on the value of boredom`, should: true },
-    { q: `write something on our Q2 hiring philosophy for the company newsletter`, should: true },
-    { q: `write the opening for my conference talk on observability`, should: true },
-    // should-trigger, covered ONLY by when_to_use (editing prose, README, ADR) — descOnly should miss these
-    { q: `tighten this writing, it's far too wordy: "In order to be able to..."`, should: true, wtuOnly: true },
-    { q: `this draft reads like it was written by an AI — make it less AI-sounding`, should: true, wtuOnly: true },
-    { q: `rewrite the intro paragraph of our README so it reads less like marketing fluff`, should: true, wtuOnly: true },
-    { q: `edit this ADR's summary section to be clearer and more concise`, should: true, wtuOnly: true },
-    // should-NOT-trigger near-misses (share a keyword or the edit/write concept, but need a different tool)
-    { q: `write a Python function to strip whitespace from these strings`, should: false },
-    { q: `write a commit message for this diff`, should: false },
-    { q: `summarize this 40-page PDF into bullet points`, should: false },
-    { q: `fix the grammar and typos in this sentence`, should: false },
-  ],
+// The subject is always supplied. A built-in default would freeze one skill's frontmatter at the date
+// it was copied, and it rots into a measurement of a listing nobody ships any more.
+//
+// args.skills: [{
+//   name, description, when_to_use?,
+//   queries: [
+//     { q: 'a prompt the listing should fire on',            should: true  },
+//     { q: 'a prompt only when_to_use covers',               should: true, wtuOnly: true },
+//     { q: 'a near-miss that shares words but needs something else', should: false },
+//   ],
+// }]
+//
+// Mark a query wtuOnly when only `when_to_use` covers it: that is what sizes the cross-tool loss,
+// since the open spec drops the field and descOnly should miss exactly those.
+if (!_args || !Array.isArray(_args.skills) || !_args.skills.length) {
+  throw new Error('trigger-eval: args.skills is required — [{ name, description, when_to_use?, queries: [{ q, should, wtuOnly? }] }]')
 }
-
-const SKILLS = (_args && Array.isArray(_args.skills) && _args.skills.length) ? _args.skills : [SALTINTESTA]
+const SKILLS = _args.skills
 const REPS = (_args && Number.isInteger(_args.reps) && _args.reps > 0) ? _args.reps : 3
 
 const VARIANTS = [

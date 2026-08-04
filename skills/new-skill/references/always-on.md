@@ -2,6 +2,15 @@
 
 The always-on surfaces. CLAUDE.md is loaded in full every turn; a rule loads whenever a matching file is touched. Canonical reference: `code.claude.com/docs/en/memory` (loading order, `claudeMdExcludes`, AGENTS.md compatibility, path-rule semantics).
 
+## The judgment, before the mechanics
+
+Every line is paid for every turn (CLAUDE.md) or whenever the glob matches (rules).
+
+- **Never current state.** The code says what the code is; restating it pays tokens to go stale on the next commit. What survives a refactor: intent, spirit, durable harness traps, pointers, framing caveats.
+- **Verify every fact-claim against its source** — filesystem, configs, scripts, settings — before writing or keeping it. Intent voice does not protect against a wrong mechanism inside it.
+- **Short files are read; long ones are skimmed.** Compliance dilutes as rules and examples accumulate, and "be careful" adverbs add little. Reasoned rules beat bare directives, so give the Why where the rule isn't its own reason.
+- **A rule is earned by recurrence** — corrections repeating on the same convention in the same slice — and verified against the slice. If the files don't already follow the convention, the rule is wishful and will contradict the code. Write condition-shaped bullets rather than principles ("when X genuinely needs Y, do Z" beats "Y before Z"), phrase capability-agnostically, and add a respect-the-framework preamble where the rule overlaps an opinionated framework's territory.
+
 ## CLAUDE.md
 
 **Verify first.** Every entry rests on fact-claims about how the place works. Before writing or retaining one, check each claim against its source: the filesystem, `package.json` and lockfiles, `.claude-plugin/*`, `.claude/settings*`, skill frontmatter, scripts in `bin/`. A sentence shaped as orientation can hide a wrong mechanism, and the "code is authoritative" caveat only catches it after the agent has acted on the error.
@@ -38,7 +47,7 @@ The dividing test is discovery cost, not "is it about the code": architecture, c
 
 The CLAUDE.md ↔ local-notes boundary is **functional, not topical**: a behavioral precondition the agent must satisfy during normal work belongs in CLAUDE.md even when it's "publish-flow" (the agent never opens the playbook mid-task); the playbook detail (commands, diagnostics) stays in the unloaded file. Tell: *would an agent doing ordinary work step on this if it weren't in context?*
 
-**Voice.** Intent, not rulebook. "We treat new artifacts as feedback for the forge" frames a disposition; "ALWAYS propose improvements" performs enforcement the file can't deliver, and all-caps usually means the content wants to be a hook. Where a rule isn't its own reason, give the Why inline (rules-with-reasons markedly outperform unreasoned rules):
+**Voice.** Intent, not rulebook. "We treat new artifacts as feedback for the tools that built them" frames a disposition; "ALWAYS propose improvements" performs enforcement the file can't deliver, and all-caps usually means the content wants to be a hook. Where a rule isn't its own reason, give the Why inline (rules-with-reasons markedly outperform unreasoned rules):
 
 ```
 - Integration tests hit a real database, not mocks. **Why:** a mock/prod divergence masked a broken migration. **How to apply:** tests/integration/; mocks fine in tests/unit/.
@@ -62,7 +71,7 @@ The CLAUDE.md ↔ local-notes boundary is **functional, not topical**: a behavio
 - **Greppable doc headers make routing two-level.** Open each system doc with a short header — `Purpose / Read when / Key constraints / Relevant paths / Last verified`. The routing table narrows the search to a doc; the header lets the agent confirm the full doc applies before paying to read it, and `Last verified` tells it how much to trust what it finds.
 - **Doc updates ride the change that earns them, and only that change.** Update a doc when a change alters the *documented system* — architecture, a public interface, an established convention, a setup/test/deploy procedure — not for an implementation detail the doc never described. The first keeps the fleet trustworthy; the second is churn that trains agents to distrust it.
 
-**Escalation.** Recurrence is a signal to capture, not to re-correct: a mistake seen twice becomes an automated check (a hook) or a router/doc improvement, never a third correction typed into chat, which vanishes with the session. And a rule that keeps getting missed *despite* being in CLAUDE.md and within the ceilings doesn't want more emphasis. Anthropic's documented answer is a dynamic workflow spawning one verifier agent per rule, each judging the work against its single rule in a fresh context. That's a workflow artifact, not a CLAUDE.md edit.
+**Escalation.** Recurrence is a signal to capture, not to re-correct: a mistake seen twice becomes an automated check (a hook) or a router/doc improvement, never a third correction typed into chat, which vanishes with the session. And a rule that keeps getting missed *despite* being in CLAUDE.md and within the ceilings doesn't want more emphasis. Anthropic's documented answer is a dynamic workflow spawning one verifier agent per rule, each judging the work against its single rule in a fresh context. That's a workflow artifact, not a CLAUDE.md edit. Dynamic workflows default to medium size (aim &lt;15 agents); for many rules, set `workflowSizeGuideline` higher/unrestricted in settings, or author a `.claude/workflows/*.js` with explicit `agent()` fan-out.
 
 ## Path-scoped rules
 

@@ -8,19 +8,19 @@ The whole kitchen is human-in-the-loop, and verification informs — it never ov
 
 ## What the kitchen optimizes for
 
-The kitchen's artifacts compete with two forces only: the unaided frontier model, which improves every release and absorbs generic craft, and the owner's time. An artifact is how the owner transmits intent the model can't infer. It might be a raw idea or something read worth operationalizing, an output that missed what was meant and got refined, a post-cutoff fact the model lacks, or a task the model got wrong. Failure is one means, not the main one; a new idea and a corrected miscommunication are the everyday means. Durable value comes from what the model cannot have: the owner's taste and intent made operational, local truths of a repo or team, verified post-cutoff currency. The standing claim the kitchen holds its output to: **each expertise or taste skill it produces (kept in the separate `skills` repo, github.com/claudialnathan/skills) earns its place only by beating the current model on the gap that created it — the model as it actually runs where the gap lives, same harness, same repo, same steering context, minus the artifact.** A session is never unaided: whatever surrounds the model steers it, and existing work below the owner's bar reads to it as the accepted standard. So an artifact can earn its keep purely as a counterweight — restating what a clean model "knows" is dead weight only when nothing in context pulls against it — and any check that strips the steering away measures knowledge, not the deployed behavior the gap lives in. The evidence is live use: the moment a skill's guidance and bare instinct converge in real work, it has stopped earning, so log it and delete it. Deletion is the expected end of every such artifact, not a failure of one. Process skills (changelog and quality-audit in the skills repo; the kitchen's own forge, harvest, ingest, harness-audit) are exempt because their value is the owner wanting the procedure, which no release absorbs, so no deletion rule applies to them. Publication upkeep (STATE.md, HACKS.md) serves those documents' own readers; it is real work, but not the kitchen's product.
+The kitchen's artifacts compete with two forces only: the unaided frontier model, which improves every release and absorbs generic craft, and the owner's time. An artifact is how the owner transmits intent the model can't infer. It might be a raw idea or something read worth operationalizing, an output that missed what was meant and got refined, a post-cutoff fact the model lacks, or a task the model got wrong. Failure is one means, not the main one; a new idea and a corrected miscommunication are the everyday means. Durable value comes from what the model cannot have: the owner's taste and intent made operational, local truths of a repo or team, verified post-cutoff currency. The standing claim the kitchen holds its output to: **each expertise or taste skill it produces (kept in the separate `skills` repo, github.com/claudialnathan/skills) earns its place only by beating the current model on the gap that created it — the model as it actually runs where the gap lives, same harness, same repo, same steering context, minus the artifact.** A session is never unaided: whatever surrounds the model steers it, and existing work below the owner's bar reads to it as the accepted standard. So an artifact can earn its keep purely as a counterweight — restating what a clean model "knows" is dead weight only when nothing in context pulls against it — and any check that strips the steering away measures knowledge, not the deployed behavior the gap lives in. The evidence is live use: the moment a skill's guidance and bare instinct converge in real work, it has stopped earning, so log it and delete it. Deletion is the expected end of every such artifact, not a failure of one. Process skills (changelog and quality-audit in the skills repo; the kitchen's own new-skill, improve-skill, grill-skill, ingest, harness-audit) are exempt because their value is the owner wanting the procedure, which no release absorbs, so no deletion rule applies to them. Publication upkeep (STATE.md, HACKS.md) serves those documents' own readers; it is real work, but not the kitchen's product.
 
-## New artifacts are feedback for the forge
+## New artifacts are feedback for the meta layer
 
-The user comes here to design new harness-related tools. Every one of those is also evidence about the forge. When a session creates a new artifact, after delivery ask:
+The user comes here to design new harness-related tools. Every one of those is also evidence about the meta layer that built it. When a session creates a new artifact, after delivery ask:
 
 - **Was the output actually excellent?** Judge an artifact by the work it makes an agent produce (would the best practitioner in its domain call that work expert-grade?) and judge it by that *first*. The artifact's own properties (token cost, trigger precision, provenance hygiene) are hygiene; they never stand in for the quality of the output. A flawlessly-shaped skill that yields competent-floor work has failed. The trap, learned the hard way: scoring an artifact on what's easy to measure while the output goes ungraded, and the output is the only thing that matters.
-- What was friction during the design? Did the forge anticipate it, or did you have to improvise?
-- Was anything missing from the forge's triage, stance, or references?
-- Did any anti-pattern bite that the forge doesn't currently warn about?
-- Did the artifact's shape suggest something the forge should learn?
+- What was friction during the design? Did the skill that ran anticipate it, or did you have to improvise?
+- Was anything missing from its triage, stance, or references?
+- Did any anti-pattern bite that it doesn't currently warn about?
+- Did the artifact's shape suggest something it should learn?
 
-Propose updates to the forge based on what surfaced, as part of finishing the work. An artifact that revealed a gap is more valuable as a forge improvement than as a one-off.
+Propose updates based on what surfaced, as part of finishing the work. An artifact that revealed a gap is more valuable as an improvement to the skill that built it than as a one-off.
 
 Do not propose updates simply because it says to try so here. Use your judgement, critical thinking and creativity, and decide if it's really worthwhile mentioning.
 
@@ -48,12 +48,12 @@ The work here is small and evidence-driven: the meta layer (this repo) plus the 
 
 Two defaults before adding a new meta or applied skill, each bendable with a named reason logged in CHANGELOG.md:
 
-1. **Triage gap is real.** There is a class of artifact the forge doesn't cover, or discipline that gets retyped in a stack.
+1. **Triage gap is real.** There is a class of artifact the meta layer doesn't cover, or discipline that gets retyped in a stack.
 2. **A first worked example is in hand.** Shipping without one is an experiment: mark the artifact provisional and validate it in live use.
 
 ## Authoring footgun: skill loader trigger sequences
 
-The skill loader executes two literal byte sequences as shell commands in any file inside a skill directory. Markdown context (fences, inline code, quotes) offers no protection, and a hit breaks the whole skill's loading. The sequences, how to document them safely, and the self-check grep are in the `forge` skill. `bin/preship-check` catches both; a committed PreToolUse hook runs it on every `git commit` and blocks on failure, so there is no need to run it manually before committing.
+The skill loader executes two literal byte sequences as shell commands in any file inside a skill directory. Markdown context (fences, inline code, quotes) offers no protection, and a hit breaks the whole skill's loading. The sequences, how to document them safely, and the self-check grep are in the `new-skill` skill. `bin/preship-check` catches both; a committed PreToolUse hook runs it on every `git commit` and blocks on failure, so there is no need to run it manually before committing.
 
 ## Publishing footgun: Claude stays versionless; Codex does not
 
@@ -65,7 +65,7 @@ Codex is a separate contract: `.codex-plugin/plugin.json` carries the strict-sem
 
 When a skill name in this repo collides with one at `~/.claude/skills/<name>/`, flag it and ask the user how to proceed.
 
-The forge family (forge, harness-audit, harvest, ingest) never writes, stages, or offers to apply machine-scope config (anything under `~/.claude/`, user or enterprise settings, global plugins), even during an audit and even when the fix is one obvious line. Machine-scope findings are reported for the owner to action; the family's write scope is the current repo. A hard boundary, not a default to weigh. (The skills carry this rule themselves so it travels when the plugin is installed elsewhere; this line governs kitchen sessions and any future family skill.)
+The meta layer (new-skill, improve-skill, grill-skill, ingest, harness-audit) never writes, stages, or offers to apply machine-scope config (anything under `~/.claude/`, user or enterprise settings, global plugins), even during an audit and even when the fix is one obvious line. Machine-scope findings are reported for the owner to action; their write scope is the current repo. A hard boundary, not a default to weigh. (The skills carry this rule themselves so it travels when the plugin is installed elsewhere; this line governs kitchen sessions and any future meta-layer skill.)
 
 ## Dates
 

@@ -1,8 +1,8 @@
 ```
 HACKS, FYIs & NICE-TO-KNOWS █
-CLAUDE CODE v2.1.218 + CLAUDE AGENT PLATFORM
+CLAUDE CODE v2.1.221 + CLAUDE AGENT PLATFORM
 
-UPDATED: 2026-07-24
+UPDATED: 2026-08-04
 SOURCE REPO: anthropics/claude-code/blob/main/CHANGELOG.md
 STATUS: DRAFT
 ```
@@ -83,7 +83,7 @@ A couple lesser-known or new features I like.
 <table>
 <tr><th><samp>FEATURE</samp></th><th><samp>IDENTIFIER</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td>hidden skill</td><td><code>disable-model-invocation: true</code></td><td>Skill stays <em>entirely</em> out of context (not even its description) until you <code>/name</code> it. Put on side-effecting workflows (commit, deploy) for zero standing cost.</td></tr>
-<tr><td>tiny-context skill</td><td><code>context: fork</code> + <code>agent: Explore</code></td><td>Runs a skill in an isolated subagent that skips CLAUDE.md and git status.</td></tr>
+<tr><td>tiny-context skill</td><td><code>context: fork</code> + <code>agent: Explore</code></td><td>Runs a skill in an isolated subagent that skips CLAUDE.md and git status. As of v2.1.218 forks run in the <strong>background by default</strong>; set <code>background: false</code> to keep them blocking.</td></tr>
 <tr><td>tool search</td><td>default on Sonnet 4+ / Opus 4+</td><td>Defers all MCP tool schemas by default. The "too many MCP servers blow my context" caution is largely obsolete unless you force <code>alwaysLoad</code> or <code>ENABLE_TOOL_SEARCH=false</code>.</td></tr>
 <tr><td>nested <code>.claude/</code><sup>NEW</sup> <kbd><samp>v2.1.178</samp></kbd></td><td>nearest dir wins</td><td>A skill in a nested <code>.claude/skills/</code> loads when you work on files beneath it (<code>&lt;dir&gt;:&lt;name&gt;</code> on a clash); the agent/workflow/output-style in the <em>closest</em> <code>.claude/</code> wins a name collision. Monorepo subprojects carry their own harness.</td></tr>
 <tr><td>inline MCP data</td><td><code>@server:resource</code> (<code>@github:issue://123</code>) · <code>/mcp__server__prompt</code></td><td>Pull live MCP data inline like an <code>@file</code>; surface server prompts as slash commands.</td></tr>
@@ -144,7 +144,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>CLAUDE_CODE_RETRY_WATCHDOG</code><sup>NEW</sup> <kbd><samp>v2.1.199</samp></kbd></td><td>Raises the default retry count for non-capacity transient errors to 300 and <em>lifts</em> the former cap of 15 on <code>CLAUDE_CODE_MAX_RETRIES</code>: the supported lever for unattended sessions that must not give up.</td></tr>
 <tr><td><code>CLAUDE_ENABLE_STREAM_WATCHDOG=0</code><sup>NEW</sup> <kbd><samp>v2.1.196</samp></kbd></td><td>Opt out of the idle-stream watchdog, which is now on by default for <em>all</em> providers and aborts and retries a response stream that emits no events for 5 min.</td></tr>
 <tr><td><code>CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS</code><sup>NEW</sup> <kbd><samp>v2.1.213</samp></kbd></td><td>MCP tool calls past 2 min now auto-background by default so the session stays usable; tune the threshold or disable here.</td></tr>
-<tr><td><code>CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH</code> / <code>_MAX_SUBAGENTS_PER_SESSION</code> / <code>_MAX_CONCURRENT_SUBAGENTS</code><sup>NEW</sup> <kbd><samp>v2.1.212–217</samp></kbd></td><td>The 3 subagent-fan-out limits: nesting is now off by default (set the depth to enable it), 200 total/session, 20 concurrent. → <a href="#07-orchestration">#07</a></td></tr>
+<tr><td><code>CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH</code> / <code>_MAX_SUBAGENTS_PER_SESSION</code> / <code>_MAX_CONCURRENT_SUBAGENTS</code><sup>CHANGED</sup> <kbd><samp>v2.1.212–219</samp></kbd></td><td>The 3 subagent-fan-out limits: nesting defaults to depth <strong>3</strong> again (set <code>=1</code> to disable), 200 total/session, 20 concurrent. → <a href="#07-orchestration">#07</a></td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>settings.json keys</h4></kbd></td></tr>
 <tr><th><samp>KEY</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>skillOverrides</code></td><td>Set a skill to <code>"name-only"</code> (keep listed, drop description budget) or <code>"off"</code>, without editing its file; great for noisy third-party skills.</td></tr>
@@ -158,7 +158,7 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>fallbackModel</code><sup>NEW</sup> <kbd><samp>v2.1.166</samp></kbd></td><td>Up to three fallbacks tried in order when the primary is overloaded/unavailable; the settings form of <code>--fallback-model</code>.</td></tr>
 <tr><td><code>disableBundledSkills</code><sup>NEW</sup> <kbd><samp>v2.1.169</samp></kbd></td><td>Hide <em>all</em> bundled skills, workflows, and built-in slash commands from the model in one key: reclaim their description budget.</td></tr>
 <tr><td><code>Tool(param:value)</code> perm rules<sup>NEW</sup> <kbd><samp>v2.1.178</samp></kbd></td><td>Permission rules match a tool call's <em>input params</em> (with <code>*</code>): e.g. <code>Agent(model:opus)</code> blocks Opus subagents. Param-level <code>deny</code>/<code>allow</code> without a <code>PreToolUse</code> hook.</td></tr>
-<tr><td><code>sandbox.credentials</code><sup>NEW</sup> <kbd><samp>v2.1.187</samp></kbd></td><td>Block sandboxed commands from reading credential files and secret env vars. Defense-in-depth for untrusted shell.</td></tr>
+<tr><td><code>sandbox.credentials</code> + <code>mode: "mask"</code><sup>CHANGED</sup> <kbd><samp>v2.1.187 / 221</samp></kbd></td><td>Block sandboxed commands from reading credential files and secret env vars. <code>mode: "mask"</code> (Linux/WSL) serves a sentinel copy and substitutes the real value on egress; macOS falls back to <code>deny</code>. Pair with <code>sandbox.network.strictAllowlist</code> (v2.1.219) to deny non-allowlisted hosts without prompting.</td></tr>
 <tr><td><code>sandbox.filesystem.disabled</code><sup>NEW</sup> <kbd><samp>v2.1.216</samp></kbd></td><td>Skip filesystem isolation while keeping network egress control — the inverse trade-off from <code>sandbox.credentials</code> above.</td></tr>
 <tr><td><code>respondToBashCommands: false</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td>Revert the new default where a <code>!</code> bash run makes Claude react to the output; keeps <code>!</code> output as context only.</td></tr>
 </table>
@@ -210,6 +210,7 @@ The events and fields nobody reads down to.
 <tr><td><code>"type": "mcp_tool"</code></td><td>Route hook logic through an already-connected MCP tool (e.g. a security scanner), no subprocess.</td></tr>
 <tr><td><code>"args": [...]</code> (exec form)</td><td>Spawns the command without a shell: the fix for quoting hell and "command not found."</td></tr>
 <tr><td><code>InstructionsLoaded</code></td><td>Logs which CLAUDE.md/rule loaded, when, and why: the debugger for "why didn't my path-scoped rule fire?"</td></tr>
+<tr><td><code>DirectoryAdded</code><sup>NEW</sup> <kbd><samp>v2.1.219</samp></kbd></td><td>Fires after <code>/add-dir</code> or SDK <code>register_repo_root</code> registers a new working directory mid-session.</td></tr>
 </table>
 
 <br>
@@ -254,9 +255,9 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 <table>
 <tr><th><code>FEATURE</code></th><th><code>INVOKE</code></th><th><code>FUNCTION</code></th></tr>
 <tr><td>forked subagents / <code>/subtask</code><sup>CHANGED</sup> <kbd><samp>v2.1.212</samp></kbd></td><td><code>/subtask &lt;directive&gt;</code> · <code>CLAUDE_CODE_FORK_SUBAGENT=1|0</code></td><td>The old <code>/fork</code>, renamed. Inherits the <em>entire</em> conversation (zero re-explaining) and shares the parent's prompt cache, so cheaper than a fresh subagent for same-context work. Default-on since v2.1.161 (the env var now just forces on/off). <code>/fork</code> means something else now — see the next row.</td></tr>
-<tr><td><code>/fork</code><sup>CHANGED</sup> <kbd><samp>v2.1.212</samp></kbd></td><td><code>/fork [prompt]</code></td><td>Copies the whole conversation into a new, independent <strong>background session</strong> (its own row in <code>claude agents</code>) while you keep working here; runs its own subagent budget. With agent view off, <code>/subtask</code> disappears and <code>/fork</code> reverts to the old forked-subagent behavior.</td></tr>
-<tr><td>nested subagents<sup>CHANGED, off by default</sup> <kbd><samp>v2.1.217</samp></kbd></td><td><code>CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=&lt;n&gt;</code></td><td>A subagent spawning its <em>own</em> subagents (reviewer → a verifier per finding) is now <strong>opt-in, not default</strong> (reversed from v2.1.172). Set the env var to the number of layers you want; there's no fixed depth-5 cap anymore, you configure the depth. While off, every subagent but a fork keeps <code>Agent</code> listed but gets an error if it tries to spawn.</td></tr>
-<tr><td>subagent limits, 3 of them<sup>NEW</sup> <kbd><samp>v2.1.212–217</samp></kbd></td><td><code>CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION</code> (200) · <code>CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS</code> (20) · spawn depth above</td><td>Per-session total (v2.1.212, can't be disabled, resets on <code>/clear</code>, doesn't count a <code>/fork</code> session or workflow <code>agent()</code> calls) · concurrency cap (v2.1.217, exempt under <code>ultracode</code>/workflows, <code>/subtask</code> never blocked by it) · nesting depth. Also new: a 200-call WebSearch cap per session (<code>CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION</code>, v2.1.213).</td></tr>
+<tr><td><code>/fork</code><sup>CHANGED</sup> <kbd><samp>v2.1.212 / 221</samp></kbd></td><td><code>/fork [prompt]</code></td><td>Copies the whole conversation into a new, independent <strong>background session</strong> (its own row in <code>claude agents</code>) while you keep working here; runs its own subagent budget. As of v2.1.221 the fork also gets its <strong>own worktree</strong>. With agent view off, <code>/subtask</code> disappears and <code>/fork</code> reverts to the old forked-subagent behavior.</td></tr>
+<tr><td>nested subagents<sup>CHANGED, depth 3 by default</sup> <kbd><samp>v2.1.219</samp></kbd></td><td><code>CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=&lt;n&gt;</code></td><td>A subagent spawning its <em>own</em> subagents (reviewer → a verifier per finding) defaults to depth <strong>3</strong> again (was off at v2.1.217). Set <code>=1</code> to disable nesting. No fixed depth-5 cap — you configure the depth. A fork still can't spawn a fork.</td></tr>
+<tr><td>subagent limits, 3 of them<sup>CHANGED</sup> <kbd><samp>v2.1.212–219</samp></kbd></td><td><code>CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION</code> (200) · <code>CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS</code> (20) · spawn depth above</td><td>Per-session total (v2.1.212, can't be disabled, resets on <code>/clear</code>, doesn't count a <code>/fork</code> session or workflow <code>agent()</code> calls) · concurrency cap (v2.1.217, exempt under <code>ultracode</code>/workflows, <code>/subtask</code> never blocked by it) · nesting depth (default 3 as of v2.1.219). Also: a 200-call WebSearch cap per session (<code>CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION</code>, v2.1.213).</td></tr>
 <tr><td>advisor tool<sup>NEW</sup> <kbd><samp>experimental, API-only</samp></kbd></td><td><code>/advisor &lt;model&gt;</code> · <code>advisorModel</code> setting · <code>--advisor</code></td><td>Claude consults a second, typically stronger model at decision points (before committing to an approach, when stuck on a recurring error, before declaring done) — the advisor sees the <em>full</em> transcript and Claude generally follows its guidance. Anthropic API only (no Bedrock/Vertex/Foundry/AWS). Advisor tokens bill on top of main-model usage. Fable 5 can be the main model but currently can't be the advisor (dimmed "temporarily unavailable" in the picker, pending a remote rollout).</td></tr>
 <tr><td><code>/goal</code><sup>NEW</sup> <kbd><samp>v2.1.139+</samp></kbd></td><td><code>/goal &lt;condition&gt;</code></td><td>A small fast model re-checks your condition every turn and keeps Claude working until it holds, no per-turn prompting. Judges <em>only the transcript</em>, so write conditions the output can prove: <code>"npm test exits 0 and git status clean, or stop after 20 turns"</code>.</td></tr>
 <tr><td>agent view</td><td><code>claude agents</code> · <code>--json</code></td><td><code>←</code> on an empty prompt backgrounds + jumps here; <code>Ctrl+T</code> pins (survives idle, restarts onto new binaries); <code>s:blocked</code> filters "what needs me"; <code>--json</code> emits an inventory with a <code>waitingFor</code> field.</td></tr>
@@ -469,6 +470,6 @@ lap's configuration.
 
 ```
 EVERY FLAG, FIELD, AND VERSION ABOVE: COPIED FROM A DOC, NOT RECALLED.
-RE-CHECKED: 2026-07-24 · AGAINST: v2.1.218 · AUTHORITATIVE: docs changelog
+RE-CHECKED: 2026-08-04 · AGAINST: v2.1.221 · AUTHORITATIVE: docs changelog
 ON DRIFT: FIX IT HERE, RE-PIN THE DATE.
 ```

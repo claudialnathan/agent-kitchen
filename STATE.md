@@ -1,6 +1,6 @@
 # The state of Claude Code and the coding-agent landscape
 
-Last updated: 24 July 2026 | Version: v2.1.218
+Last updated: 4 August 2026 | Version: v2.1.221
 
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. It is a factual reference for builders working against these surfaces, not a tutorial. Filtered to what changes how you build, configure, and ship.
 
@@ -12,9 +12,9 @@ If you've been away for a few months, read this first; the surface has shifted f
 
 | Skill | Read `STATE.md` when |
 | --- | --- |
-| `forge` | choosing among skills, hooks, rules, workflows, subagents, MCP, or a native harness capability |
+| `new-skill` | choosing among skills, hooks, rules, workflows, subagents, MCP, or a native harness capability |
+| `improve-skill` | a failure may already be solved by the harness natively, or may expose a stale mechanism |
 | `harness-audit` | checking the installed harness against the documented surface, limits, or cross-tool conventions |
-| `harvest` | a surviving correction may already be solved by the harness or may expose a stale mechanism |
 | `ingest` | supplied material concerns a current harness primitive, capability, or placement boundary |
 
 Each skill treats this as a local map, not proof of current behavior. It still verifies decision-bearing claims against the live canonical source; if this file is absent, the skill proceeds from discovery and live documentation.
@@ -55,16 +55,23 @@ Practical consequences:
 - Knowledge skills with broad applicability should be path-scoped (`paths:` glob) so they don't load when out of scope.
 - Reference docs > 150 lines belong in sibling files, not inline.
 
-## What's distinctive about July 2026 (vs. last quarter)
+## What's distinctive about August 2026 (vs. last quarter)
 
 Features that changed how skills get built, in rough order of impact:
 
-### Sonnet 5 (new default on Pro-tier plans, v2.1.197)
+### Opus 5 (new default Opus, v2.1.219)
 
-- **`claude-sonnet-5`**: launched 30 June 2026. The default model in Claude Code for **Pro, Team Standard, and Enterprise subscription seats**. Opus 4.8 stays the default for **Max, Team Premium, Enterprise pay-as-you-go, Bedrock, Vertex, Claude Platform on AWS, and the Anthropic API** (the Bedrock/Vertex/AWS default was confirmed explicitly in v2.1.207); the `sonnet` alias resolves to Sonnet 5 on the API. Requires v2.1.197+.
-- **1M context is native and unconditional**: no 200K variant, no `[1m]` suffix, no usage credits on any plan (unlike Opus's plan-gated 1M). Sessions auto-compact at ~967K tokens by default; `CLAUDE_CODE_AUTO_COMPACT_WINDOW` changes the threshold, `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` caps it back to 200K.
+- **`claude-opus-5`**: launched 24 July 2026; Claude Code picked it up in v2.1.219 as the **default Opus model**. New default on **Max / Team Premium / Enterprise pay-as-you-go / Anthropic API** (and the strongest model on Pro); Sonnet 5 remains the default on Pro / Team Standard / Enterprise subscription seats. The `/model` picker shows the merged Opus row as "Opus (1M context)".
+- 1M context is both the default and the maximum (no smaller variant). Pricing unchanged from Opus 4.8: **$5/$25** per Mtok; Fast mode at **$10/$50** (~2.5× speed). `/fast` now applies to Opus 5 and Opus 4.8; Opus 4.7 was removed from fast mode.
+- Near-Fable intelligence at half Fable's $10/$50 price on coding and knowledge-work evals; thinking on by default. Cyber classifiers are lighter than Fable's (~85% fewer interventions): source-code vulnerability finding is allowed; binary scanning, pentesting, and exploit generation stay blocked. Flagged requests in Claude Code fall back to Opus 4.8 by default; biology-flagged Fable requests now route to Opus 5 rather than 4.8.
+- Opus 4.8 (`claude-opus-4-8`) and 4.7 remain selectable via `/model`. Effort scale (`low`–`max`, `/effort xhigh` for the hardest tasks) carries over.
+
+### Sonnet 5 (default on Pro-tier plans, v2.1.197)
+
+- **`claude-sonnet-5`**: launched 30 June 2026. The default model in Claude Code for **Pro, Team Standard, and Enterprise subscription seats**. Opus 5 is the default for **Max, Team Premium, Enterprise pay-as-you-go, Bedrock, Vertex, Claude Platform on AWS, and the Anthropic API**; the `sonnet` alias resolves to Sonnet 5 on the API. Requires v2.1.197+.
+- **1M context is native and unconditional**: no 200K variant, no `[1m]` suffix, no usage credits on any plan (unlike Opus's plan-gated 1M on some tiers). Sessions auto-compact at ~967K tokens by default; `CLAUDE_CODE_AUTO_COMPACT_WINDOW` changes the threshold, `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` caps it back to 200K.
 - **New tokenizer inflates token counts ~30%** for the same text vs Sonnet 4.6. Re-measure anything you budget in tokens: `max_tokens` limits, context-window text capacity, per-request cost. Counts carried over from older models are wrong.
-- Effort levels `low`–`max`, default `high`. Adaptive thinking is on by default; manual extended thinking (`budget_tokens`) and non-default sampling params (`temperature`/`top_p`/`top_k`) now return HTTP 400, the same constraint Opus 4.8 already had.
+- Effort levels `low`–`max`, default `high`. Adaptive thinking is on by default; manual extended thinking (`budget_tokens`) and non-default sampling params (`temperature`/`top_p`/`top_k`) now return HTTP 400, the same constraint Opus already had.
 - **First Sonnet-tier model with real-time cybersecurity safeguards.** Flagged requests refuse as a *successful* HTTP 200 with `stop_reason: "refusal"`, not an API error. Unlike Fable 5, there's no automatic Opus fallback documented, so a flagged request just refuses.
 - Pricing $3/$15 per Mtok; **introductory $2/$10 through 31 August 2026**.
 
@@ -86,7 +93,7 @@ Features that changed how skills get built, in rough order of impact:
 
 - Pairs the main model with a second, typically stronger model that Claude itself decides to consult mid-task — before committing to an approach, when an error keeps recurring, or before declaring a task done. The advisor gets the *full* conversation (every tool call and result) and returns guidance Claude generally follows, but surfaces a conflict rather than blindly complying when its own evidence contradicts the advice.
 - Enable via `/advisor <model>` (persists to `advisorModel` in user settings), the `advisorModel` setting directly, or `--advisor <model>` for one session (not in `--help`). `/advisor off` or `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` turns it off.
-- The advisor must be at least as capable as the main model (Sonnet 5 main rejects a Sonnet 4.6 advisor; Opus 4.7/4.8 are ranked equal so either accepts the other). Subagents inherit the configured advisor and are checked against the same pairing rule.
+- The advisor must be at least as capable as the main model (Sonnet 5 main rejects a Sonnet 4.6 advisor; Opus 4.7/4.8 are ranked equal so either accepts the other — confirm where Opus 5 sits in that ranking against current docs before pinning pairs). Subagents inherit the configured advisor and are checked against the same pairing rule.
 - **Fable 5 can be a main model but not an advisor right now**: a Fable 5 main runs without an advisor (only a Fable advisor would be accepted, and Fable isn't currently offered in the `/advisor` picker — it shows dimmed as "temporarily unavailable" pending a remote rollout).
 - Anthropic API only — unavailable on Bedrock, Vertex, Foundry, or Claude Platform on AWS. Toggling it mid-session doesn't invalidate the main model's prompt cache, but each advisor call re-reads the full transcript uncached, and tokens bill at the advisor model's rate on top of the main model's usage (countable in `/usage`).
 - Distinct from `opusplan` (stronger model only during plan mode, then switches for execution), a `model`-pinned subagent (stronger model for one whole delegated subtask), and `/model` (switches the main model for all subsequent turns) — the advisor is the only one of the four that runs *at decision points mid-task* while the main model keeps driving.
@@ -103,7 +110,7 @@ Features that changed how skills get built, in rough order of impact:
 - `/workflows` shows your runs.
 - Type `ultracode` in a prompt to fire one off. It was renamed from the bare word `workflow`, which no longer triggers a run (asking in your own words still does). The keyword highlights violet in the input; a `/config` setting disables it.
 - `/effort ultracode` makes workflows the default, so Claude authors and runs one for every substantive task, not just on the keyword. Offered only where the model supports `xhigh`.
-- A **Dynamic workflow size** setting (`/config`, v2.1.202) steers how large Claude generally makes workflows (small/medium/large agent counts). It is advisory guidance, not an enforced cap.
+- A **Dynamic workflow size** setting (`/config`, v2.1.202; also the `workflowSizeGuideline` settings key as of v2.1.219) steers how large Claude generally makes workflows. **Default is now medium** (aim for fewer than 15 agents); pick another size or unrestricted in `/config`. Advisory guidance, not an enforced cap. The `/config` row is hidden while a settings file sets the key.
 - The heaviest fan-out option, alongside agent teams and `/batch`; the model decomposes and pipelines the work itself.
 - **It's an authorable artifact, not just a prompt.** A workflow is a JavaScript orchestration script (`agent()` / `parallel()` / `pipeline()` / `phase()`); the runtime runs it in the background while agents work in fresh contexts. Sandbox: no filesystem, no `Date.now()`/`Math.random()` in the script; ~16 concurrent agents, 1,000 per run. Save a run as a reusable `/command` in `.claude/workflows/<name>.js` (input via the global `args`).
 - **Why the surface exists:** it replaces the model's plan-and-execute-in-one-drifting-context default with deterministic control flow, countering *agentic laziness* (declaring a 50-item task done at 35), *self-preferential bias* (preferring its own results when it self-grades, hence adversarial verification in a separate agent), and *goal drift* after compaction.
@@ -129,7 +136,7 @@ Features that changed how skills get built, in rough order of impact:
 ### `/fork` and `/subtask` (split at v2.1.212)
 
 - **The old `/fork` was renamed `/subtask`** (v2.1.212). `/subtask <directive>` spawns an in-session forked subagent: it inherits the _full conversation history_ (unlike a normal subagent, which starts fresh) and shares system prompt, tools, model, and prompt cache with the parent. Default-on since v2.1.161; `CLAUDE_CODE_FORK_SUBAGENT=1`/`=0` still forces it on/off explicitly (needed for opt-in only on v2.1.117–160). A fork can't spawn further forks.
-- **`/fork` now means something different**: it copies the whole conversation into a new, independent **background session** with its own row in `claude agents`, and you keep working in the original. Pass a prompt and the copy starts immediately; without one it waits in agent view. Requires v2.1.212+; with agent view turned off, `/subtask` isn't available and `/fork` falls back to the old forked-subagent behavior.
+- **`/fork` now means something different**: it copies the whole conversation into a new, independent **background session** with its own row in `claude agents`, and you keep working in the original. Pass a prompt and the copy starts immediately; without one it waits in agent view. Requires v2.1.212+; with agent view turned off, `/subtask` isn't available and `/fork` falls back to the old forked-subagent behavior. **As of v2.1.221, a forked session creates its own worktree** instead of sharing the original checkout.
 - A `/fork` background session runs its own budget (doesn't count against the per-session subagent caps below); a `/subtask` does count, but is never blocked by the concurrent-subagent limit.
 
 ### Monitor tool (w15, v2.1.98)
@@ -152,13 +159,12 @@ Features that changed how skills get built, in rough order of impact:
 - `/ultraplan` drafts a plan in a cloud session; review in browser; execute remotely or pull back to CLI.
 - `claude ultrareview [target]` runs the review non-interactively from CI or scripts (`--json` for raw output; exits 0 on completion, 1 on failure).
 
-### Opus 4.8 (default on Max/API tiers, v2.1.154)
+### Opus 4.8 / 4.7 (still selectable; superseded as default by Opus 5)
 
-- Opus 4.8 (`claude-opus-4-8`) is the default model on Max, Team Premium, Enterprise pay-as-you-go, and the Anthropic API (Sonnet 5 is the default on Pro-tier; see above); it defaults to **high** effort, with `/effort xhigh` reserved for the hardest tasks.
+- Opus 4.8 (`claude-opus-4-8`) was the Max/API default from v2.1.154 until Opus 5 took that seat in v2.1.219; it remains selectable and is the cyber-classifier fallback target for Opus 5 in Claude Code. Defaults to **high** effort; `/effort xhigh` for the hardest tasks.
 - Effort levels: `low`, `medium`, `high`, `xhigh`, `max`. `/effort` opens an interactive slider when called without args (slider labels are now "Faster"/"Smarter").
-- The **lean system prompt** shipped as the default with Opus 4.8 (v2.1.154); older models kept the full prompt. Which side newer lines (Sonnet 5, Fable 5) land on is undocumented. `/context` shows the session's actual system-prompt size when it matters.
-- 1M context window included for Max/Team/Enterprise on Opus.
-- Fast mode on Opus 4.8 runs at 2× the standard rate for ~2.5× the speed. `CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE` is deprecated (removed 2026-06-01); for fast mode on 4.6, switch with `/model claude-opus-4-6[1m]` then `/fast on`.
+- The **lean system prompt** shipped as the default with Opus 4.8 (v2.1.154); older models kept the full prompt. Which side newer lines (Sonnet 5, Fable 5, Opus 5) land on is undocumented. `/context` shows the session's actual system-prompt size when it matters.
+- Fast mode still works on Opus 4.8 (and Opus 5); Opus 4.7 was dropped from `/fast` at v2.1.219. `CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE` is deprecated (removed 2026-06-01).
 - Opus 4.7 (`claude-opus-4-7`) is still selectable via `/model`; it introduced the effort-level scale and always-on adaptive reasoning.
 
 ### Agent view (`claude agents`, research preview)
@@ -190,6 +196,7 @@ The hook surface has accumulated several useful fields:
 - **Effort context**: hooks receive `effort.level` in their JSON input and `$CLAUDE_EFFORT` in their environment; Bash commands also get `$CLAUDE_EFFORT`.
 - **MCP servers receive `CLAUDE_PROJECT_DIR`** in their environment, matching hooks. Plugin configs can reference `${CLAUDE_PROJECT_DIR}` in commands.
 - **`agent_needs_input` / `agent_completed` Notification events** (v2.1.198): background `claude agents` sessions fire the `Notification` hook when they block on input or finish, so unattended fleets can wire up push/desktop alerts.
+- **`DirectoryAdded` hook** (v2.1.219): fires after `/add-dir` or the SDK `register_repo_root` control request registers a new working directory mid-session.
 - **Hyphenated matchers now exact-match** (v2.1.195): a matcher like `code-reviewer` or `mcp__brave-search` used to substring-match; it no longer does. To match all tools from a hyphenated MCP server, write `mcp__brave-search__.*`. Comma-separated matchers (`"Bash,PowerShell"`) also fire correctly now (v2.1.191).
 
 ### Plugin executables on PATH (w14)
@@ -238,8 +245,8 @@ The hook surface has accumulated several useful fields:
 - **`acceptEdits` guards code-execution writes**: it now prompts before writing files that can run code on open: shell startup files (`.zshenv`, `.zlogin`), `~/.config/git/`, and build configs (`.npmrc`, `.yarnrc*`, `bunfig.toml`, `.bazelrc`, `.pre-commit-config.yaml`, `.devcontainer/`).
 - **`requiredMinimumVersion` / `requiredMaximumVersion`** managed settings: Claude Code refuses to start outside the allowed version range and points to an approved build.
 - **`fallbackModel` setting** (v2.1.166): up to three fallback models, tried in order when the primary is unavailable; the settings-file form of the `--fallback-model` flag.
-- **Nested subagents** (introduced v2.1.172, **default flipped to off at v2.1.217**): a subagent can spawn its own subagents — useful for a delegated task that itself splits into parallel subtasks (a reviewer dispatching a verifier per finding), keeping that fan-out off the main thread with only the top-level summary returning — but as of v2.1.217 this is opt-in, not default-on. Set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to the number of layers you want below the main conversation (e.g. `"2"`) to enable it; while it's off, every subagent except a fork keeps the `Agent` tool listed but gets an error if it tries to spawn. No longer a fixed depth-5 cap — depth is however deep you configure. A lighter-weight alternative to a workflow script when the orchestration is a single delegated task, not a standing pipeline.
-- **Three independent subagent limits** (as of v2.1.217): a **per-session total** (default 200, `CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION`, v2.1.212+, no upper bound but can't be disabled, resets on `/clear`) counting every subagent spawned with the `Agent` tool — nested, forked, background, and your own `/subtask` — but *not* a `/fork` background session or agents a workflow script spawns with `agent()` (those have their own per-run cap); a **concurrency cap** (default 20, `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`, v2.1.217+, exempt when `ultracode`/workflows are active) that blocks new spawns with `Concurrent subagent limit reached` until the running count drops, but never blocks your own `/subtask`; and the **depth limit** above. Also new: a session-wide WebSearch cap (default 200, `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION`, v2.1.213) against runaway search loops.
+- **Nested subagents** (introduced v2.1.172; off by default at v2.1.217; **default depth 3 again as of v2.1.219**): a subagent can spawn its own subagents — useful for a delegated task that itself splits into parallel subtasks (a reviewer dispatching a verifier per finding), keeping that fan-out off the main thread with only the top-level summary returning. Default spawn depth is now **3**; set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1` to disable nesting (depth 1 = main conversation only, no nested spawn). No fixed depth-5 cap — depth is however deep you configure. A lighter-weight alternative to a workflow script when the orchestration is a single delegated task, not a standing pipeline.
+- **Three independent subagent limits**: a **per-session total** (default 200, `CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION`, v2.1.212+, no upper bound but can't be disabled, resets on `/clear`) counting every subagent spawned with the `Agent` tool — nested, forked, background, and your own `/subtask` — but *not* a `/fork` background session or agents a workflow script spawns with `agent()` (those have their own per-run cap); a **concurrency cap** (default 20, `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`, v2.1.217+, exempt when `ultracode`/workflows are active) that blocks new spawns with `Concurrent subagent limit reached` until the running count drops, but never blocks your own `/subtask`; and the **depth limit** above. Also: a session-wide WebSearch cap (default 200, `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION`, v2.1.213) against runaway search loops.
 - **`availableModels` allowlist + `enforceAvailableModels`** (managed settings; `enforceAvailableModels` added v2.1.175): restrict which models a deployment may use; with `enforceAvailableModels` on, the allowlist also constrains the resolved Default model (a Default that would resolve to a blocked model falls back to the first allowed one) and user/project settings can't widen a managed list. `ANTHROPIC_DEFAULT_*_MODEL` env vars and `/fast` can no longer slip a blocked model past it (v2.1.177). The model-governance analog to `requiredMinimumVersion`.
 - **`Tool(param:value)` permission rules** (v2.1.178): permission rules can now match a tool call's input parameters, with `*` wildcards: e.g. `Agent(model:opus)` blocks Opus subagents. Parameter-level policy in `permissions.deny`/`allow`, where you'd previously have needed a `PreToolUse` hook.
 - **Nested `.claude/` directories resolve by proximity** (v2.1.178): a skill in a nested `.claude/skills/` loads when you work on files beneath it (dir-qualified `<dir>:<name>` on a name clash, so both survive), and the agent / workflow / output-style in the closest `.claude/` wins a name collision. Monorepo subprojects can carry their own harness.
@@ -248,8 +255,9 @@ The hook surface has accumulated several useful fields:
 - **`claude mcp login <name>` / `claude mcp logout <name>`** (v2.1.186): authenticate an MCP server from the CLI without opening `/mcp`; `--no-browser` redirects the flow over SSH.
 - **MCP `roots/list` includes the session's extra working dirs** (v2.1.203): additional (`--add-dir`) roots now appear alongside the primary cwd, with a `notifications/roots/list_changed` when the set changes; a workspace-aware MCP server can drop its own dir-discovery heuristics.
 - **Skill frontmatter keys are case-style-insensitive** (v2.1.186): `display-name`, `default-enabled`, `fallback`, and `metadata.*` accept kebab-case, snake_case, or camelCase; malformed YAML frontmatter now loads the body with empty metadata instead of failing silently.
-- **`sandbox.credentials` setting** (v2.1.187): blocks sandboxed commands from reading credential files and secret environment variables.
-- **Subagents run in the background by default** (GA, v2.1.198): Claude keeps working while a delegated subagent runs and is notified on completion, instead of blocking the turn. Background agents launched from `claude agents` now also commit, push, and open a draft PR when they finish code work in a worktree.
+- **`sandbox.credentials` setting** (v2.1.187): blocks sandboxed commands from reading credential files and secret environment variables. **`mode: "mask"`** (v2.1.221, Linux/WSL): sandboxed commands read a sentinel copy (whole file, or spans matched by an `extract` regex) while the sandbox proxy substitutes the real value on egress; on macOS file masking falls back to `deny`. **`sandbox.network.strictAllowlist`** (v2.1.219): deny non-allowlisted hosts for sandboxed commands without prompting.
+- **Subagents run in the background by default** (GA, v2.1.198): Claude keeps working while a delegated subagent runs and is notified on completion, instead of blocking the turn. Background agents launched from `claude agents` **commit and push to preserve work**, open a draft PR only when the task calls for one, follow CLAUDE.md git instructions, and always end by reporting where the work lives (v2.1.221; previously always opened a draft PR).
+- **Skills with `context: fork` run in the background by default** (v2.1.218): opt out per skill with `background: false`.
 - **Stacked slash-skill invocations load all leading skills** (v2.1.199): `/skill-a /skill-b do XYZ` now loads every leading skill (up to 5), not just the first; useful for composing a stance from several skills in one prompt.
 - **`"default"` permission mode is now labelled "Manual"** (v2.1.200) across the CLI, `--help`, VS Code, and JetBrains. `--permission-mode manual` and `"defaultMode": "manual"` are accepted alongside the old `default`; both still work.
 - **Organization default models** (v2.1.196, Enterprise): admins set a Claude Code default in the claude.ai console, org-wide or per role; it shows as "Org default" / "Role default" in `/model`. A starting point, not a restriction, since any explicit model selection overrides it. The soft-default analog to the hard `availableModels` allowlist.
@@ -260,6 +268,7 @@ The hook surface has accumulated several useful fields:
 - **"Always allow" permission rules now save at the repository root** (v2.1.211), so an approval granted inside a git worktree persists across sessions and other worktrees of the same repo, not just that one checkout.
 - **`claude auto-mode reset`** (v2.1.213): restores default auto-mode configuration in one command; prompts for confirmation, `--yes` skips it.
 - **MCP tool calls auto-background past 2 minutes** (v2.1.213): a long-running MCP call moves to the background automatically so the session stays usable; tune or disable via `CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS`.
+- **Plugins accept `"."` as a `skills` path** (v2.1.221): put `SKILL.md` at the plugin root; validation now suggests that instead of rejecting it. Plugins installed from `/plugin` activate immediately when safe (no `/reload-plugins` required), and `/plugin install` refreshes a stale marketplace catalog before reporting not-found.
 
 ## Constraints worth designing around
 
@@ -380,11 +389,12 @@ Cross-tool standards:
 - `https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills`: Agent Skills standard announcement.
 - `https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation`: AAIF formation.
 
-## In flux as of late July 2026
+## In flux as of early August 2026
 
 Things that were research previews or moving fast at the time of writing:
 
-- **Fable 5 is back as a main model** (restored 2026-07-01 after the US export-control order was lifted; see the Fable 5 section above). `/model fable` selects it again and `best` resolves to it where the org has access. The throttled-rollout window closed 2026-07-12. **Still excluded as an advisor** (see the Advisor tool section above): a remote rollout, not the changelog, decides when the `/advisor` picker stops showing it dimmed as "temporarily unavailable." The episode remains a standing reminder that model availability — including partial availability in a specific role like advisor — moves independently of the changelog.
+- **Fable 5 is back as a main model** (restored 2026-07-01 after the US export-control order was lifted; see the Fable 5 section above). `/model fable` selects it again and `best` resolves to it where the org has access. Since 2026-07-20: **in-plan on Max and Team/Enterprise premium seats** (up to 50% of weekly limits); **usage credits on Pro and standard seats**. **Still excluded as an advisor** (see the Advisor tool section above): a remote rollout, not the changelog, decides when the `/advisor` picker stops showing it dimmed as "temporarily unavailable." The episode remains a standing reminder that model availability — including partial availability in a specific role like advisor — moves independently of the changelog.
+- **Opus 5 just landed as the default Opus** (v2.1.219). Confirm advisor-pairing ranks, Bedrock/Vertex model IDs, and whether any org default still pins 4.8 before treating the Sonnet/Opus default split as settled everywhere.
 - **Agent view (`claude agents`)** is research preview. Surface and command shape may shift.
 - **Auto mode** is in research preview. Default thresholds and classifier behavior may change. `hard_deny` rules are stable.
 - **Agent teams** (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) are experimental. Listed limitations: no in-process teammate session resumption, lagging task status, no nested teams.

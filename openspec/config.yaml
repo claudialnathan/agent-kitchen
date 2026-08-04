@@ -1,0 +1,80 @@
+schema: spec-driven
+
+context: |
+  agent-kitchen is where coding-agent harness artifacts are designed and
+  evaluated. Its product is the meta layer, cut by the situation the owner is
+  in: `new-skill` (build an artifact, and pick the surface it belongs on),
+  `improve-skill` (repair one, or work new material into it), `grill-skill`
+  (run one against a real prompt and iterate), `ingest` (external sources to a
+  placement), `harness-audit` (audits an installed setup).
+  The applied skills it produces live in a separate public repo
+  (github.com/claudialnathan/skills). Both repos are public.
+
+  Standing claim the kitchen holds its output to: each expertise or taste
+  skill earns its place only by beating the current model on the gap that
+  created it — the model as deployed, same harness, same repo, same steering
+  context, minus the artifact. Never a clean-room baseline. Process skills
+  (new-skill, improve-skill, grill-skill, ingest, harness-audit) are exempt,
+  because their value is the owner wanting the procedure and no model release
+  absorbs that.
+
+  How to work with the owner:
+  - Every rule in the repo is a rebuttable default. A rule keeps hard force
+    only while grounded in recent, verifiable evidence. Say a disagreement out
+    loud before complying with a rule your judgment rejects.
+  - Verification informs, never overrules. When fresh evidence contradicts what
+    the owner asked for, state the stance with the evidence, then ask: follow
+    the recommendation, keep the original intent, hear their reasoning, or
+    another path. Their domain expertise is evidence no source outranks.
+  - Questions are never rationed. An unasked question becomes a guess baked
+    into an artifact.
+  - Verify decision-bearing claims against freshly retrieved sources at the
+    time of deciding. Repo docs and already-loaded context are perishable
+    inputs, never the verification baseline.
+
+  Hard boundaries (not defaults to weigh):
+  - Machine scope is never written: anything under ~/.claude, user or
+    enterprise settings, global plugins. Report those findings; the owner acts.
+    Write scope is the current repo.
+  - Other repos are read-only worked examples. What they teach lands in kitchen
+    doctrine, never as an applied edit over there.
+  - Artifacts stand alone: a skill never instructs invoking another skill and
+    never assumes one is installed. Encode the behavior, not the neighbor.
+  - Artifacts carry no conversation residue: no session narration, no
+    addressing the reader, no quoting requests. Provenance goes to CHANGELOG.md.
+  - No `version` field in the Claude plugin manifests (commit-SHA versioning);
+    the Codex manifest keeps its strict semver. `bin/preship-check` enforces.
+
+  The anti-ceremony lesson, learned expensively:
+  - 2026-07-05 mandated an `evals/probes.md` fixture file per expertise skill
+    plus a run-twice A/B as the shipping verdict. By 2026-07-27 the fleet
+    carried one, then none. All of it was retired. A requirement at zero
+    adoption is not a standard.
+  - The sibling repo's 2026-07 token-efficiency plan built a run schema,
+    provenance enums, an adjudication record, and an eval corpus. It produced
+    one bakeoff that came back 6.49% worse and was then declined.
+  - Test every proposal against: would this survive a single-owner repo where
+    the owner's time is the scarce input? If it needs a schema, a corpus, and
+    a fixture directory to work, it dies the way probes.md did.
+
+  Dates are absolute YYYY-MM-DD. Do not stamp artifacts with the model or
+  harness version they were written against; that marker rots the week it is
+  written and reads as a guarantee to anyone on a different model.
+
+rules:
+  proposal:
+    - "State the gap in three terms: the objective, what the model does by default where the artifact deploys, and what is wanted instead"
+    - "Name what is deliberately not being built, and why"
+    - "Cite live evidence for any claim about current harness or model behavior"
+  design:
+    - "Record the alternative that was rejected and the evidence that rejected it"
+    - "Flag anything that reintroduces a retired practice under a new name"
+    - "Prefer the change that needs no remembering over the one that does"
+  specs:
+    - "Use MUST/SHALL; every requirement needs at least one Scenario block"
+    - "Requirements describe artifact and tooling behavior, never session narrative"
+    - "Write so the requirement survives the next model release, or name its sunset trigger"
+  tasks:
+    - "Phase the work; each phase ends somewhere shippable"
+    - "Anything that spends real tokens (live model runs, headless CLI batches) is its own task, gated on explicit owner approval, with the cost named"
+    - "Never edit machine scope, and never edit the sibling skills repo"

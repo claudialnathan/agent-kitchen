@@ -6,6 +6,12 @@ On 2026-07-14 the repo split: the `cook` plugin was renamed `agent-kitchen` and 
 
 On 2026-07-31 the meta layer was re-cut by situation: `forge` and `harvest` retired, `new-skill`, `improve-skill`, and `grill-skill` created. Entries before that date name the retired skills as they were at the time.
 
+## 2026-08-04: MODELS.md routes on Opus 5; STATE already at v2.1.221
+
+- **MODELS.md** re-verified 2026-08-04. Opus 5 (`claude-opus-5`, $5/$25) becomes the default Claude Opus route and the preferred Claude daily driver when Fable is credit/quota-gated; Fable stays writing/taste ceiling and entitled long-horizon pick. Agent Arena / WebDev / ReactBench / AA snapshots updated; Opus 4.8 demoted to selectable prior + classifier fallback.
+- Kitchen skill sync and STATE/HACKS pin already shipped earlier this day (see prior entry).
+- Applied-skills fleet sweep: inventoried in the sibling `skills` repo; keep verdicts + live-test queue recorded there — no deletions without live convergence.
+
 ## 2026-08-04: STATE/HACKS to v2.1.221; kitchen skills synced; no model pins in skill bodies
 
 - **STATE.md / HACKS.md** pinned to Claude Code **v2.1.221** (4 August 2026). Delta 2.1.219–221. Survivors: Opus 5 as default Opus; nested-subagent default depth **3** again (`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1` disables); `DirectoryAdded`; sandbox `mode: "mask"` + `strictAllowlist`; dynamic-workflow medium default / `workflowSizeGuideline`; `/fork` own worktree; background agents commit/push with draft PR only when tasked; `context: fork` background by default.

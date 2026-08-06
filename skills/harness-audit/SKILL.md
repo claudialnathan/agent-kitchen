@@ -1,10 +1,22 @@
 ---
 name: harness-audit
 description: |
-  Audits the coding-agent harness a project's sessions run under, end-to-end: what loads every session, what it costs, whether the harness's own claims hold, and whether its parts work when assembled. Inventories the standing surfaces (CLAUDE.md chain, personal/project/plugin skills, MCP instruction blocks, agent rosters, hooks, settings at every scope), quantifies their per-session token cost, runs setup checks (self-consistency, duplication across scopes, enforcement parity, scope discipline, and a provisional routing-effectiveness check for doc-fleet repos), and after substantial harness changes can run a representative composition probe through the complete installed system. The audit itself is read-only: the deliverable is a ranked findings report leading with the highest-value edit, nothing is applied without the owner's explicit go-ahead, and edits stay inside the project directory. Machine scope (anything under ~/.claude, user or enterprise settings, global plugins) is never edited; those findings are reported with a project-scoped counterweight proposed where one exists. Use to review, slim, or sanity-check a project's harness after major harness changes or when sessions feel slow or behave incoherently from turn one; auditing the guidance inside a single artifact is a different job from auditing the setup that loads it.
+  Audit the coding-agent harness a project's sessions run under: what loads every session, what it costs, whether its own claims hold, and whether the parts work once assembled. Use to review, slim, or sanity-check a project's harness after major harness changes, or when sessions feel slow or behave incoherently from turn one. Read-only, and nothing is applied without the owner's go-ahead. Auditing one artifact's guidance is a different job.
 ---
 
 Do not load shared snapshots for every audit. Read the plugin-root `STATE.md` when an installed capability, limit, or cross-tool convention is in question; read `MODELS.md` only when the audit includes model policy, routing economics, or model-release convergence. Resolve both from this skill's source. They orient the check but never replace inspection of the installed harness or live canonical docs.
+
+## Start here: why is this audit running?
+
+| The reason | Run |
+| :--- | :--- |
+| Sessions feel slow or expensive | Steps 1–2. The cost table is the finding. |
+| Sessions behave incoherently from turn one | Steps 1 and 3. Contradictions between surfaces are the finding, not cost. |
+| Substantial harness changes just landed | Steps 1–4, including the composition probe. |
+| General review, or slimming | Every step in order. |
+| One artifact's guidance looks wrong | Not this skill. Auditing the guidance inside an artifact is a different job from auditing the setup that loads it. |
+
+Steps 5 and 6 always apply: report first, apply only on the owner's go-ahead.
 
 ## The attention this skill redirects
 

@@ -1,32 +1,45 @@
 ---
 name: ingest
 description: |
-  Reads content the owner hands over when its destination is not yet known, and works out where it belongs in the harness: which existing primitive it improves, whether it warrants a new one, or that nothing does. Scoped to coding-agent harness primitives (skills, hooks, path-scoped rules, CLAUDE.md and AGENTS.md entries, workflow scripts, subagents, MCP), read for what they mean for how those behave rather than summarized. Sources a request is built on, or one author's body of work being distilled, are read whole in the main thread whatever the count; a large pile of side references may fan out to one subagent per source that returns quoted excerpts. Surveys whatever harness exists around it, a skills repo or a codebase's .claude or nothing, instead of assuming a shape, then surfaces the placement for the owner to confirm. Use when handing over reading, links, or someone's public writing without naming which artifact it belongs in. Material handed over for an artifact the owner names is an edit to that artifact, not a placement question.
+  Work out where handed-over reading belongs in a coding-agent harness: which existing primitive it improves, whether it warrants a new one, or that nothing does. Use when given articles, links, papers or someone's public writing without a named destination. Material for an artifact the owner already names is an edit to that artifact, not a placement question.
 disable-model-invocation: true
 ---
 
-## What it does
+The owner hands over reading — an article, a paper, a doc, links, pasted text, someone's body of public work — and this works out **where it belongs in the harness**: which existing primitive it should improve, whether it warrants a new one, or that nothing here is worth building.
 
-The owner hands over reading — an article, a paper, a doc, links, pasted text, or one person's body of public work — and `/ingest` works out **where that content belongs in the harness**: which existing primitive it should improve, whether it warrants a new one, or that nothing here is worth building.
+What it redirects: from "what the model already knows about topic X" to "what *these* sources say, what they add that priors didn't, and which primitive in *this* harness they change." The deliverable isn't a summary. It's a **placement** — a target primitive (existing, new, or none), the concrete change, and the cited excerpts behind it, put to the owner to confirm.
 
-Scope is the harness primitives and nothing wider: skills, hooks, path-scoped rules, CLAUDE.md / AGENTS.md entries, workflow scripts, subagents, MCP. Content that isn't aimed at one of these isn't `/ingest`'s job; that is ordinary research, and the model's priors or a plain read answer it.
+## Start here: is this the job?
 
-## The attention this redirects
+| What arrived | Do this |
+| :--- | :--- |
+| Reading aimed at a harness primitive, destination not named | Continue below. This is the job. |
+| Reading for an artifact the owner already named | Not a placement question. It's an edit to that artifact, so say so. |
+| A topic the model's priors answer, with no harness angle | Ordinary research. Read it and answer; don't run this. |
+| One source, and the next step is obvious | Read it whole inline and go. Skip the placement file. |
 
-From "what the model already knows about topic X" to "what *these specific sources* say, what they add that priors didn't, and which primitive in *this* harness they change." The deliverable is not a summary of the reading. It is a **placement**: a target primitive (existing or new, or none), the concrete change, and the cited excerpts that ground it, surfaced for the owner to confirm before an artifact-design pass.
+Scope is harness primitives and nothing wider: skills, hooks, path-scoped rules, CLAUDE.md and AGENTS.md entries, workflow scripts, subagents, MCP. The strongest signals this is the right call: the topic is newer than the training cutoff, the owner wants reading *reflected* rather than summarized, the material is internal or someone's writing the model can't have seen, or two sources disagree and both belong in the placement.
 
-## Read the spec whole; fan out only a large pile
+## Then: how does each source get read?
 
-Two kinds of source, and role decides how each is read. Count never overrides role.
+Role decides. Count never overrides role.
 
-- **Spec material is read whole, in the main thread, however many there are.** The sources a request is built on: "inspired by this", "do what they do", "make a skill from this person's writing", or one author's body of work being distilled into taste. The isolation machinery is *not* applied to these. What the artifact must transplant — the judgment, the voice, the call at the fork — lives in the connective tissue that excerpting drops, so a taste skill built from eight quotes of its own spec is a skeleton. Six articles by one author you are distilling are six spec sources, and you read all six whole. The token cost is the price of the material the artifact is made of.
-- **Supplementary references are read in the main thread by default, and *may* fan out when the pile is large.** Trailing "might also be useful" links, semi-relevant context. A handful (roughly under four to go fetch) you just read. Once the pile is large enough to crowd the main thread, dispatch one subagent per source under the quote-only contract below, and only excerpts return. The fan-out is a tool you reach for to spare context, not a step you owe.
+| The source is | Read it |
+| :--- | :--- |
+| What the request is built on: "inspired by this", "do what they do", one author's work being distilled | **Whole, in this thread**, however many there are |
+| A trailing "might also be useful" link, small pile (under about four to fetch) | Whole, in this thread |
+| A trailing pile big enough to crowd the thread | One subagent per source, under the fan-out contract below |
+| Already pasted in full | Excerpt it inline. A subagent buys nothing once the text is here |
 
-If the tier is genuinely ambiguous — a pile with no clear center — ask which sources the work is built on. A one-line answer beats a guessed tier in either direction: a fanned-out spec loses its judgment, an inlined pile floods the thread.
+Spec material never goes to subagents. What the artifact has to carry over — the judgment, the voice, the call at the fork — lives in the connective tissue excerpting throws away, so a taste skill built from eight quotes of its own spec is a skeleton. Six articles by one author being distilled are six spec sources, and you read all six whole. That token cost is the price of the material.
+
+If the tier is genuinely unclear, a pile with no obvious centre, ask which sources the work is built on. A one-line answer beats guessing either way: a fanned-out spec loses its judgment, an inlined pile floods the thread.
 
 ## Essence over shape
 
-Distill what the material *says, intends, and means*, never its structure, format, or voice. Read the meaning twice: against context primitives (what does this imply for how skills, hooks, rules, CLAUDE.md, and agent context actually behave?) and against the owner's standing harness and intent. A source can be anything — an article, a paper, someone else's skill. A skill used as a source is excerpted like any document; its ideas are reworked into the owner's artifacts, never cross-wired as a dependency, and whatever is built from them stands alone — it never invokes another skill or assumes one is installed.
+Distill what the material *says, intends, and means*, never its structure, format, or voice. Read the meaning twice: against context primitives (what does this imply for how skills, hooks, rules, CLAUDE.md, and agent context actually behave?) and against the owner's standing harness and intent.
+
+**Capture the settled values, not only the argument.** A source's durable contribution is usually the conventions it has already fixed: the numbers, curves, thresholds, class names, code fragments, and defaults an agent would otherwise re-derive differently every run. Excerpt those verbatim beside the reasoning that justifies them, and name which parameter varies by project so the artifact adapts them instead of copying them literally. Where the source carries a runnable demo, a video, or a live example, note what it shows that the prose does not, because a procedure's real detail often lives only there. A source can be anything — an article, a paper, someone else's skill. A skill used as a source is excerpted like any document; its ideas are reworked into the owner's artifacts, never cross-wired as a dependency, and whatever is built from them stands alone — it never invokes another skill or assumes one is installed.
 
 ## How it works
 
@@ -122,21 +135,6 @@ Per-source agent prompt template. Substitute `{{topic}}` and `{{source}}` at dis
 - **The kitchen-sink placement.** Four thousand tokens of synthesis "to be thorough" defeats the point. The placement is the small artifact that reaches the design step. Cut weak quotes; raise the relevance bar.
 - **The empty rough edge.** If what the sources "add" reads as a restatement of what priors already hold, they added nothing. Say so and stop; don't manufacture a target for a non-gap.
 - **The paraphrase smuggle.** A subagent that returns "the source argues that X" instead of a verbatim quote has done paraphrase, and synthesis will treat it as authoritative. Reject the output and re-dispatch with the contract.
-
-## When to reach for `/ingest`, and when to skip
-
-Reach for it when the content is meant to become a harness improvement and at least one holds:
-
-- The topic is newer than the training cutoff (recent release, new spec, fresh paper).
-- The owner has reading they want *reflected*, not just topical questions answered.
-- The owner has internal docs, or someone's public writing, the model can't have seen.
-- Sources disagree and both sides should be cited into the placement.
-
-Skip when:
-
-- The content isn't aimed at a harness primitive. That's research, not `/ingest`.
-- The topic is well-covered in training and the owner is asking from priors anyway.
-- It's one source and the next step is immediate: read it whole inline and go. The fan-out machinery has no leverage, and a written placement only earns its writing if the material must survive to a later session.
 
 ## See also
 

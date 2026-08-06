@@ -1,14 +1,14 @@
 ---
 name: improve-skill
 description: |
-  Changes an existing coding-agent harness artifact, entered from either of two situations: evidence that it is underperforming, or new material to work into it. Diagnoses before editing, locating the failure by information flow, position, boundaries, composition, and only then wording, so a wording patch never compensates for a wrong surface. Where the owner knows something is not working but cannot cite the moment, it mines recent session transcripts for the corrections that show it. Changes are localised deltas that name what must not regress. Use when a skill misses, over-fires, never triggers, or steers badly, when an article or doc should be worked into one that already exists, and when the honest outcome is deleting it because the model now does unaided what it instructs.
+  Change an existing coding-agent harness artifact. Use when a skill misses, over-fires, never triggers, or steers badly, when an article or doc should be worked into one that already exists, or when the artifact may no longer be needed at all. Deleting it is a normal outcome.
 ---
 
 # improve-skill
 
-Something already exists and something about it is wrong or incomplete. The surface question was answered when it was built, so it is not asked again here. The subject is whether the guidance is right, whether it reaches the agent at all, and what must not break while it is fixed.
+Something already exists and something about it is wrong or incomplete. Whoever built it already answered the surface question, so don't ask it again here. Three things matter: is the guidance right, does it reach the agent at all, and what must not break while you fix it.
 
-**This file is a router. Budget: 90 lines.** Neither door's procedure belongs in it. If the router passes 90 lines, a door's content moves to a reference; the budget does not move. The predecessor this replaces was avoided over invocation cost, which is the failure being fixed.
+**This file is a router. Budget: 90 lines.** Neither door's procedure belongs in it. If the router goes over 90 lines, move a door's content to a reference — the budget doesn't move.
 
 ## Two doors, inferred rather than asked
 
@@ -44,9 +44,11 @@ Locate the failure in this order and **stop at the first layer that failed**. Wo
 4. **Composition:** is another artifact duplicating its ownership, contradicting it, or stealing its trigger?
 5. **Wording:** only now, revise the prose.
 
-A wording patch that compensates for missing context or the wrong surface makes the failure quieter, not fixed, and it must be rejected on those grounds. When the layer is position, change the surface and leave the wording alone. When the layer is composition, redraw ownership and update both ledger rows rather than adding disambiguating prose to either.
+A wording patch laid over missing context or the wrong surface makes the failure quieter instead of fixing it. Reject it for exactly that reason. When the layer is position, change the surface and leave the wording alone. When the layer is composition, redraw ownership and update both ledger rows rather than adding disambiguating prose to either.
 
-The one case where wording genuinely is the layer: **a rule the model read and still violated.** When the same correction recurs in sessions where the artifact was demonstrably loaded, the deficit is salience, not triggering, so more triggers change nothing. Move the trigger from concept to shape — name the exact wrong artifacts the model produces (the parallel component beside the source it should have edited, the bracket value already on the scale) and lead with the highest-recurrence shape.
+Two cases where wording genuinely is the layer. The first: **a rule the model read and still violated.** When the same correction recurs in sessions where the artifact was demonstrably loaded, the deficit is salience, not triggering, so more triggers change nothing. Move the trigger from concept to shape — name the exact wrong artifacts the model produces (the parallel component beside the source it should have edited, the bracket value already on the scale) and lead with the highest-recurrence shape.
+
+The second: **it fired, it was followed, and the output was wrong in kind** — a report where the work was wanted, process narration, or values the agent settled differently every run. That is form. Check the body for derivations the author could have settled, rules un-ruled by the next clause, a mode router or phase sequence gating the work, and an output contract taking a large share of the lines. The repair states the values, pairs every prohibition with its replacement, and returns control flow to the agent.
 
 Mechanics for why something fails to trigger, dies at compaction, or fires without steering: [references/diagnosis.md](references/diagnosis.md).
 
@@ -55,7 +57,7 @@ Mechanics for why something fails to trigger, dies at compaction, or fires witho
 - **Delta by default.** A localised edit that leaves the surrounding content intact. Rewriting whole requires a named reason recorded in the changelog entry; a whole rewrite proposed for a defect confined to one section gets reduced to a delta.
 - **Respect the preservation set.** A change that fixes the current failure while degrading something in it is a trade-off to state, not an edit to apply silently. The owner decides.
 - **A change that does not hold is reverted, not layered.** When the same failure reappears after a fix meant to address it, the prior version stands and a different repair is attempted from there. Never stack a second change on one already judged not to have worked.
-- **Whether it held is judgment made with the owner**, and it is stated as that. When not enough use has happened to tell, the state is unknown, which is reported as unknown rather than as success.
+- **Whether a fix held is a judgment you make with the owner**, so say it that way. If there hasn't been enough use to tell yet, the answer is unknown — report it as unknown, not as success.
 - **Anything added traces to a source.** Supplied reading, a live canonical doc, the owner's stated intent, or a verified truth of the repo the artifact runs in. A revision never extends a source's stance past where the source takes it, and never adds conduct doctrine of its own — what counts as verified, what honesty requires, what "truth" means in the domain — unless a source or the owner states it. Write condition-shaped ("when X, do Y, because Z"); a belief declaration or aphorism reads as universal and gets cited where its conditions don't hold. Not licence to hedge: be as opinionated as the sources and the owner are.
 - **Don't add rigid absolutes or enumerated case lists.** An enumerated list reads as exhaustive and makes the unlisted case look out of scope. Where an issue resists a general fix, try a different framing rather than a narrower rule.
 

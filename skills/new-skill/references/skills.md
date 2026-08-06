@@ -87,6 +87,10 @@ The kind constrains the form; it doesn't decide worth (that's additive-vs-transf
 - **Cross-skill dependency**: a body that says "first run `/X`", or that only works if `/X` is installed. It breaks silently the moment `/X` is absent, disabled, or off-menu.
 - **Article-as-speculation**: encoding the interesting-but-unproven; the most expensive kind of skill, paying rent until something forces removal.
 - **Conversation residue**: the artifact is not the conversation. No session narration, no addressing the reader, no quoting requests.
+- **Prose state machine**: a mode router, a phase sequence, or a findings → plan → apply → re-audit lifecycle written into the body. The agent already owns control flow, so the router charges every invocation to gate the work behind a classification step.
+- **Report contract**: column specs, an evidence-status taxonomy, and a pre-ship checklist restating the body. Past a certain share of the body, the artifact is describing its output instead of producing it.
+- **Derivation assignment**: "infer the local conventions from two or three nearby examples" where the author could have named the values once. Re-derivation is what the artifact was supposed to remove.
+- **Bidirectional hedge**: each rule un-ruled by the next clause ("not automatically wrong… not automatically right"). Net instruction is zero at full token cost.
 
 ## A skill stands alone
 

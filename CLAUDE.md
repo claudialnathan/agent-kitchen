@@ -20,6 +20,8 @@ Prefer condition-shaped guidance to principle-shaped. "When X, do Y, because Z" 
 
 None of this is licence to hedge. An artifact should be as specific, as opinionated, and as directive about procedure as its sources and the owner are. A limp artifact that commits to nothing fails for the same reason as a preachy one: the session substituted its own judgment for the material's. What to avoid is manufactured conviction, and the tell is copywriting — the two-part reframe, the quotable line, the principle nobody supplied. When a session does believe something no source holds, it says so to the owner in the session rather than writing it into the artifact.
 
+This file and the meta layer's skills are the register an authoring session copies, so write them the way the artifacts should read. Plain English, in sentences with someone doing something — the owner has to be able to read these, and a passage she can't parse has failed however correct it is. State values instead of asking for them to be derived, pair every prohibition with its replacement, and attach the reason to the action. `new-skill` carries the full form rule and a lookup of the ways a line fails.
+
 ## New artifacts are feedback for the meta layer
 
 The user comes here to design new harness-related tools. Every one of those is also evidence about the meta layer that built it. When a session creates a new artifact, after delivery ask:

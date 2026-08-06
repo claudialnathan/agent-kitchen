@@ -1,7 +1,7 @@
 ---
 name: grill-skill
 description: |
-  Runs an existing coding-agent harness artifact against a real prompt, collects the owner's reaction to that output, and turns it into a change that generalises past the example. Each round produces the actual output rather than a description of what the artifact would do, and the prompt is used exactly as the owner wrote it. Before any change is applied, the class of requests it affects is named along with one case outside the test example it should improve, because an artifact tuned until it satisfies the prompts it was tuned on is the documented way to make one worse. Approved outputs become a preservation set that later rounds are checked against. Use to try an artifact on something real and iterate from feedback, especially for voice, taste, and judgment work where the owner is the only judge.
+  Test an existing coding-agent harness artifact on a real prompt, then turn the owner's reaction into a change that holds beyond that one example. Use when trying a skill on something real and iterating from feedback, especially for voice, taste and judgment work where the owner is the only judge. Needs both the artifact and a prompt.
 disable-model-invocation: true
 ---
 
@@ -46,7 +46,7 @@ The change is made here. It is never handed to another skill to apply — a poin
 
 ## Rerunning
 
-After a change, rerun. At minimum on the same prompt; where the owner can supply one, also on a prompt the change was not tuned against, because that is the only place the generalisation gets tested at all. Nothing here verifies it — the name-the-class gate is a discipline, not a check, and the honest framing is judgment made with the owner rather than a result.
+After a change, rerun it. On the same prompt at minimum, and where the owner can supply one, on a prompt the change wasn't tuned against — that is the only place the generalisation gets tested at all. Nothing here proves it worked. Naming the class is a discipline, not a test, so treat the outcome as a judgment you made with the owner rather than a result.
 
 The loop continues until the owner says she is satisfied, until feedback stops producing changes, or until it is making no progress. It does not declare its own completion. When two rounds produce nothing the owner considers an improvement, report that rather than continuing to iterate.
 

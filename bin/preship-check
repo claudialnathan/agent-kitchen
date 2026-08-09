@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Pre-ship hygiene check for harness skills.
-# Mechanically runs the validation gates from CLAUDE.md.
+# Mechanically runs the validation gates from AGENTS.md.
 # Exits non-zero on any FAIL. Run from anywhere in the repo.
 
 set -uo pipefail
@@ -8,7 +8,7 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
 
 fail=0
 
-# 1. Loader-trigger byte sequences (CLAUDE.md "Authoring footgun"; full discussion in the new-skill skill).
+# 1. Loader-trigger byte sequences (AGENTS.md "Authoring footgun"; full discussion in the new-skill skill).
 echo "Loader-trigger sequences (must be empty):"
 m1=$(grep -rln $'\x60\x60\x60!' skills/ 2>/dev/null || true)
 m2=$(grep -rln $'!\x60' skills/ 2>/dev/null || true)
@@ -36,7 +36,7 @@ for d in skills/*/; do
 done
 [ "$fm_fail" -eq 0 ] && echo "  OK"
 
-# 3. Description + when_to_use combined chars. CLAUDE.md: 1,536-char discovery budget.
+# 3. Description + when_to_use combined chars. 1,536-char discovery budget.
 #    Anything past is silently truncated by the skill loader. Counts only those two fields,
 #    not the full frontmatter (which can hold paths, hooks, harness-targets, etc.).
 echo

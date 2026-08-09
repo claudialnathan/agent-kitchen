@@ -2,6 +2,8 @@
 
 Last updated: 4 August 2026 | Version: v2.1.221
 
+Read when: an installed Claude Code capability, limit, setting, or cross-tool convention is in question. Skip when the task doesn't turn on what the harness can do.
+
 A snapshot of what's true about Claude Code and the broader coding-agent ecosystem right now. It is a factual reference for builders working against these surfaces, not a tutorial. Filtered to what changes how you build, configure, and ship.
 
 If you've been away for a few months, read this first; the surface has shifted faster than the mental models. For verification against current docs, see the **URLs to keep handy** section below. For per-version changes, `code.claude.com/docs/en/changelog` is authoritative.

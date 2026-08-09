@@ -1,13 +1,13 @@
 ---
 name: state-bump
 description: |
-  Refresh STATE.md against the live Claude Code changelog. Edits the "Last updated:" / "Version:" header on line 3, then adds, edits, or retires body entries so the snapshot matches what's at code.claude.com/docs/en/changelog. Preserves the document's existing voice (terse, factual, "what changes how you build, configure, and ship"), its section structure, and the dateline convention, which means header fields only and no inline "last reviewed against vX.Y.Z" reintroduced elsewhere. On every substantive bump, also re-pin and amend HACKS.md, check CLAUDE.md for staleness, and sweep the kitchen's skills/ artifacts against the new state (Steps 5–7).
+  Refresh STATE.md against the live Claude Code changelog. Edits the "Last updated:" / "Version:" header on line 3, then adds, edits, or retires body entries so the snapshot matches what's at code.claude.com/docs/en/changelog. Preserves the document's existing voice (terse, factual, "what changes how you build, configure, and ship"), its section structure, and the dateline convention, which means header fields only and no inline "last reviewed against vX.Y.Z" reintroduced elsewhere. On every substantive bump, also re-pin and amend HACKS.md, check AGENTS.md for staleness, and sweep the kitchen's skills/ artifacts against the new state (Steps 5–7).
 when_to_use: |
   Triggers: "update STATE.md", "bump STATE.md", "refresh STATE.md", "STATE.md is stale", "STATE.md against latest Claude Code", "what's new in Claude Code since vX", "rev STATE for vX.Y.Z", "changelog dropped, update STATE.md".
   Scoped only to this repo's STATE.md, which is a curated snapshot of Claude Code plus the coding-agent landscape. Not a general changelog summarizer.
 ---
 
-<!-- Scope expanded 2026-06-10 (Fable 5 bump, user directive): HACKS.md companion bump, CLAUDE.md staleness check, and the kitchen skills sweep are standing steps on every substantive bump, not offers. -->
+<!-- Scope expanded 2026-06-10 (Fable 5 bump, user directive): HACKS.md companion bump, AGENTS.md staleness check, and the kitchen skills sweep are standing steps on every substantive bump, not offers. -->
 
 ## The attention this skill redirects
 
@@ -86,9 +86,9 @@ HACKS.md is the "did you know" layer. Same repo, different filter: obscure, powe
 - **Amend rows the release contradicts** before adding anything. A new model or flag often carves an exception into an existing row (e.g. Fable 5 made `MAX_THINKING_TOKENS=0` a no-op on one model). Edit the row in place.
 - **Add only hack-worthy entries**, as table rows or single ⚠️/💡 lines in the existing sections. It's a scannable table/glossary, so no prose paragraphs (see auto-memory `hacks-md-form`).
 
-## Step 6: Check CLAUDE.md for staleness (standing)
+## Step 6: Check AGENTS.md for staleness (standing)
 
-Scan the repo CLAUDE.md against the new state: any rule or footgun the release contradicts? CLAUDE.md holds intent, not current state, so most bumps find nothing, but a contradicted line must be flagged to the user, not silently relied on. A major *model* release additionally activates CLAUDE.md's deletion discipline: every artifact in the repo becomes a re-test candidate, and the fleet is small enough to read through whole rather than selected from. Report which artifacts the release puts in question and what would settle each one; the owner decides what actually gets run. The applied skills are the skills repo's own sweep to run: flag it as pending rather than reaching into that repo from here.
+Scan the repo AGENTS.md against the new state, plus the short Claude-only addendum in CLAUDE.md that imports it: any rule or footgun the release contradicts? AGENTS.md holds intent, not current state, so most bumps find nothing, but a contradicted line must be flagged to the user, not silently relied on. A major *model* release additionally activates AGENTS.md's deletion discipline: every artifact in the repo becomes a re-test candidate, and the fleet is small enough to read through whole rather than selected from. Report which artifacts the release puts in question and what would settle each one; the owner decides what actually gets run. The applied skills are the skills repo's own sweep to run: flag it as pending rather than reaching into that repo from here.
 
 ## Step 7: Sweep the kitchen's skills/ artifacts (standing)
 

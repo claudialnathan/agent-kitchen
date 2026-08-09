@@ -12,7 +12,7 @@ Update this repository's `MODELS.md` as a routing guide for agents building and 
 
 Read:
 
-- `CLAUDE.md`
+- `AGENTS.md`
 - `MODELS.md`
 - the newest relevant `CHANGELOG.md` entry
 

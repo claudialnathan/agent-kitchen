@@ -2,6 +2,8 @@
 
 Last verified: 2026-08-04
 
+Read when: the task involves model choice, routing economics, reasoning-effort tradeoffs, or a model release changing what an artifact is earned against. Skip for work that doesn't pick or price a model.
+
 A routing reference for choosing models while building, testing, and retiring agent skills and primitives. It is not a universal leaderboard. Model, provider, agent harness, tools, and reasoning effort are separate variables; a result belongs to the full configuration that produced it.
 
 API prices below are USD per 1 million input/output tokens. They exclude cached-token rates, batch discounts, long-context multipliers, reasoning-token differences, and tool-call charges. Benchmark cost per rollout is more useful than list price when it is available.

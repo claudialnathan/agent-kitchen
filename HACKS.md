@@ -1,8 +1,8 @@
 ```
 HACKS, FYIs & NICE-TO-KNOWS █
-CLAUDE CODE v2.1.221 + CLAUDE AGENT PLATFORM
+CLAUDE CODE v2.1.226 + CLAUDE AGENT PLATFORM
 
-UPDATED: 2026-08-04
+UPDATED: 2026-08-09
 SOURCE REPO: anthropics/claude-code/blob/main/CHANGELOG.md
 READ WHEN: LOOKING UP A SPECIFIC LESSER-KNOWN SURFACE OR FLAG. FULL-SURFACE REFERENCE IS STATE.MD
 STATUS: DRAFT
@@ -41,6 +41,7 @@ A couple lesser-known or new features I like.
 <tr><td>channels<sup>NEW</sup> <kbd><samp>v2.1.80+</samp></kbd></td><td><code>claude --channels plugin:&lt;name&gt;@&lt;mkt&gt;</code></td><td>Pushes outside events (CI fail, Telegram, <code>curl</code>) <em>into</em> your live session over stdio, files + context already loaded. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
 <tr><td>deep links<sup>NEW</sup> <kbd><samp>v2.1.91+</samp></kbd></td><td><code>claude-cli://open?repo=…&q=…</code></td><td>One click opens Claude in a new terminal, right repo, prompt pre-typed. <code>mailto:</code> for agent sessions. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
 <tr><td>remote control</td><td><code>claude remote-control · /rc</code></td><td>Drive your local session from your phone; full tooling, outbound HTTPS only. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
+<tr><td>session-to-session mail<sup>NEW</sup> <kbd><samp>v2.1.224+</samp></kbd></td><td><code>/list-agents</code> · Claude sends it</td><td>One session tells another what just landed — a breaking change, a settled question, a migration finishing — without you copy-pasting between terminals. Same machine never leaves your box. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
 <tr><td>artifacts + MCP<sup>NEW</sup> <kbd><samp>v2.1.207–212</samp></kbd></td><td>ask for it in the build prompt</td><td>A published artifact can call MCP connectors <em>on every view</em>, not just at build time — live dashboards, not snapshots. Runs through the <em>viewer's</em> own connections (they approve before the first call), not the author's. Also new: public sharing links, Team/Enterprise editor roles, artifacts from Claude Tag sessions.</td></tr>
 </table>
 
@@ -121,6 +122,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>--agents '{"reviewer":{…,"prompt":"…"}}'</code></td><td>Define a subagent inline as JSON, no file to author.</td></tr>
 <tr><td><code>--strict-mcp-config</code></td><td>Use <em>only</em> <code>--mcp-config</code> servers: hermetic, reproducible MCP set.</td></tr>
 <tr><td><code>--plugin-url &lt;https-zip&gt;</code></td><td>Load a plugin from a hosted CI artifact for one session, no install.</td></tr>
+<tr><td><code>archive</code> plugin source<sup>NEW</sup> <kbd><samp>v2.1.224</samp></kbd></td><td><em>Install</em> a plugin from a zip over HTTPS with no git and no npm, optionally pinned to a SHA-256. The persistent counterpart to <code>--plugin-url</code>: ship a plugin off an artifact store or an internal bucket.</td></tr>
+<tr><td><code>claude --teleport &lt;session id&gt;</code><sup>NEW</sup> <kbd><samp>v2.1.223</samp></kbd></td><td>Continue a cloud session locally. The cloud session now prints the hint itself.</td></tr>
 <tr><td><code>claude mcp serve</code></td><td>Run <strong>Claude Code itself as an MCP server</strong>, exposing its tools to other clients.</td></tr>
 <tr><td><code>claude project purge [path]</code></td><td>Wipe one project's local footprint (transcripts, memory, tasks); <code>--dry-run</code>, <code>--all</code>.</td></tr>
 <tr><td><code>claude setup-token</code></td><td>Long-lived OAuth token for CI/scripts (Claude subscription).</td></tr>
@@ -145,7 +148,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>CLAUDE_CODE_RETRY_WATCHDOG</code><sup>NEW</sup> <kbd><samp>v2.1.199</samp></kbd></td><td>Raises the default retry count for non-capacity transient errors to 300 and <em>lifts</em> the former cap of 15 on <code>CLAUDE_CODE_MAX_RETRIES</code>: the supported lever for unattended sessions that must not give up.</td></tr>
 <tr><td><code>CLAUDE_ENABLE_STREAM_WATCHDOG=0</code><sup>NEW</sup> <kbd><samp>v2.1.196</samp></kbd></td><td>Opt out of the idle-stream watchdog, which is now on by default for <em>all</em> providers and aborts and retries a response stream that emits no events for 5 min.</td></tr>
 <tr><td><code>CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS</code><sup>NEW</sup> <kbd><samp>v2.1.213</samp></kbd></td><td>MCP tool calls past 2 min now auto-background by default so the session stays usable; tune the threshold or disable here.</td></tr>
-<tr><td><code>CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH</code> / <code>_MAX_SUBAGENTS_PER_SESSION</code> / <code>_MAX_CONCURRENT_SUBAGENTS</code><sup>CHANGED</sup> <kbd><samp>v2.1.212–219</samp></kbd></td><td>The 3 subagent-fan-out limits: nesting defaults to depth <strong>3</strong> again (set <code>=1</code> to disable), 200 total/session, 20 concurrent. → <a href="#07-orchestration">#07</a></td></tr>
+<tr><td><code>CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH</code> / <code>_MAX_CONCURRENT_SUBAGENTS</code><sup>CHANGED</sup> <kbd><samp>v2.1.217–224</samp></kbd></td><td>The 2 remaining subagent-fan-out limits: nesting defaults to depth <strong>3</strong> (set <code>=1</code> to disable), 20 concurrent. The per-session total is <strong>gone</strong> (v2.1.224) — <code>_MAX_SUBAGENTS_PER_SESSION</code> no longer caps a long session. → <a href="#07-orchestration">#07</a></td></tr>
+<tr><td><code>CLAUDE_CODE_MESSAGING_SOCKET</code><sup>NEW</sup> <kbd><samp>v2.1.224</samp></kbd></td><td>Each session's own inbox socket, exported to hooks and Bash <em>before</em> <code>SessionStart</code> runs: the supported way for a hook or script to post a message into its own live session. Same path as <code>/status</code> → <code>Peer address</code>. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
 <tr><td colspan="2" align="center"><kbd><h4>settings.json keys</h4></kbd></td></tr>
 <tr><th><samp>KEY</samp></th><th><samp>FUNCTION</samp></th></tr>
 <tr><td><code>skillOverrides</code></td><td>Set a skill to <code>"name-only"</code> (keep listed, drop description budget) or <code>"off"</code>, without editing its file; great for noisy third-party skills.</td></tr>
@@ -159,7 +163,8 @@ Full lists live in `docs/en/cli-reference`, `/settings`, `/env-vars`, `/hooks`. 
 <tr><td><code>fallbackModel</code><sup>NEW</sup> <kbd><samp>v2.1.166</samp></kbd></td><td>Up to three fallbacks tried in order when the primary is overloaded/unavailable; the settings form of <code>--fallback-model</code>.</td></tr>
 <tr><td><code>disableBundledSkills</code><sup>NEW</sup> <kbd><samp>v2.1.169</samp></kbd></td><td>Hide <em>all</em> bundled skills, workflows, and built-in slash commands from the model in one key: reclaim their description budget.</td></tr>
 <tr><td><code>Tool(param:value)</code> perm rules<sup>NEW</sup> <kbd><samp>v2.1.178</samp></kbd></td><td>Permission rules match a tool call's <em>input params</em> (with <code>*</code>): e.g. <code>Agent(model:opus)</code> blocks Opus subagents. Param-level <code>deny</code>/<code>allow</code> without a <code>PreToolUse</code> hook.</td></tr>
-<tr><td><code>sandbox.credentials</code> + <code>mode: "mask"</code><sup>CHANGED</sup> <kbd><samp>v2.1.187 / 221</samp></kbd></td><td>Block sandboxed commands from reading credential files and secret env vars. <code>mode: "mask"</code> (Linux/WSL) serves a sentinel copy and substitutes the real value on egress; macOS falls back to <code>deny</code>. Pair with <code>sandbox.network.strictAllowlist</code> (v2.1.219) to deny non-allowlisted hosts without prompting.</td></tr>
+<tr><td><code>sandbox.credentials</code> + <code>mode: "mask"</code><sup>CHANGED</sup> <kbd><samp>v2.1.187 / 221 / 224</samp></kbd></td><td>Block sandboxed commands from reading credential files and secret env vars. <code>mode: "mask"</code> (Linux/WSL) serves a sentinel copy and substitutes the real value on egress; macOS falls back to <code>deny</code>. v2.1.224 adds <code>decode: "jwt"</code> + <code>maskClaims</code> (mask <em>inside</em> a token) and <code>awsPairs</code>/<code>sigv4</code> (re-sign SigV4 on the way out) — both need <code>network.tlsTerminate</code>, and the whole block is read only from user/managed/<code>--settings</code>, never a repo. Pair with <code>sandbox.network.strictAllowlist</code> (v2.1.219) to deny non-allowlisted hosts without prompting.</td></tr>
+<tr><td><code>crossSessionInbound</code> · <code>isolatePeerMachines</code> · <code>dialogExpiry</code><sup>NEW</sup> <kbd><samp>v2.1.224</samp></kbd></td><td><code>accept</code>/<code>hold</code>/<code>refuse</code> for messages from your other sessions · require approval before any message leaves the machine (a <code>true</code> from <em>any</em> scope wins) · how long a held-message dialog waits before dropping it (default 5 min). A <code>-p</code> worker can't show that dialog, so give it <code>accept</code> in <code>--settings</code> or its mail sits held forever.</td></tr>
 <tr><td><code>sandbox.filesystem.disabled</code><sup>NEW</sup> <kbd><samp>v2.1.216</samp></kbd></td><td>Skip filesystem isolation while keeping network egress control — the inverse trade-off from <code>sandbox.credentials</code> above.</td></tr>
 <tr><td><code>respondToBashCommands: false</code><sup>NEW</sup> <kbd><samp>v2.1.186</samp></kbd></td><td>Revert the new default where a <code>!</code> bash run makes Claude react to the output; keeps <code>!</code> output as context only.</td></tr>
 </table>
@@ -258,7 +263,8 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 <tr><td>forked subagents / <code>/subtask</code><sup>CHANGED</sup> <kbd><samp>v2.1.212</samp></kbd></td><td><code>/subtask &lt;directive&gt;</code> · <code>CLAUDE_CODE_FORK_SUBAGENT=1|0</code></td><td>The old <code>/fork</code>, renamed. Inherits the <em>entire</em> conversation (zero re-explaining) and shares the parent's prompt cache, so cheaper than a fresh subagent for same-context work. Default-on since v2.1.161 (the env var now just forces on/off). <code>/fork</code> means something else now — see the next row.</td></tr>
 <tr><td><code>/fork</code><sup>CHANGED</sup> <kbd><samp>v2.1.212 / 221</samp></kbd></td><td><code>/fork [prompt]</code></td><td>Copies the whole conversation into a new, independent <strong>background session</strong> (its own row in <code>claude agents</code>) while you keep working here; runs its own subagent budget. As of v2.1.221 the fork also gets its <strong>own worktree</strong>. With agent view off, <code>/subtask</code> disappears and <code>/fork</code> reverts to the old forked-subagent behavior.</td></tr>
 <tr><td>nested subagents<sup>CHANGED, depth 3 by default</sup> <kbd><samp>v2.1.219</samp></kbd></td><td><code>CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=&lt;n&gt;</code></td><td>A subagent spawning its <em>own</em> subagents (reviewer → a verifier per finding) defaults to depth <strong>3</strong> again (was off at v2.1.217). Set <code>=1</code> to disable nesting. No fixed depth-5 cap — you configure the depth. A fork still can't spawn a fork.</td></tr>
-<tr><td>subagent limits, 3 of them<sup>CHANGED</sup> <kbd><samp>v2.1.212–219</samp></kbd></td><td><code>CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION</code> (200) · <code>CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS</code> (20) · spawn depth above</td><td>Per-session total (v2.1.212, can't be disabled, resets on <code>/clear</code>, doesn't count a <code>/fork</code> session or workflow <code>agent()</code> calls) · concurrency cap (v2.1.217, exempt under <code>ultracode</code>/workflows, <code>/subtask</code> never blocked by it) · nesting depth (default 3 as of v2.1.219). Also: a 200-call WebSearch cap per session (<code>CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION</code>, v2.1.213).</td></tr>
+<tr><td>subagent limits, now 2<sup>CHANGED</sup> <kbd><samp>v2.1.224</samp></kbd></td><td><code>CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS</code> (20) · spawn depth above</td><td>The <strong>per-session total is removed</strong> (v2.1.224): no cap on how many subagents a session spawns over its life, so an all-day session stops refusing new agents. What's left: concurrency (v2.1.217, exempt under <code>ultracode</code>/workflows, <code>/subtask</code> never blocked by it) · nesting depth (3). Also still live: a 200-call WebSearch cap per session (<code>CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION</code>, v2.1.213).</td></tr>
+<tr><td>cross-session messaging<sup>NEW</sup> <kbd><samp>v2.1.224</samp></kbd></td><td><code>/list-agents</code> (= <code>/peers</code>) · <code>SendMessage</code> · <code>ListAgents</code></td><td>Your separate sessions message each other — plain text only, never history or files. Same machine goes over a Unix socket that never touches Anthropic servers; another machine or the web is <strong>reply-only</strong>, via Remote Control. macOS/Linux, not on Bedrock/Vertex/Foundry. → <a href="#08-sessions-remote-deep-links">#08</a></td></tr>
 <tr><td>advisor tool<sup>NEW</sup> <kbd><samp>experimental, API-only</samp></kbd></td><td><code>/advisor &lt;model&gt;</code> · <code>advisorModel</code> setting · <code>--advisor</code></td><td>Claude consults a second, typically stronger model at decision points (before committing to an approach, when stuck on a recurring error, before declaring done) — the advisor sees the <em>full</em> transcript and Claude generally follows its guidance. Anthropic API only (no Bedrock/Vertex/Foundry/AWS). Advisor tokens bill on top of main-model usage. Fable 5 can be the main model but currently can't be the advisor (dimmed "temporarily unavailable" in the picker, pending a remote rollout).</td></tr>
 <tr><td><code>/goal</code><sup>NEW</sup> <kbd><samp>v2.1.139+</samp></kbd></td><td><code>/goal &lt;condition&gt;</code></td><td>A small fast model re-checks your condition every turn and keeps Claude working until it holds, no per-turn prompting. Judges <em>only the transcript</em>, so write conditions the output can prove: <code>"npm test exits 0 and git status clean, or stop after 20 turns"</code>.</td></tr>
 <tr><td>agent view</td><td><code>claude agents</code> · <code>--json</code></td><td><code>←</code> on an empty prompt backgrounds + jumps here; <code>Ctrl+T</code> pins (survives idle, restarts onto new binaries); <code>s:blocked</code> filters "what needs me"; <code>--json</code> emits an inventory with a <code>waitingFor</code> field.</td></tr>
@@ -280,6 +286,20 @@ On a Claude subscription the 1-hour cache TTL is automatic (no <code>ENABLE_PROM
 <tr><td>iMessage self-chat</td><td>iMessage channel reads <code>~/Library/Messages/chat.db</code></td><td>Text yourself for a zero-config phone→Claude bridge (needs Full Disk Access, no bot token).</td></tr>
 <tr><td>remote control<sup>NEW</sup> <kbd><samp>v2.1.51+</samp></kbd></td><td><code>claude remote-control</code> · <code>/rc</code> · <code>--spawn worktree</code></td><td>Local session, phone UI via QR; filesystem + MCP + <code>@</code>-autocomplete intact. <code>/rc</code> hands an in-progress convo over without restarting. <code>--spawn worktree</code> = parallel edits per connection. Outbound HTTPS only. Pro/Max/Team/Enterprise, preview.</td></tr>
 <tr><td>deep links<sup>NEW</sup> <kbd><samp>v2.1.91+</samp></kbd></td><td><code>claude-cli://open?…</code> · <code>vscode://anthropic.claude-code/open</code></td><td>Auto-registered on first run, no install. Opens a terminal (or an IDE tab) in the right repo, prompt pre-typed. Fire via <code>open</code> (macOS) / <code>xdg-open</code> (Linux) / <code>Start-Process</code> (PowerShell).</td></tr>
+<tr><td>self-hosted runners<sup>NEW</sup> <kbd><samp>v2.1.224</samp></kbd></td><td><code>claude self-hosted-runner</code></td><td>Cloud sessions (claude.ai, mobile, desktop, <code>claude --cloud</code>, routines) execute on <em>your</em> hosts. All-outbound HTTPS; Anthropic never dials in. A runner locks to the first user it serves, so min fleet size = expected concurrent users. Team/Enterprise public beta, off by default, no ZDR, no Bedrock/Vertex/Foundry/gateway inference.</td></tr>
+</table>
+
+<br>
+
+**Cross-session messaging** <kbd><samp>v2.1.224</samp></kbd> — the footguns:
+
+<table>
+<tr><th><code>TRAP</code></th><th><code>REALITY</code></th></tr>
+<tr><td>privacy env vars kill it silently</td><td><code>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC</code>, <code>DISABLE_TELEMETRY</code>, <code>DO_NOT_TRACK</code>, <code>DISABLE_GROWTHBOOK</code> each turn off the feature-flag evaluation it rides on, so a locked-down setup just doesn't have it. First check is <code>/list-agents</code>: unrecognized = no feature.</td></tr>
+<tr><td>bypassing sessions hold their mail</td><td>With no <code>crossSessionInbound</code> set, the default keys off <em>permission modes</em>: a session that bypasses prompts holds every inbound message for approval unless the sender also bypasses. Your <code>--dangerously-skip-permissions</code> worker is the one that won't hear you.</td></tr>
+<tr><td>containers can't see each other</td><td>Peers find each other through files on a shared filesystem. Host ↔ container can't message; two sessions inside one container can.</td></tr>
+<tr><td><code>--bare</code> sessions are invisible</td><td>Bare mode binds no inbox socket, so the session neither receives nor appears in the list. A plain <code>-p</code> session <em>does</em> bind one.</td></tr>
+<tr><td>denying <code>SendMessage</code> costs more than you think</td><td>The same tool serves subagents and agent-team teammates, so a blanket deny rule silently kills in-session messaging too.</td></tr>
 </table>
 
 <br>
@@ -361,6 +381,9 @@ Renamed, removed, don't-use.
 <tr><td><code>think</code> / <code>think hard</code> as keywords</td><td>only <code>ultrathink</code> is parsed now (the ladder lives in the original best-practices post).</td></tr>
 <tr><td><code>TodoWrite</code></td><td>replaced by <code>TaskCreate</code>/<code>TaskGet</code>/<code>TaskList</code><sup>NEW</sup> <kbd><samp>v2.1.142+</samp></kbd>; <code>CLAUDE_CODE_ENABLE_TASKS=0</code> reverts.</td></tr>
 <tr><td>the <code>/agents</code> wizard (Running tab + Library)</td><td>removed v2.1.198; create/manage subagents by asking Claude or editing <code>.claude/agents/</code>. <code>claude agents</code> (the CLI session list) is unrelated and still current.</td></tr>
+<tr><td><code>/ultraplan</code></td><td>removed v2.1.222. No replacement cloud-planning command; plan locally or plan inside a cloud session.</td></tr>
+<tr><td><code>/ultrareview</code> as the command · <code>/review</code> as a separate fast review</td><td>the command is <code>/code-review ultra</code> (<code>/ultrareview</code> is an alias where you have the feature). <code>/review</code> is now just an alias of <code>/code-review</code><sup>NEW</sup> <kbd><samp>v2.1.223</samp></kbd> — the fast single-pass split is gone. Bare <code>/code-review</code> reuses your last level.</td></tr>
+<tr><td>"200 subagents per session, then it refuses"</td><td>the per-session total was removed v2.1.224. Only concurrency (20) and depth (3) remain.</td></tr>
 <tr><td>Windsurf in <code>/ide</code></td><td>rebranded Devin Desktop.</td></tr>
 </table>
 
@@ -404,7 +427,7 @@ lap's configuration.
 │ ① PLAN                                     "decide what to build"  §06 §10 │
 ├────────────────────────────────────────────────────────────────────────────┤
 │  plan mode ....... Shift+Tab ×2 · ultrathink for the gnarly parts          │
-│  cloud plan ...... /ultraplan  (draft in cloud → review → pull back)       │
+│  cloud plan ...... gone: /ultraplan removed v2.1.222 (plan locally)        │
 │  persistent goal . /goal <condition the transcript can prove>              │
 │  dials ........... /model best · /effort low→max (ultracode = workflows)   │
 │  cache rule ...... pick model + effort NOW; every mid-task flip            │
@@ -418,6 +441,7 @@ lap's configuration.
 │  isolation ....... --worktree <name> · worktree.baseRef fresh|head         │
 │  parallelism ..... claude agents (Ctrl+T pins) · /bg · /batch              │
 │  heavy fan-out ... ultracode dynamic workflows · agent teams (~7× tokens)  │
+│  cross-talk ...... /list-agents → Claude messages your other sessions      │
 │  from anywhere ... channels (events flow in) · remote control (you drive)  │
 └─────────────────────────────────────┬──────────────────────────────────────┘
                                       ▼
@@ -435,7 +459,8 @@ lap's configuration.
 ├────────────────────────────────────────────────────────────────────────────┤
 │  bug hunt ........ /code-review [effort]  (--comment posts · --fix edits)  │
 │  cleanup only .... /simplify  (reuse / altitude, NOT bug-hunting)          │
-│  multi-agent ..... /ultrareview  (parallel reviewers + adversarial pass)   │
+│  multi-agent ..... /code-review ultra  (cloud fleet, verified findings;    │
+│                    ~$5-25 in credits after 3 free runs on Pro/Max)         │
 │  fresh eyes ...... a second Claude, fresh context, reviews the first's     │
 │                    work, unbiased toward code it just wrote                │
 └─────────────────────────────────────┬──────────────────────────────────────┘
@@ -471,6 +496,6 @@ lap's configuration.
 
 ```
 EVERY FLAG, FIELD, AND VERSION ABOVE: COPIED FROM A DOC, NOT RECALLED.
-RE-CHECKED: 2026-08-04 · AGAINST: v2.1.221 · AUTHORITATIVE: docs changelog
+RE-CHECKED: 2026-08-09 · AGAINST: v2.1.226 · AUTHORITATIVE: docs changelog
 ON DRIFT: FIX IT HERE, RE-PIN THE DATE.
 ```

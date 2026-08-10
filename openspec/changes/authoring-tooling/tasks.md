@@ -6,17 +6,17 @@
 ## 1. Close the gate's cross-skill hole
 
 - [ ] 1.1 Write violating and benign fixtures first: a body with an invocation step, a body with a see-also pointer, a body mentioning a slash command inside a quoted example. The benign cases are the point
-- [ ] 1.2 Add the detection to `bin/preship-check` as a **warning**, not a failure
+- [ ] 1.2 Add the detection to `scripts/preship-check` as a **warning**, not a failure
 - [ ] 1.3 Run it against the four skills. Any see-also pointers surviving the re-cut should warn, which confirms the check sees real references
 - [ ] 1.4 Confirm zero output on a body with no references, matching the gate's success-silent convention
 
 ## 2. Build the scaffolder
 
-- [ ] 2.1 `bin/new-artifact <name>`: creates the directory, SKILL.md skeleton with valid frontmatter, and `agents/openai.yaml` to match the existing four skills
+- [ ] 2.1 `scripts/new-artifact <name>`: creates the directory, SKILL.md skeleton with valid frontmatter, and `agents/openai.yaml` to match the existing four skills
 - [ ] 2.2 Read contract text from the canonical reference at generation time. Do not embed copies in the script
 - [ ] 2.3 Emit explicit placeholders for objective, gap, and sunset trigger, and make an unfilled placeholder a gate failure
 - [ ] 2.4 Append the ledger row with born date and selected contract versions
-- [ ] 2.5 Verify a scaffold-then-fill cycle passes `bin/preship-check` with no structural fixes
+- [ ] 2.5 Verify a scaffold-then-fill cycle passes `scripts/preship-check` with no structural fixes
 - [ ] 2.6 Decide whether the scaffolder handles non-skill surfaces (hooks, rules) or skills only. Skills-only is the honest v1 if the other surfaces have no repeated shape yet
 
 ## 3. Add the held-out split to the trigger harness

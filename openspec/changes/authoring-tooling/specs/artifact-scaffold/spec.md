@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: The scaffolder emits skeleton, ledger row, and contract text together
-`bin/new-artifact` MUST create a new artifact's directory and SKILL.md skeleton, append its ledger row, and insert the text of any contracts the author selects. Emitting the skeleton alone MUST NOT be an option, because the surrounding discipline is the reason the tool exists.
+`scripts/new-artifact` MUST create a new artifact's directory and SKILL.md skeleton, append its ledger row, and insert the text of any contracts the author selects. Emitting the skeleton alone MUST NOT be an option, because the surrounding discipline is the reason the tool exists.
 
 #### Scenario: New skill scaffolded
 - **WHEN** the scaffolder is run for a new skill
@@ -34,8 +34,8 @@ The generated skeleton MUST contain placeholders for the objective, the gap, and
 - **THEN** the gate fails, because a placeholder shipping into the fleet is worse than an absent section
 
 ### Requirement: The scaffolder output passes the gate immediately
-An artifact created by the scaffolder and then filled in MUST pass `bin/preship-check` without structural fixes: valid frontmatter, a description within budget, no orphan or dangling references, a ledger row, and no loader-trigger byte sequences.
+An artifact created by the scaffolder and then filled in MUST pass `scripts/preship-check` without structural fixes: valid frontmatter, a description within budget, no orphan or dangling references, a ledger row, and no loader-trigger byte sequences.
 
 #### Scenario: Filled scaffold committed
 - **WHEN** a scaffolded artifact has its placeholders filled and nothing else changed
-- **THEN** `bin/preship-check` exits zero
+- **THEN** `scripts/preship-check` exits zero

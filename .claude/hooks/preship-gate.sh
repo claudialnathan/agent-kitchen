@@ -1,5 +1,5 @@
 #!/bin/bash
-# PreToolUse gate: run bin/preship-check before any `git commit` Bash call.
+# PreToolUse gate: run scripts/preship-check before any `git commit` Bash call.
 #
 # CLAUDE.md promises "run the preship check before commits" — this makes that
 # a guarantee instead of a request (hooks for guarantees, skills for guidance).
@@ -18,7 +18,7 @@ case "$CMD" in
 esac
 
 DIR="${CLAUDE_PROJECT_DIR:-.}"
-GATE="$DIR/bin/preship-check"
+GATE="$DIR/scripts/preship-check"
 [[ -x "$GATE" ]] || exit 0
 
 if OUT=$("$GATE" 2>&1); then

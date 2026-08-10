@@ -51,12 +51,12 @@
 ## 5. Update everything that names the old fleet
 
 - [x] 5.1 `.claude-plugin/plugin.json` and `marketplace.json`, `.codex-plugin/plugin.json`, `.cursor-plugin/plugin.json` and `marketplace.json`. `.cursor-plugin/` was missing from this task and enumerated both retired skills in its `skills` array. `.agents/plugins/marketplace.json` names no skills, so it needed nothing
-- [x] 5.2 `bin/preship-check` — two stale comments, one naming the 2026-06-12-retired `skill-forge`. `bin/sync-cross-tool` hardcodes no skill names
+- [x] 5.2 `scripts/preship-check` — two stale comments, one naming the 2026-06-12-retired `skill-forge`. `scripts/sync-cross-tool` hardcodes no skill names
 - [x] 5.3 `CLAUDE.md` — the process-skills exemption list, the feedback section (now "feedback for the meta layer"), the footgun pointer, and the machine-scope rule (now "the meta layer", not "the forge family")
 - [x] 5.4 `README.md` (loop diagram redrawn around the new fleet, surface table rewritten, install comment), `CHANGELOG.md` header, `MODELS.md` and `STATE.md` routing tables. `.claude/settings.local.json` names no skills. Also re-cut the three `.claude/skills/` symlinks
 - [x] 5.5 The three sibling OpenSpec changes and `openspec/config.yaml`. `artifact-contracts` needed more than a rename: its third contract, the handoff brief, is down to one carrier now that the routers don't take it, which fails that change's own independent-reinvention bar. Flagged in its proposal as a decision to settle before implementing
 - [x] 5.6 `ingest`'s `/forge` see-also removed; its body, `references/failure-modes.md`, and the workflow example no longer name it. `harness-audit`'s five "the forge's job" boundary statements rephrased as the job rather than the skill
-- [x] 5.7 `bin/preship-check` passes clean; loader-trigger grep returns zero matches over the whole tree
+- [x] 5.7 `scripts/preship-check` passes clean; loader-trigger grep returns zero matches over the whole tree
 
 ## 6. Use it once, on something real — gated
 

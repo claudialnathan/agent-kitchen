@@ -16,7 +16,7 @@
 - [ ] 2.3 Write the report contract with its version marker
 - [ ] 2.4 Write the handoff brief with its version marker, taken from whichever existing copy is most current
 - [ ] 2.5 Add the earned-by-reinvention bar at the top of the file, so a future session does not add a speculative fourth contract
-- [ ] 2.6 Add one pointer from `skills/new-skill/SKILL.md` into the reference, and confirm `bin/preship-check`'s orphan-reference check passes
+- [ ] 2.6 Add one pointer from `skills/new-skill/SKILL.md` into the reference, and confirm `scripts/preship-check`'s orphan-reference check passes
 
 ## 3. Wire the ledger
 
@@ -27,7 +27,7 @@
 
 - [ ] 4.1 Confirm no artifact body gained a pointer to the contracts reference. Artifacts carry text; `new-skill` carries the source
 - [ ] 4.2 Confirm the reference is one level deep from SKILL.md, per the references-one-level-deep rule
-- [ ] 4.3 Run the loader-trigger grep over the new file and `bin/preship-check` over the tree
+- [ ] 4.3 Run the loader-trigger grep over the new file and `scripts/preship-check` over the tree
 
 ## 5. Record
 

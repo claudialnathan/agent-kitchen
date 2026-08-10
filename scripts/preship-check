@@ -126,7 +126,7 @@ done
 # 7. Native Codex plugin packaging and cross-harness invocation parity.
 echo
 echo "Codex plugin packaging:"
-if ! bin/validate-codex-plugin; then
+if ! scripts/validate-codex-plugin; then
   fail=1
 fi
 

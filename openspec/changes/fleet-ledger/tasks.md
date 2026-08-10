@@ -25,10 +25,10 @@
 
 ## 4. Gate it
 
-- [ ] 4.1 Add the parity check to `bin/preship-check`, failing in both directions
+- [ ] 4.1 Add the parity check to `scripts/preship-check`, failing in both directions
 - [ ] 4.2 Verify against a deliberately broken tree: an artifact with no row, and a row with no artifact
 - [ ] 4.3 Confirm the check is silent on a clean pass, matching the rest of the gate
-- [ ] 4.4 Run `bin/preship-check` on the real tree and confirm exit 0
+- [ ] 4.4 Run `scripts/preship-check` on the real tree and confirm exit 0
 
 ## 5. Record
 

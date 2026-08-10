@@ -43,7 +43,7 @@ context: |
   - Artifacts carry no conversation residue: no session narration, no
     addressing the reader, no quoting requests. Provenance goes to CHANGELOG.md.
   - No `version` field in the Claude plugin manifests (commit-SHA versioning);
-    the Codex manifest keeps its strict semver. `bin/preship-check` enforces.
+    the Codex manifest keeps its strict semver. `scripts/preship-check` enforces.
 
   The anti-ceremony lesson, learned expensively:
   - 2026-07-05 mandated an `evals/probes.md` fixture file per expertise skill

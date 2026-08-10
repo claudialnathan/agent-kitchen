@@ -133,7 +133,7 @@ Mechanics — listing budget, frontmatter fields and traps, kinds, naming and pr
 
 ## Authoring footgun: the loader trigger sequences
 
-The loader pre-processes every file in a skill directory, scanning for two literal byte sequences and running what follows as a shell command, and it **ignores markdown context** — inline code, fences and block quotes offer no protection. An off-allowlist or malformed command stops the whole skill loading. The sequences: an exclamation mark immediately followed by a backtick, and three backticks immediately followed by an exclamation mark. A file that has to *describe* injection does it in words and uses an `[INJECT: <command>]` placeholder in example bodies. After writing, grep the tree with both patterns backslash-escaped, so the grepping file stays load-safe itself; zero matches means it will load. `bin/preship-check` catches both and gates every commit here.
+The loader pre-processes every file in a skill directory, scanning for two literal byte sequences and running what follows as a shell command, and it **ignores markdown context** — inline code, fences and block quotes offer no protection. An off-allowlist or malformed command stops the whole skill loading. The sequences: an exclamation mark immediately followed by a backtick, and three backticks immediately followed by an exclamation mark. A file that has to *describe* injection does it in words and uses an `[INJECT: <command>]` placeholder in example bodies. After writing, grep the tree with both patterns backslash-escaped, so the grepping file stays load-safe itself; zero matches means it will load. `scripts/preship-check` catches both and gates every commit here.
 
 ## Ship, and expect to delete it
 

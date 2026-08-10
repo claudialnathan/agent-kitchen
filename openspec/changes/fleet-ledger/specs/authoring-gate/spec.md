@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: The gate enforces ledger and filesystem parity
-`bin/preship-check` MUST fail when a published artifact has no ledger row, and MUST fail when a ledger row names an artifact that no longer exists on disk. Parity MUST be checked in both directions, because a stale row reads as coverage while routing nowhere.
+`scripts/preship-check` MUST fail when a published artifact has no ledger row, and MUST fail when a ledger row names an artifact that no longer exists on disk. Parity MUST be checked in both directions, because a stale row reads as coverage while routing nowhere.
 
 The check MUST be a hard failure rather than a warning. A ledger nothing enforces is the probes.md failure mode, where a mandated artifact reached zero adoption within three weeks.
 

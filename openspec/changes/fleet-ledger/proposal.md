@@ -13,7 +13,7 @@ Both are the same missing thing — a place where the fleet exists as an object 
 - Each repo that holds a fleet carries a **ledger**: one row per artifact recording what it owns, what it deliberately does **not** own, which shared contracts it carries, when it was born, its most recent recorded win, and its sunset trigger.
 - **Forge reads the ledger before drafting** and **writes the row at inception**, as the closing step of a build.
 - **Forge's triage gains a boundary question** before the surface ladder: which existing artifact does this overlap, and where is the line? Answering it edits the ledger row on both sides of the boundary.
-- **`bin/preship-check` gains a ledger-row presence check** so the record cannot silently fall behind the filesystem.
+- **`scripts/preship-check` gains a ledger-row presence check** so the record cannot silently fall behind the filesystem.
 - The kitchen's own four skills get the first ledger. Whether the sibling repo adopts one is the owner's call and is out of scope here.
 
 ## Capabilities
@@ -23,11 +23,11 @@ Both are the same missing thing — a place where the fleet exists as an object 
 
 ### Modified Capabilities
 - `artifact-triage`: The surface-selection ladder in `new-skill` gains a boundary question that runs before the ladder and produces a ledger edit.
-- `authoring-gate`: `bin/preship-check` gains ledger-row presence as a failing check.
+- `authoring-gate`: `scripts/preship-check` gains ledger-row presence as a failing check.
 
 ## Impact
 
-- Touches `skills/new-skill/SKILL.md` (boundary question, closing step), `skills/improve-skill/SKILL.md` (read-first), a new ledger file at the repo root, and `bin/preship-check`.
+- Touches `skills/new-skill/SKILL.md` (boundary question, closing step), `skills/improve-skill/SKILL.md` (read-first), a new ledger file at the repo root, and `scripts/preship-check`.
 - **Tension with CLAUDE.md's "never current state" rule, resolved deliberately.** A ledger is current state, which normally belongs to the filesystem. The exemption holds for exactly three columns the filesystem cannot answer: what an artifact *refuses* (nowhere in any description), which contract *version* it carries, and whether it recently *worked*. The columns that duplicate the filesystem (what it does, where it lives) are not in the ledger. Any row is verified before it is trusted, like any pointer.
 - **Rot risk, accepted with a mitigation.** A ledger is a fleet-wide mirror and will drift if nothing enforces it. The preship check is the mitigation; without it this proposal reintroduces the probes.md failure mode, so the check is not optional scope.
 - **Non-goals:** no per-artifact cost baseline (that is measurement machinery, deliberately not built); no ownership hierarchy or invocation graph; no automated overlap detection; no ledger for the sibling repo from this change.

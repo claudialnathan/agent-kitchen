@@ -99,10 +99,10 @@ Upgrading the marketplace alone leaves the installed plugin serving the previous
 
 The kitchen carries a native Cursor plugin package under `.cursor-plugin/`, including a marketplace catalog for `agent-kitchen` and the separate applied `skills` repo. Install it through Cursor's `/plugin` or Marketplace UI; that is the only path for published kitchen skills on Cursor.
 
-`bin/sync-cross-tool` covers what the plugin does not: project-local workflows that opt in with `harness-targets:`, such as `ship-agent-skills`, which is tracked here but never bundled into the published plugin.
+`scripts/sync-cross-tool` covers what the plugin does not: project-local workflows that opt in with `harness-targets:`, such as `ship-agent-skills`, which is tracked here but never bundled into the published plugin.
 
 ```bash
-bin/sync-cross-tool
+scripts/sync-cross-tool
 ```
 
 It links those into `~/.cursor/skills/` and `~/.agents/skills/` (the location current Codex scans; `~/.codex/skills/` is legacy and no longer read). Reload Cursor or start a new agent session after syncing.

@@ -148,7 +148,7 @@ Then:
 - check that every benchmark score names its configuration;
 - check tables render cleanly;
 - run `git diff --check`;
-- run `bin/preship-check`;
+- run `scripts/preship-check`;
 - inspect the final diff without touching unrelated working-tree changes.
 
 Add a newest-first `CHANGELOG.md` entry only when the guide or this command changes materially. A date-only refresh with no decision change needs no changelog entry.

@@ -6,7 +6,7 @@ Verified facts about how the loader, the listing, and the lifecycle behave, for 
 
 - At session start the model sees only **names and descriptions**. Combined `description` + `when_to_use` is capped at **1,536 chars per skill**; the aggregate listing budget is ~1% of the context window (≈8K chars on a 200K session), dropping the least-used descriptions first. A fleet of near-cap descriptions can overflow the budget by itself.
 - `when_to_use` renders concatenated after the description with a `-` separator, so bullet lists arrive as run-on artifacts. Keep it one compact line.
-- Cross-tool: the open agentskills.io spec caps `description` at 1,024 chars and **ignores `when_to_use`**, so Cursor and Codex see only the description. The spec, cross-tool consumers, and `bin/preship-check` all require an explicit `name:`.
+- Cross-tool: the open agentskills.io spec caps `description` at 1,024 chars and **ignores `when_to_use`**, so Cursor and Codex see only the description. The spec, cross-tool consumers, and `scripts/preship-check` all require an explicit `name:`.
 - Cheap diagnostic: ask a fresh session "when would you use the `<skill>` skill?" It quotes the description back, and the gap tells you what to add.
 - Add a *negative* trigger only when the skill demonstrably over-fires.
 

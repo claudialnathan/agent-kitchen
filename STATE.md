@@ -227,6 +227,7 @@ The hook surface has accumulated several useful fields:
 
 - `bin/` at plugin root: executables there are added to Bash tool's PATH while the plugin is enabled.
 - Bare commands work without absolute paths.
+- **CLI only, and it blocks claude.ai hosting.** The account-synced marketplace path (Customize → Plugins, feeding Chat, Cowork, and claude.ai/code) refuses to sync a marketplace whose plugin ships a top-level `bin/`: executables land on PATH in the CLI but never appear on the admin approval surface. The server names the offending files and fails the whole sync, while the UI shows only "Marketplace sync failed. Check the repository URL and try again."; the real error is in `~/Library/Logs/Claude/claude.ai-web.log`. Ship entry points as hooks, commands, or mcpServers, or accept that the plugin is CLI-only.
 
 ### `disableSkillShellExecution` setting (w14)
 

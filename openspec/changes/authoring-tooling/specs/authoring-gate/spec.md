@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: The gate detects cross-skill invocation prose
-`bin/preship-check` MUST flag an artifact body that instructs invoking another skill or assumes one is installed. Detection MUST cover slash-command invocations presented as steps, including harness built-ins, which are as fragile as third-party skills because they can be disabled wholesale.
+`scripts/preship-check` MUST flag an artifact body that instructs invoking another skill or assumes one is installed. Detection MUST cover slash-command invocations presented as steps, including harness built-ins, which are as fragile as third-party skills because they can be disabled wholesale.
 
 The check MUST warn rather than fail. A see-also pointer naming another skill is permitted by the stands-alone rule, so a failing check would produce false positives, and a gate that blocks on legitimate content trains the author to bypass it.
 

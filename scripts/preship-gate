@@ -1,0 +1,36 @@
+#!/bin/bash
+# PreToolUse gate for Claude Code and Codex: blocks `git commit` when scripts/preship-check fails.
+
+set -uo pipefail
+
+INPUT=$(cat)
+
+if command -v jq >/dev/null 2>&1; then
+  CMD=$(printf '%s' "$INPUT" | jq -r '[.tool_input? | .. | strings] | join(" ")' 2>/dev/null)
+else
+  CMD=$INPUT
+fi
+
+case "$CMD" in
+  *"git commit"*) ;;
+  *) exit 0 ;;
+esac
+
+ROOT="${CLAUDE_PROJECT_DIR:-}"
+[[ -n "$ROOT" ]] || ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || ROOT=.
+GATE="$ROOT/scripts/preship-check"
+
+if [[ ! -x "$GATE" ]]; then
+  echo "preship-gate: $GATE is missing or not executable, so the commit could not be verified." >&2
+  exit 2
+fi
+
+if OUT=$("$GATE" 2>&1); then
+  exit 0
+fi
+
+{
+  echo "preship-check failed — fix the findings below, then re-run the commit:"
+  echo "$OUT"
+} >&2
+exit 2
